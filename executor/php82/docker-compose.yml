@@ -1,0 +1,9 @@
+version: '3'
+services:
+  php-container:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./requests:/app/requests
+      - ./results:/app/results
