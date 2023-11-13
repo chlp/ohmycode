@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/codemirror.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/codemirror.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/javascript/javascript.js"></script>
@@ -50,23 +51,34 @@ if ($id !== null) {
 }
 ?>
 
+<div class="header">
+    <button style="float: left; clear: left; margin-right: 1em;">save</button>
+    <input type="text" id="name" style="width: 15em; float: left;">
+    <label for="name" style="float: left;"><- your name (show if not written or clicked change)</label>
+
+    <button style="float: left; clear: left; margin-right: 1em;">save</button>
+    <input type="text" id="executor" style="width: 15em; float: left;">
+    <label for="executor" style="float: left;"><- executor (input and hide / show input)</label>
+
+    <div style="clear: both;">
+        Session <span style="color: cornflowerblue">Quinyx 14.11.23</span>,
+        executor: <span style="color: forestgreen;">online</span>,
+        spectators: <span style="">Alex, <u>Serg</u></span>,
+        writer: <span style="">Boris</span>
+    </div>
+</div>
+
 <textarea id="code"><?= $code ?></textarea>
 <div style="float:left; border: 1px solid #666; width: 40vw; height: 80vh; margin-left: 5px;">results</div>
 
 <div style="float: left; clear: both; padding: 1em;">
-    <input type="button" value="Become a writer">
-    <select style="width: 120px;">
+    <input type="button" value="Become a writer" style="float: left;">
+    <select style="width: 120px; float: left;">
         <option>PHP 8.2</option>
         <option>MySQL 8</option>
         <option>GoLang</option>
     </select>
     <input type="button" value="Execute code"><br><br>
-    <label for="name"><input type="text" id="name"> <- your name (show if not written or clicked change)</label><br><br>
-    <label for="executor"><input type="text" id="executor"> <- executor (input and hide / show input)</label><br><br>
-    Updating: <span style="color: forestgreen;">online</span>,
-    executor: <span style="color: forestgreen;">online</span>,
-    spectators: <span style="">Alex, <u>Serg</u></span>,
-    writer: <span style="">Boris</span>
 </div>
 
 <script>
