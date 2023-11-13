@@ -54,8 +54,12 @@ if ($id !== null) {
 <div style="float:left; border: 1px solid #666; width: 40vw; height: 80vh; margin-left: 5px;">results</div>
 
 <div style="float: left; clear: both; padding: 1em;">
-    <label for="name"><input type="text" id="name"> <- your name</label><br><br>
-    <label for="executor"><input type="text" id="executor"> <- executor (input and hide / show input)</label><br>
+    <label for="name"><input type="text" id="name"> <- your name (show if not written or clicked change)</label><br><br>
+    <label for="executor"><input type="text" id="executor"> <- executor (input and hide / show input)</label><br><br>
+    Updating: <span style="color: forestgreen;">online</span>,
+    executor: <span style="color: forestgreen;">online</span>,
+    spectators: <span style="">Alex, <u>Serg</u></span>,
+    writer: <span style="">Boris</span>
 </div>
 
 <script>
