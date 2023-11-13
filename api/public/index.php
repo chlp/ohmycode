@@ -54,6 +54,13 @@ if ($id !== null) {
 <div style="float:left; border: 1px solid #666; width: 40vw; height: 80vh; margin-left: 5px;">results</div>
 
 <div style="float: left; clear: both; padding: 1em;">
+    <input type="button" value="Become a writer">
+    <select style="width: 120px;">
+        <option>PHP 8.2</option>
+        <option>MySQL 8</option>
+        <option>GoLang</option>
+    </select>
+    <input type="button" value="Execute code"><br><br>
     <label for="name"><input type="text" id="name"> <- your name (show if not written or clicked change)</label><br><br>
     <label for="executor"><input type="text" id="executor"> <- executor (input and hide / show input)</label><br><br>
     Updating: <span style="color: forestgreen;">online</span>,
