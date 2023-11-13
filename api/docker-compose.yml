@@ -1,0 +1,31 @@
+version: '3'
+services:
+  mysql:
+    container_name: ohmycode-mysql
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ohmycode
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    ports:
+      - "3306:3306"
+    networks:
+      - ohmycode-network
+  php:
+    container_name: ohmycode-php
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public:/app/public
+      - ./api-conf.json:/app/api-conf.json
+    depends_on:
+      - mysql
+    networks:
+      - ohmycode-network
+networks:
+  ohmycode-network:
+    driver: bridge

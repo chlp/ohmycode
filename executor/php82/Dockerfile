@@ -1,4 +1,3 @@
-# docker build -t executor-php82 .
 # docker-compose up --build
 
 FROM php:8.2-cli

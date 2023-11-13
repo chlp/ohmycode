@@ -2,7 +2,7 @@
 
 function loadApiConf(): array
 {
-    define('CONF_PATH', 'api-conf.json');
+    define('CONF_PATH', '../api-conf.json');
     if (!file_exists(CONF_PATH)) {
         die('conf: please create conf file');
     }

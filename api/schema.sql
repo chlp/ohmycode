@@ -3,9 +3,9 @@ create table sessions
     id                  varchar(32) not null,
     code                blob        not null,
     lang                varchar(32) not null,
-    executor            varchar(32) not null,
+    executor            varchar(32),
     executor_checked_at datetime,
-    updated_at          datetime    not null on update NOW(),
+    updated_at          datetime(3) default NOW(3) on update NOW(3),
     constraint sessions_pk
         primary key (id)
 );
@@ -31,10 +31,10 @@ create index requests_executor_idx
 
 create table results
 (
-    session  varchar(32) not null,
-    code     blob        not null,
-    result   blob        not null,
-    lang     varchar(32) not null,
+    session varchar(32) not null,
+    code    blob        not null,
+    result  blob        not null,
+    lang    varchar(32) not null,
     constraint results_pk
         primary key (session)
 );
