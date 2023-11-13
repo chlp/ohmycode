@@ -15,9 +15,12 @@
     <style>
         .CodeMirror {
             border: 1px solid #666;
-            max-width: 1000px;
             width: 50vw;
             min-width: 500px;
+            height: 80vh;
+            min-height: 300px;
+            cursor: text;
+            float: left;
         }
     </style>
 </head>
@@ -47,22 +50,31 @@ if ($id !== null) {
 }
 ?>
 
-
 <textarea id="code"><?= $code ?></textarea>
-<button onclick="importCode()">Import Code</button>
+<div style="float:left; border: 1px solid #666; width: 40vw; height: 80vh; margin-left: 5px;">results</div>
+
+<div style="float: left; clear: both; padding: 1em;">
+    <label for="name"><input type="text" id="name"> <- your name</label><br><br>
+    <label for="executor"><input type="text" id="executor"> <- executor (input and hide / show input)</label><br>
+</div>
 
 <script>
-    let editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+    window.editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
         mode: "sql", // javascript, go, php, sql
         matchBrackets: true,
+        indentWithTabs: false,
     });
 
     function importCode() {
-        // Get the code from the CodeMirror editor
-        var code = editor.getValue();
+        var code = window.editor.getValue();
         console.log("Imported Code:", code);
-        // You can now use the 'code' variable as needed
+    }
+
+    function updateCode() {
+        let scrollInfo = window.editor.getScrollInfo();
+        window.editor.setValue("create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); asd asdasd asdasd");
+        window.editor.scrollTo(scrollInfo.left, scrollInfo.top);
     }
 </script>
 
