@@ -8,7 +8,7 @@ class Conf
         if ($conf !== null) {
             return $conf;
         }
-        define('CONF_PATH', '../api-conf.json');
+        define('CONF_PATH', __DIR__ . '/../../api-conf.json');
         if (!file_exists(CONF_PATH)) {
             die('conf: please create conf file');
         }

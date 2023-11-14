@@ -17,7 +17,7 @@
 
 <?php
 
-require __DIR__ . '/bootstrap.php';
+require __DIR__ . '/app/bootstrap.php';
 
 $code = '';
 $lang = '';
