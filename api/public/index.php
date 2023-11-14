@@ -19,25 +19,10 @@
 
 require __DIR__ . '/app/bootstrap.php';
 
-$code = '';
-$lang = '';
-$executor = '';
-$executorCheckedAt = null;
-$updatedAt = null;
-
 $id = $_GET['session'] ?? null;
+$session = null;
 if ($id !== null) {
-    $id = (string)$id;
-    $dbConn = Db::dbConn();
-    $stmt = $dbConn->prepare("SELECT `name`, `code`, `lang`, `executor`, `executor_checked_at`, `updated_at`, `writer` FROM `sessions` WHERE `id` = ?");
-    if (!$stmt) {
-        die('wrong stmt');
-    }
-    $stmt->bind_param('s', $id);
-    $stmt->execute();
-    $stmt->bind_result($sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer);
-    $stmt->fetch();
-    $stmt->close();
+    $session = Session::getById((string)$id);
 }
 ?>
 
@@ -63,14 +48,14 @@ if ($id !== null) {
 </div>
 
 <div class="blocks-container">
-    Session <a href="#">Quinyx 14.11.23</a>
+    Session <a href="#"><?= $session->name ?? '' ?></a>
     (<span id="session-status" class="online">online</span>),
     spectators: <span style="">Alex, <a href="#">Serg</a></span>,
     writer: <span style="">Boris</span>
 </div>
 
 <div class="editor textarea">
-    <textarea id="editor"><?= $code ?></textarea>
+    <textarea id="editor"><?= $session->code ?? '' ?></textarea>
 </div>
 <div class="results textarea">
     <textarea id="results">Waiting for execution...</textarea>
@@ -99,6 +84,7 @@ if ($id !== null) {
         matchBrackets: true,
         indentWithTabs: false,
     });
+
     // window.editor.setOption('readOnly', true)
 
     function importCode() {

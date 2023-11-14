@@ -4,10 +4,10 @@ create table sessions
     name                varchar(32) not null,
     code                blob        not null,
     lang                varchar(32) not null,
-    executor            varchar(32),
+    executor            varchar(32) not null,
     executor_checked_at datetime,
-    updated_at          datetime(3) default NOW(3) on update NOW(3),
-    writer              varchar(32),
+    updated_at          datetime(3) not null default NOW(3) on update NOW(3),
+    writer              varchar(32) not null,
     constraint sessions_pk
         primary key (id)
 );
