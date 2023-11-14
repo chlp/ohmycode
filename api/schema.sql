@@ -1,6 +1,7 @@
 create table sessions
 (
     id                  varchar(32) not null,
+    name                varchar(32) not null,
     code                blob        not null,
     lang                varchar(32) not null,
     executor            varchar(32),
@@ -10,6 +11,12 @@ create table sessions
     constraint sessions_pk
         primary key (id)
 );
+
+create index sessions_executor_idx
+    on sessions (executor);
+
+create index sessions_updated_at_idx
+    on sessions (updated_at);
 
 create table session_users
 (
@@ -21,11 +28,8 @@ create table session_users
         primary key (session, user)
 );
 
-create index sessions_executor_idx
-    on sessions (executor);
-
-create index sessions_updated_at_idx
-    on sessions (updated_at);
+create index session_users_user_idx
+    on session_users (user);
 
 create table requests
 (

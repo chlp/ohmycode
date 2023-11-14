@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <title>OhMyCode</title>
     <meta charset="UTF-8">
@@ -13,21 +12,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/go/go.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/sql/sql.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/php/php.js"></script>
-    <style>
-        .CodeMirror {
-            border: 1px solid #666;
-            width: 50vw;
-            min-width: 500px;
-            height: 80vh;
-            min-height: 300px;
-            cursor: text;
-            float: left;
-        }
-    </style>
 </head>
 <body>
 
 <?php
+
+require __DIR__ . '/bootstrap.php';
+
 $code = '';
 $lang = '';
 $executor = '';
@@ -37,57 +28,78 @@ $updatedAt = null;
 $id = $_GET['session'] ?? null;
 if ($id !== null) {
     $id = (string)$id;
-    require 'db.php';
-    $dbConn = dbConn();
-    $stmt = $dbConn->prepare("SELECT `code`, `lang`, `executor`, `executor_checked_at`, `updated_at` FROM `sessions` WHERE `id` = ?");
+    $dbConn = Db::dbConn();
+    $stmt = $dbConn->prepare("SELECT `name`, `code`, `lang`, `executor`, `executor_checked_at`, `updated_at`, `writer` FROM `sessions` WHERE `id` = ?");
     if (!$stmt) {
         die('wrong stmt');
     }
     $stmt->bind_param('s', $id);
     $stmt->execute();
-    $stmt->bind_result($code, $lang, $executor, $executorCheckedAt, $updatedAt);
+    $stmt->bind_result($sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer);
     $stmt->fetch();
     $stmt->close();
 }
 ?>
 
-<div class="header">
-    <button style="float: left; clear: left; margin-right: 1em;">save</button>
-    <input type="text" id="name" style="width: 15em; float: left;">
-    <label for="name" style="float: left;"><- your name (show if not written or clicked change)</label>
-
-    <button style="float: left; clear: left; margin-right: 1em;">save</button>
-    <input type="text" id="executor" style="width: 15em; float: left;">
-    <label for="executor" style="float: left;"><- executor (input and hide / show input)</label>
-
-    <div style="clear: both;">
-        Session <span style="color: cornflowerblue">Quinyx 14.11.23</span>,
-        executor: <span style="color: forestgreen;">online</span>,
-        spectators: <span style="">Alex, <u>Serg</u></span>,
-        writer: <span style="">Boris</span>
-    </div>
+<div class="blocks-container">
+    <button>save</button>
+    <input type="text" id="session" style="width: 15em;" maxlength="32" minlength="1"
+           pattern="[0-9a-zA-Z\u0400-\u04ff\s\-]{1,32}">
+    <label for="session""><- session name</label>
 </div>
 
-<textarea id="code"><?= $code ?></textarea>
-<div style="float:left; border: 1px solid #666; width: 40vw; height: 80vh; margin-left: 5px;">results</div>
+<div class="blocks-container">
+    <button>save</button>
+    <input type="text" id="name" style="width: 15em;" maxlength="32" minlength="1"
+           pattern="[0-9a-zA-Z\u0400-\u04ff\s\-]{1,32}">
+    <label for="name""><- your name (show if not written or clicked change)</label>
+</div>
 
-<div style="float: left; clear: both; padding: 1em;">
-    <input type="button" value="Become a writer" style="float: left;">
-    <select style="width: 120px; float: left;">
+<div class="blocks-container">
+    <button>save</button>
+    <input type="text" id="executor" style="width: 15em;" maxlength="32" minlength="1"
+           pattern="[0-9a-zA-Z]{32}">
+    <label for="executor"><- executor (input and hide / show input)</label>
+</div>
+
+<div class="blocks-container">
+    Session <a href="#">Quinyx 14.11.23</a>
+    (<span id="session-status" class="online">online</span>),
+    spectators: <span style="">Alex, <a href="#">Serg</a></span>,
+    writer: <span style="">Boris</span>
+</div>
+
+<div class="editor textarea">
+    <textarea id="editor"><?= $code ?></textarea>
+</div>
+<div class="results textarea">
+    <textarea id="results">Waiting for execution...</textarea>
+</div>
+
+<div class="blocks-container">
+    <button style="float: left; clear: left; margin-right: 1em;">Become a writer</button>
+    <select style="width: 120px; float: left; margin-right: 1em;">
         <option>PHP 8.2</option>
         <option>MySQL 8</option>
         <option>GoLang</option>
     </select>
-    <input type="button" value="Execute code"><br><br>
+    <button style="float: left;; margin-right: 1em;">Execute code</button>
 </div>
 
 <script>
-    window.editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+    let user = localStorage['user'];
+    if (user === undefined) {
+        user = '<?= Utils::genUuid() ?>';
+        localStorage['user'] = user;
+    }
+
+    window.editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
         lineNumbers: true,
         mode: "sql", // javascript, go, php, sql
         matchBrackets: true,
         indentWithTabs: false,
     });
+    // window.editor.setOption('readOnly', true)
 
     function importCode() {
         var code = window.editor.getValue();
@@ -99,8 +111,13 @@ if ($id !== null) {
         window.editor.setValue("create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); asd asdasd asdasd");
         window.editor.scrollTo(scrollInfo.left, scrollInfo.top);
     }
-</script>
 
+    window.results = CodeMirror.fromTextArea(document.getElementById("results"), {
+        lineNumbers: true,
+        indentWithTabs: false,
+        readOnly: true,
+    });
+</script>
 
 </body>
 </html>

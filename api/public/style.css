@@ -1,3 +1,4 @@
+/* customized */
 /* MVP.css v1.14 - https://github.com/andybrewer/mvp */
 
 :root {
@@ -398,8 +399,8 @@ input[type="radio"] {
     display: inline-block;
 }
 
-input[type="checkbox"]+label,
-input[type="radio"]+label {
+input[type="checkbox"] + label,
+input[type="radio"] + label {
     display: inline-block;
     font-weight: normal;
     position: relative;
@@ -529,4 +530,64 @@ blockquote footer {
 *::-webkit-scrollbar-thumb {
     background-color: rgb(202, 202, 232);
     border-radius: 10px;
+}
+
+.blocks-container {
+    clear: both;
+}
+
+.blocks-container button,
+.blocks-container label,
+.blocks-container input,
+.blocks-container select {
+    float: left;
+    margin-right: 1em;
+}
+
+.textarea {
+    float: left;
+    margin-bottom: 1em;
+    border: 1px solid #666;
+    cursor: text;
+}
+
+@media (min-width: 970px) {
+    .textarea.editor {
+        width: 53vw;
+        min-width: 500px;
+    }
+
+    .textarea.results {
+        width: 42vw;
+        min-width: 400px;
+        margin-left: 5px;
+    }
+}
+@media (max-width: 969px) {
+    .textarea.editor {
+        width: 95vw;
+        min-width: 300px;
+    }
+
+    .textarea.results {
+        width: 95vw;
+        min-width: 300px;
+    }
+}
+
+.textarea > div {
+    height: 80vh;
+    min-height: 300px;
+}
+
+.online {
+    color: forestgreen;
+}
+
+.offline {
+    color: darkred;
+}
+
+input:invalid {
+    background-color: lightpink;
 }

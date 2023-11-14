@@ -5,8 +5,7 @@ if (!isset($_GET['id']) && !isset($_POST['id'])) {
     return;
 }
 
-require 'db.php';
-$conn = dbConn();
+$conn = Db::dbConn();
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
