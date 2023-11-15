@@ -94,8 +94,9 @@ if ($session === null) {
     }
     ?>
 
+    let sessionId = '<?= $session->id ?>';
     let userId = localStorage['user'];
-    let tmpUserName = '<?= Utils::randomName() ?>';
+    let userName = '<?= Utils::randomName() ?>';
     if (userId === undefined) {
         userId = '<?= Utils::genUuid() ?>';
         localStorage['user'] = userId;
@@ -136,9 +137,9 @@ if ($session === null) {
 
     let getUsersContainerContent = () => {
         if (newSession) {
-            return ', writer: <a id="own-name" href="#">' + tmpUserName + '</a>';
+            return ', writer: <a id="own-name" href="#">' + userName + '</a>';
         }
-        let html = ', spectators: <a id="own-name" href="#">' + tmpUserName + '</a>';
+        let html = ', spectators: <a id="own-name" href="#">' + userName + '</a>';
         return html;
     };
     let fillUserContainer = () => {
@@ -156,6 +157,23 @@ if ($session === null) {
     setInterval(() => {
         updateCode();
     }, 1000);
+
+    let postRequest = (url, data, callback) => {
+        fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        }).then((response) => response.text()).then((text) => callback(text));
+    };
+
+    postRequest('/action/session.php', {
+        session: sessionId,
+        user: userId,
+        userName: userName,
+        action: 'getUpdate',
+    }, (text) => {console.log(text);});
 </script>
 
 </body>

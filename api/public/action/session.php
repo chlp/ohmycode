@@ -2,39 +2,31 @@
 
 require __DIR__ . '/../app/bootstrap.php';
 
-if (!isset($_POST['session'])) {
-    http_response_code(400);
-    echo 'Not found: session';
-    return;
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    error('Method not allowed', 405);
 }
-$sessionId = (string)$_POST['session'];
+
+$input = json_decode(file_get_contents('php://input'), true);
+
+$sessionId = (string)($input['session'] ?? '');
 if (!Utils::isUuid($sessionId)) {
-    http_response_code(400);
-    echo 'Invalid: session';
-    return;
+    error('Invalid: session');
 }
 
-if (!isset($_POST['user'])) {
-    http_response_code(400);
-    return;
-}
-$userId = (string)$_POST['user'];
+$userId = (string)($input['user'] ?? '');
 if (!Utils::isUuid($userId)) {
-    http_response_code(400);
-    echo 'Invalid: user';
-    return;
+    error('Invalid: user');
 }
 
-$userName = (string)$_POST['userName'];
+$userName = (string)($input['userName'] ?? '');
 
-$action = (string)$_POST['action'] ?? '';
+$action = (string)($input['action'] ?? '');
 switch ($action) {
     case 'getUpdate':
-        $lastUpdate = isset($_POST['lastUpdate']) ? (string)$_POST['lastUpdate'] : null;
+        $lastUpdate = isset($input['lastUpdate']) ? (string)$input['lastUpdate'] : null;
         $session = Session::getById($sessionId, $lastUpdate);
         if ($session === null) {
-            http_response_code(400);
-            echo 'Not found';
+            // not found, but it is ok
             return;
         }
         $userFound = false;
@@ -54,50 +46,38 @@ switch ($action) {
         break;
     case 'setSessionName':
         $session = getSession($sessionId, $userId, $userName);
-        if (!$session->setSessionName((string)$_POST['sessionName'] ?? '')) {
-            http_response_code(400);
-            echo 'Wrong session name';
-            return;
+        if (!$session->setSessionName((string)($input['sessionName'] ?? ''))) {
+            error('Wrong session name');
         }
         break;
     case 'setUserName':
         $session = getSession($sessionId, $userId, $userName);
         if (!$session->setUserName($userId, $userName)) {
-            http_response_code(400);
-            echo 'Wrong user name';
-            return;
+            error('Wrong user name');
         }
         break;
     case 'setLang':
         $session = getSession($sessionId, $userId, $userName);
-        if (!$session->setLang((string)$_POST['lang'] ?? '')) {
-            http_response_code(400);
-            echo 'Wrong lang';
-            return;
+        if (!$session->setLang((string)($input['lang'] ?? ''))) {
+            error('Wrong lang');
         }
         break;
     case 'setExecutor':
         $session = getSession($sessionId, $userId, $userName);
-        if (!$session->setExecutor((string)$_POST['executor'] ?? '')) {
-            http_response_code(400);
-            echo 'Wrong executor';
-            return;
+        if (!$session->setExecutor((string)($input['executor'] ?? ''))) {
+            error('Wrong executor');
         }
         break;
     case 'setWriter':
         $session = getSession($sessionId, $userId, $userName);
         if (!$session->setWriter($userId)) {
-            http_response_code(400);
-            echo 'Wrong userId';
-            return;
+            error('Wrong userId');
         }
         break;
     case 'setCode':
         $session = getSession($sessionId, $userId, $userName);
-        if (!$session->setCode((string)$_POST['code'] ?? '')) {
-            http_response_code(400);
-            echo 'Wrong lang';
-            return;
+        if (!$session->setCode((string)($input['code'] ?? ''))) {
+            error('Wrong lang');
         }
         break;
 }
@@ -112,4 +92,10 @@ function getSession(int $sessionId, int $userId, string $userName): Session
         $session->setUserName($userId, $userName);
     }
     return $session;
+}
+
+function error($str, $code = 400): void
+{
+    http_response_code($code);
+    die(json_encode(['error' => $str]));
 }
