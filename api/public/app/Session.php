@@ -68,7 +68,36 @@ class Session
             $executorCheckedAt = DateTime::createFromFormat('Y-m-d H:i:s', $executorCheckedAtStr);
         }
         $updatedAt = DateTime::createFromFormat('Y-m-d H:i:s.u', $updatedAtStr);
-        return new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], false, null);
+
+        $session = new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], false, null);
+        $session->loadUsers();
+
+        return $session;
+    }
+
+    private function loadUsers(): void
+    {
+        $res = $this->db->select("select `user`, `name` from `session_users` where session = ?", [$this->id]);
+        $users = [];
+        foreach ($res as $row) {
+            $users[] = [
+                'id' => $row[0],
+                'name' => $row[1],
+            ];
+        }
+        $this->users = $users;
+    }
+
+    public function removeOldUsers(): void
+    {
+        $this->db->exec("delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL 20 second", [$this->id]);
+    }
+
+    public function updateUserOnline(string $userId): void
+    {
+        if (Utils::isUuid($userId)) {
+            $this->db->exec("update `session_users` set updated_at = NOW(3) where session = ? and user = ?", [$this->id, $userId]);
+        }
     }
 
     public function insert(): self

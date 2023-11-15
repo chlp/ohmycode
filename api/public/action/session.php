@@ -25,6 +25,8 @@ if (!Utils::isUuid($userId)) {
     return;
 }
 
+$userName = (string)$_POST['userName'];
+
 $action = (string)$_POST['action'] ?? '';
 switch ($action) {
     case 'getUpdate':
@@ -35,10 +37,23 @@ switch ($action) {
             echo 'Not found';
             return;
         }
+        $userFound = false;
+        foreach ($session->users as $user) {
+            if ($user['id'] === $userId) {
+                $userFound = true;
+                break;
+            }
+        }
+        if (!$userFound) {
+            $session->setUserName($userId, $userName);
+        } else {
+            $session->updateUserOnline($userId);
+        }
+        $session->removeOldUsers();
         echo $session->getJson();
         break;
     case 'setSessionName':
-        $session = getSession($sessionId, $userId);
+        $session = getSession($sessionId, $userId, $userName);
         if (!$session->setSessionName((string)$_POST['sessionName'] ?? '')) {
             http_response_code(400);
             echo 'Wrong session name';
@@ -46,15 +61,15 @@ switch ($action) {
         }
         break;
     case 'setUserName':
-        $session = getSession($sessionId, $userId);
-        if (!$session->setUserName($userId, (string)$_POST['userName'] ?? '')) {
+        $session = getSession($sessionId, $userId, $userName);
+        if (!$session->setUserName($userId, $userName)) {
             http_response_code(400);
             echo 'Wrong user name';
             return;
         }
         break;
     case 'setLang':
-        $session = getSession($sessionId, $userId);
+        $session = getSession($sessionId, $userId, $userName);
         if (!$session->setLang((string)$_POST['lang'] ?? '')) {
             http_response_code(400);
             echo 'Wrong lang';
@@ -62,7 +77,7 @@ switch ($action) {
         }
         break;
     case 'setExecutor':
-        $session = getSession($sessionId, $userId);
+        $session = getSession($sessionId, $userId, $userName);
         if (!$session->setExecutor((string)$_POST['executor'] ?? '')) {
             http_response_code(400);
             echo 'Wrong executor';
@@ -70,7 +85,7 @@ switch ($action) {
         }
         break;
     case 'setCode':
-        $session = getSession($sessionId, $userId);
+        $session = getSession($sessionId, $userId, $userName);
         if (!$session->setCode((string)$_POST['code'] ?? '')) {
             http_response_code(400);
             echo 'Wrong lang';
@@ -79,13 +94,14 @@ switch ($action) {
         break;
 }
 
-function getSession(int $sessionId, int $userId): Session
+function getSession(int $sessionId, int $userId, string $userName): Session
 {
     $session = Session::getById($sessionId);
     if ($session === null) {
         $session = Session::createNew($sessionId);
         $session->writer = $userId;
         $session->insert();
+        $session->setUserName($userId, $userName);
     }
     return $session;
 }
