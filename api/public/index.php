@@ -39,20 +39,20 @@ if ($session === null) {
 
 <div class="blocks-container" id="session-name-container" style="display: none;">
     <button>save</button>
-    <input type="text" id="session-name" style="width: 15em;" maxlength="32" minlength="1"
+    <input type="text" id="session-name-input" style="width: 15em;" maxlength="32" minlength="1"
            pattern="[0-9a-zA-Z\u0400-\u04ff\s\-\']{1,32}">
     <label for="session""><- session name</label>
 </div>
 
 <div class="blocks-container" id="user-name-container" style="display: none;">
     <button>save</button>
-    <input type="text" id="user-name" style="width: 15em;" maxlength="32" minlength="1"
+    <input type="text" id="user-name-input" style="width: 15em;" maxlength="32" minlength="1"
            pattern="[0-9a-zA-Z\u0400-\u04ff\s\-\']{1,32}">
     <label for="name""><- your name</label>
 </div>
 
 <div class="blocks-container">
-    Session <a href="#"><?= $session->name ?? '' ?></a>
+    Session <a href="#" id="session-name"><?= $session->name ?? '' ?></a>
     (<span id="session-status" class="online">online</span>)<span id="users-container"></span>
 </div>
 
@@ -94,17 +94,30 @@ if ($session === null) {
     }
     ?>
 
+    let session = <?= $session->getJson() ?>;
     let sessionId = '<?= $session->id ?>';
     let userId = localStorage['user'];
-    let userName = '<?= Utils::randomName() ?>';
     if (userId === undefined) {
         userId = '<?= Utils::genUuid() ?>';
         localStorage['user'] = userId;
     }
-    let sessionUpdatedAt = <?= $session->updatedAt?->format('\'Y-m-d H:i:s.u\'') ?? 'null' ?>;
+    let userName = undefined;
+    session.users.forEach((user) => {
+        if (user.id === userId) {
+            userName = user.name;
+        }
+    });
+    if (userName === undefined) {
+        userName = localStorage['tmpUserName'];
+        if (userName === undefined) {
+            userName = '<?= Utils::randomName() ?>';
+            localStorage['tmpUserName'] = userName;
+        }
+    }
     let newSession = <?= $newSession ? 'true' : 'false' ?>;
+    let codeHash = undefined;
 
-    String.prototype.hashCode = function () {
+    String.prototype.hash = function () {
         let hash = 0,
             i, chr;
         if (this.length === 0) return hash;
@@ -135,27 +148,96 @@ if ($session === null) {
         console.log("Imported Code:", code);
     }
 
-    let getUsersContainerContent = () => {
+    let fillUsersContainer = () => {
+        let spectators = [];
+        let writer = undefined;
+        session.users.forEach((user) => {
+            user.own = user.id === userId;
+            if (user.id === session.writer) {
+                writer = user;
+            } else {
+                spectators.push(user)
+            }
+        });
         if (newSession) {
-            return ', writer: <a id="own-name" href="#">' + userName + '</a>';
+            writer = {
+                id: userId,
+                name: userName,
+                own: true,
+            }
         }
-        let html = ', spectators: <a id="own-name" href="#">' + userName + '</a>';
-        return html;
+        let html = '';
+        if (writer !== undefined) {
+            html += ', writer: ';
+            if (writer.own) {
+                html += '<a id="own-name" href="#">';
+            }
+            html += writer.name;
+            if (writer.own) {
+                html += '</a>';
+            }
+        }
+        if (spectators.length > 0) {
+            html += ', spectators: ';
+            spectators.forEach((user) => {
+                if (user.own) {
+                    html += '<a id="own-name" href="#">';
+                }
+                html += user.name;
+                if (user.own) {
+                    html += '</a>';
+                }
+            })
+        }
+        document.getElementById('users-container').innerHTML = html;
     };
-    let fillUserContainer = () => {
-        document.getElementById('users-container').innerHTML = getUsersContainerContent();
-    }
-    fillUserContainer();
+    fillUsersContainer();
 
-    let updateCode = () => {
-        // receive session: name, code, lang, users, writer, updatedAt, executorCheckedAt, result, request
-        // calc ping
-        let scrollInfo = window.code.getScrollInfo();
-        window.code.setValue("create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); asd asdasd asdasd");
-        window.code.scrollTo(scrollInfo.left, scrollInfo.top);
-    }
+    let lastUpdateTimestamp = +new Date / 1000;
     setInterval(() => {
-        updateCode();
+        let start = parseInt(+new Date);
+        postRequest('/action/session.php', {
+            session: sessionId,
+            user: userId,
+            userName: userName,
+            action: 'getUpdate',
+        }, (response) => {
+            let ping = parseInt(+new Date) - start;
+            console.log('ping ' + ping);
+            lastUpdateTimestamp = +new Date / 1000;
+            if (response.length === 0) {
+                return;
+            }
+            let data = JSON.parse(response);
+            if (data.error !== undefined) {
+                console.log(data)
+                return
+            }
+            newSession = false;
+            session = data;
+            if (codeHash !== session.code.hash()) {
+                codeHash = session.code.hash();
+                let scrollInfo = window.code.getScrollInfo();
+                window.code.setValue(session.code);
+                window.code.scrollTo(scrollInfo.left, scrollInfo.top);
+            }
+            fillUsersContainer();
+            document.getElementById('session-name').innerHTML = session.name;
+            // set lang: text area, select
+            // update session: lang, executorCheckedAt, result, request
+            // set online ping
+        });
+        if (+new Date / 1000 - lastUpdateTimestamp > 10) {
+            let sessionStatusEl = document.getElementById('session-status');
+            sessionStatusEl.classList.remove('online');
+            sessionStatusEl.classList.add('offline');
+            sessionStatusEl.innerHTML = 'offline';
+        } else {
+            let sessionStatusEl = document.getElementById('session-status');
+            sessionStatusEl.classList.remove('offline');
+            sessionStatusEl.classList.add('online');
+            sessionStatusEl.innerHTML = 'online';
+        }
     }, 1000);
 
     let postRequest = (url, data, callback) => {
@@ -167,15 +249,6 @@ if ($session === null) {
             }
         }).then((response) => response.text()).then((text) => callback(text));
     };
-
-    postRequest('/action/session.php', {
-        session: sessionId,
-        user: userId,
-        userName: userName,
-        action: 'getUpdate',
-    }, (text) => {
-        console.log(text);
-    });
 </script>
 
 </body>

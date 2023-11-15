@@ -585,7 +585,7 @@ blockquote footer {
 }
 
 .offline {
-    color: darkred;
+    color: red;
 }
 
 input:invalid {
