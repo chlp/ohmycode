@@ -16,42 +16,48 @@
 <body>
 
 <?php
-
 require __DIR__ . '/app/bootstrap.php';
 
 $id = trim($_SERVER['REQUEST_URI'], '/');
-if (!Utils::isUuid($id)) {
-    $id = null;
+if (str_contains($id, '?')) {
+    $id = substr($id, 0, strpos($id, '?'));
 }
-$session = null;
-if ($id !== null) {
-    $session = Session::get((string)$id);
+
+$needChangeUrl = false;
+if (!Utils::isUuid($id)) {
+    $id = Utils::genUuid();
+    $needChangeUrl = true;
+}
+
+$newSession = false;
+$session = Session::getById($id);
+if ($session === null) {
+    $newSession = true;
+    $session = Session::createNew($id);
 }
 ?>
 
-<div class="blocks-container">
+<div class="blocks-container" id="session-name-container" style="display: none;">
     <button>save</button>
-    <input type="text" id="session" style="width: 15em;" maxlength="32" minlength="1"
+    <input type="text" id="session-name" style="width: 15em;" maxlength="32" minlength="1"
            pattern="[0-9a-zA-Z\u0400-\u04ff\s\-]{1,32}">
     <label for="session""><- session name</label>
 </div>
 
-<div class="blocks-container">
+<div class="blocks-container" id="user-name-container" style="display: none;">
     <button>save</button>
-    <input type="text" id="name" style="width: 15em;" maxlength="32" minlength="1"
+    <input type="text" id="user-name" style="width: 15em;" maxlength="32" minlength="1"
            pattern="[0-9a-zA-Z\u0400-\u04ff\s\-]{1,32}">
-    <label for="name""><- your name (show if not written or clicked change)</label>
+    <label for="name""><- your name</label>
 </div>
 
 <div class="blocks-container">
     Session <a href="#"><?= $session->name ?? '' ?></a>
-    (<span id="session-status" class="online">online</span>),
-    spectators: <span style="">Alex, <a href="#">Serg</a></span>,
-    writer: <span style="">Boris</span>
+    (<span id="session-status" class="online">online</span>)<span id="users-container"></span>
 </div>
 
-<div class="editor textarea">
-    <textarea id="editor"><?= $session->code ?? '' ?></textarea>
+<div class="code textarea">
+    <textarea id="code"><?= $session->code ?? '' ?></textarea>
 </div>
 <div class="results textarea">
     <textarea id="results">Waiting for execution...</textarea>
@@ -59,33 +65,46 @@ if ($id !== null) {
 
 <div class="blocks-container">
     <button>Become a writer</button>
-    <select style="width: 150px;">
-        <option>PHP 8.2</option>
-        <option>MySQL 8</option>
-        <option>GoLang</option>
+    <select id="lang" style="width: 150px;">
+        <?php
+        foreach (Session::LANGS as $key => $data) {
+            echo "<option value=\"$key\"";
+            if ($session->lang === $key) {
+                echo ' selected';
+            }
+            echo ">{$data['name']}</option>\n";
+        }
+        ?>
     </select>
-    <button>Execute code</button>
+    <button id="execute-button" style="display: none">Execute code</button>
+    <button onClick="window.open('/', '_blank');">New session</button>
 </div>
 
 <div class="blocks-container">
     <button>save</button>
     <input type="text" id="executor" style="width: 15em;" maxlength="32" minlength="1"
            pattern="[0-9a-zA-Z]{32}">
-    <label for="executor"><- executor (input and hide / show input)</label>
+    <label for="executor"><- executor id</label>
 </div>
 
 <script>
-    let user = localStorage['user'];
-    if (user === undefined) {
-        user = '<?= Utils::genUuid() ?>';
-        localStorage['user'] = user;
+    <?php
+    if ($needChangeUrl) {
+        echo "history.pushState({}, null, '/$id');\n";
     }
-    let editorLastUpdate = <?= $session?->updatedAt->format('Uu') ?? 'null' ?>;
+    ?>
 
-    // history.pushState({}, null, '/asdasd');
+    let userId = localStorage['user'];
+    let tmpUserName = '<?= Utils::randomName() ?>';
+    if (userId === undefined) {
+        userId = '<?= Utils::genUuid() ?>';
+        localStorage['user'] = userId;
+    }
+    let sessionUpdatedAt = '<?= $session->updatedAt->format('Y-m-d H:i:s.u') ?>';
+    let newSession = <?= $newSession ? 'true' : 'false' ?>;
 
-    String.prototype.hashCode = function() {
-        var hash = 0,
+    String.prototype.hashCode = function () {
+        let hash = 0,
             i, chr;
         if (this.length === 0) return hash;
         for (i = 0; i < this.length; i++) {
@@ -96,38 +115,47 @@ if ($id !== null) {
         return hash;
     };
 
-    console.log(1);
-
-    window.editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+    window.code = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
-        mode: "sql", // javascript, go, php, sql
+        mode: 'php', // javascript, go, php, sql
         matchBrackets: true,
         indentWithTabs: false,
     });
-
-    // window.editor.setOption('readOnly', true)
-
-    function importCode() {
-        var code = window.editor.getValue();
-        console.log("Imported Code:", code);
-    }
-
-    let updateCodeFunc = () => {
-        // receive session: name, code, lang, users, writer, updatedAt, executorCheckedAt, result, request
-        // calc ping
-        let scrollInfo = window.editor.getScrollInfo();
-        window.editor.setValue("create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); asd asdasd asdasd");
-        window.editor.scrollTo(scrollInfo.left, scrollInfo.top);
-    }
-    setInterval(() => {
-        updateCodeFunc();
-    }, 1000);
-
     window.results = CodeMirror.fromTextArea(document.getElementById("results"), {
         lineNumbers: true,
         indentWithTabs: false,
         readOnly: true,
     });
+
+    // window.code.setOption('readOnly', true)
+
+    function importCode() {
+        let code = window.code.getValue();
+        console.log("Imported Code:", code);
+    }
+
+    let getUsersContainerContent = () => {
+        if (newSession) {
+            return ', writer: <a id="own-name" href="#">' + tmpUserName + '</a>';
+        }
+        let html = ', spectators: <a id="own-name" href="#">' + tmpUserName + '</a>';
+        return html;
+    };
+    let fillUserContainer = () => {
+        document.getElementById('users-container').innerHTML = getUsersContainerContent();
+    }
+    fillUserContainer();
+
+    let updateCode = () => {
+        // receive session: name, code, lang, users, writer, updatedAt, executorCheckedAt, result, request
+        // calc ping
+        let scrollInfo = window.code.getScrollInfo();
+        window.code.setValue("create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); asd asdasd asdasd");
+        window.code.scrollTo(scrollInfo.left, scrollInfo.top);
+    }
+    setInterval(() => {
+        updateCode();
+    }, 1000);
 </script>
 
 </body>

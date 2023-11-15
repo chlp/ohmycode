@@ -552,7 +552,7 @@ blockquote footer {
 }
 
 @media (min-width: 970px) {
-    .textarea.editor {
+    .textarea.code {
         width: 53vw;
         min-width: 500px;
     }
@@ -564,7 +564,7 @@ blockquote footer {
     }
 }
 @media (max-width: 969px) {
-    .textarea.editor {
+    .textarea.code {
         width: 95vw;
         min-width: 300px;
     }

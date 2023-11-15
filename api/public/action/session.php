@@ -27,4 +27,4 @@ if (!Utils::isUuid($userId)) {
 
 $lastUpdate = isset($_POST['lastUpdate']) ? (string)$_POST['lastUpdate'] : null;
 
-$session = Session::get($sessionId, $userId, $lastUpdate);
+$session = Session::getById($sessionId, $lastUpdate);
