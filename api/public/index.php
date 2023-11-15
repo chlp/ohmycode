@@ -19,10 +19,13 @@
 
 require __DIR__ . '/app/bootstrap.php';
 
-$id = $_GET['session'] ?? null;
+$id = trim($_SERVER['REQUEST_URI'], '/');
+if (!Utils::isUuid($id)) {
+    $id = null;
+}
 $session = null;
 if ($id !== null) {
-    $session = Session::getById((string)$id);
+    $session = Session::get((string)$id);
 }
 ?>
 
@@ -77,7 +80,23 @@ if ($id !== null) {
         user = '<?= Utils::genUuid() ?>';
         localStorage['user'] = user;
     }
-    let editorLastUpdate = <?= $session->updatedAt->format('Uu') ?? 'null' ?>;
+    let editorLastUpdate = <?= $session?->updatedAt->format('Uu') ?? 'null' ?>;
+
+    // history.pushState({}, null, '/asdasd');
+
+    String.prototype.hashCode = function() {
+        var hash = 0,
+            i, chr;
+        if (this.length === 0) return hash;
+        for (i = 0; i < this.length; i++) {
+            chr = this.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0;
+        }
+        return hash;
+    };
+
+    console.log(1);
 
     window.editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
         lineNumbers: true,
@@ -94,6 +113,8 @@ if ($id !== null) {
     }
 
     let updateCodeFunc = () => {
+        // receive session: name, code, lang, users, writer, updatedAt, executorCheckedAt, result, request
+        // calc ping
         let scrollInfo = window.editor.getScrollInfo();
         window.editor.setValue("create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); asd asdasd asdasd");
         window.editor.scrollTo(scrollInfo.left, scrollInfo.top);
