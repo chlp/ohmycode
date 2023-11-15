@@ -84,6 +84,14 @@ switch ($action) {
             return;
         }
         break;
+    case 'setWriter':
+        $session = getSession($sessionId, $userId, $userName);
+        if (!$session->setWriter($userId)) {
+            http_response_code(400);
+            echo 'Wrong userId';
+            return;
+        }
+        break;
     case 'setCode':
         $session = getSession($sessionId, $userId, $userName);
         if (!$session->setCode((string)$_POST['code'] ?? '')) {

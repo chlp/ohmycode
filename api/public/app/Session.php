@@ -167,6 +167,16 @@ class Session
         return true;
     }
 
+    public function setWriter(string $userId): bool
+    {
+        if (!Utils::isUuid($userId)) {
+            return false;
+        }
+        $query = "UPDATE `sessions` SET `writer` = ? WHERE `id` = ?";
+        $this->db->exec($query, [$this->id, $userId, $this->id]);
+        return true;
+    }
+
     public function getJson(): string
     {
         return json_encode([
