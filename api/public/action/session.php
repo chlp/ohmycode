@@ -26,7 +26,10 @@ switch ($action) {
         $lastUpdate = isset($input['lastUpdate']) ? (string)$input['lastUpdate'] : null;
         $session = Session::getById($sessionId, $lastUpdate);
         if ($session === null) {
-            // not found, but it is ok
+            if ($lastUpdate !== null) {
+                Session::updateUserOnline($sessionId, $userId);
+                Session::removeOldUsers($sessionId);
+            }
             return;
         }
         $userFound = false;
@@ -39,9 +42,9 @@ switch ($action) {
         if (!$userFound) {
             $session->setUserName($userId, $userName);
         } else {
-            $session->updateUserOnline($userId);
+            Session::updateUserOnline($sessionId, $userId);
         }
-        $session->removeOldUsers();
+        Session::removeOldUsers($sessionId);
         echo $session->getJson();
         break;
     case 'setSessionName':

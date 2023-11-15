@@ -21,17 +21,17 @@ class Session
     ];
 
     public function __construct(
-        public string        $id,
-        public string        $name,
-        public string        $code,
-        public string        $lang,
-        public string        $executor,
-        public DateTime|null $executorCheckedAt,
-        public DateTime      $updatedAt,
-        public string        $writer,
-        public array         $users,
-        public bool          $request,
-        public ?string       $result,
+        public string    $id,
+        public string    $name,
+        public string    $code,
+        public string    $lang,
+        public string    $executor,
+        public ?DateTime $executorCheckedAt,
+        public ?DateTime $updatedAt,
+        public string    $writer,
+        public array     $users,
+        public bool      $request,
+        public ?string   $result,
     )
     {
         $this->db = Db::get();
@@ -43,7 +43,7 @@ class Session
             return null;
         }
         $name = date('Y-m-d');
-        return new self($id, $name, '', self::DEFAULT_LANG, '', null, new DateTime(), '', [], false, null);
+        return new self($id, $name, '', self::DEFAULT_LANG, '', null, null, '', [], false, null);
     }
 
     static public function getById(string $id, ?string $updatedAfter = null): ?self
@@ -88,15 +88,17 @@ class Session
         $this->users = $users;
     }
 
-    public function removeOldUsers(): void
+    static public function updateUserOnline(string $sessionId, string $userId): void
     {
-        $this->db->exec("delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL 20 second", [$this->id]);
+        if (Utils::isUuid($sessionId) && Utils::isUuid($userId)) {
+            Db::get()->exec("update `session_users` set updated_at = NOW(3) where session = ? and user = ?", [$sessionId, $userId]);
+        }
     }
 
-    public function updateUserOnline(string $userId): void
+    static public function removeOldUsers(string $sessionId): void
     {
-        if (Utils::isUuid($userId)) {
-            $this->db->exec("update `session_users` set updated_at = NOW(3) where session = ? and user = ?", [$this->id, $userId]);
+        if (Utils::isUuid($sessionId)) {
+            Db::get()->exec("delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL 20 second", [$sessionId]);
         }
     }
 

@@ -101,7 +101,7 @@ if ($session === null) {
         userId = '<?= Utils::genUuid() ?>';
         localStorage['user'] = userId;
     }
-    let sessionUpdatedAt = '<?= $session->updatedAt->format('Y-m-d H:i:s.u') ?>';
+    let sessionUpdatedAt = <?= $session->updatedAt?->format('\'Y-m-d H:i:s.u\'') ?? 'null' ?>;
     let newSession = <?= $newSession ? 'true' : 'false' ?>;
 
     String.prototype.hashCode = function () {
@@ -173,7 +173,9 @@ if ($session === null) {
         user: userId,
         userName: userName,
         action: 'getUpdate',
-    }, (text) => {console.log(text);});
+    }, (text) => {
+        console.log(text);
+    });
 </script>
 
 </body>
