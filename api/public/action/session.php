@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/app/bootstrap.php';
+require __DIR__ . '/../app/bootstrap.php';
 
 if (!isset($_POST['session'])) {
     http_response_code(400);
@@ -25,6 +25,67 @@ if (!Utils::isUuid($userId)) {
     return;
 }
 
-$lastUpdate = isset($_POST['lastUpdate']) ? (string)$_POST['lastUpdate'] : null;
+$action = (string)$_POST['action'] ?? '';
+switch ($action) {
+    case 'getUpdate':
+        $lastUpdate = isset($_POST['lastUpdate']) ? (string)$_POST['lastUpdate'] : null;
+        $session = Session::getById($sessionId, $lastUpdate);
+        if ($session === null) {
+            http_response_code(400);
+            echo 'Not found';
+            return;
+        }
+        echo $session->getJson();
+        break;
+    case 'setSessionName':
+        $session = getSession($sessionId, $userId);
+        if (!$session->setSessionName((string)$_POST['sessionName'] ?? '')) {
+            http_response_code(400);
+            echo 'Wrong session name';
+            return;
+        }
+        break;
+    case 'setUserName':
+        $session = getSession($sessionId, $userId);
+        if (!$session->setUserName($userId, (string)$_POST['userName'] ?? '')) {
+            http_response_code(400);
+            echo 'Wrong user name';
+            return;
+        }
+        break;
+    case 'setLang':
+        $session = getSession($sessionId, $userId);
+        if (!$session->setLang((string)$_POST['lang'] ?? '')) {
+            http_response_code(400);
+            echo 'Wrong lang';
+            return;
+        }
+        break;
+    case 'setExecutor':
+        $session = getSession($sessionId, $userId);
+        if (!$session->setExecutor((string)$_POST['executor'] ?? '')) {
+            http_response_code(400);
+            echo 'Wrong executor';
+            return;
+        }
+        break;
+    case 'setCode':
+        $session = getSession($sessionId, $userId);
+        if (!$session->setCode((string)$_POST['code'] ?? '')) {
+            http_response_code(400);
+            echo 'Wrong lang';
+            return;
+        }
+        break;
+}
 
-$session = Session::getById($sessionId, $lastUpdate);
+function getSession(int $sessionId, int $userId): Session
+{
+    $session = Session::getById($sessionId);
+    if ($session === null) {
+        $session = Session::createNew($sessionId);
+        $session->writer = $userId;
+        $session->insert();
+    }
+    return $session;
+}

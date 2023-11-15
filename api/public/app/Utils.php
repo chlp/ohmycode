@@ -20,6 +20,12 @@ class Utils
         return preg_match('/^[a-z0-9]{' . self::ID_LENGTH . '}$/', $id) === 1;
     }
 
+    static public function isValidString(string $str): bool
+    {
+        return preg_match('/^[0-9a-zA-Zа-яА-Я\s\-\']{1,32}$/', $str) === 1;
+
+    }
+
     static public function randomName(): string
     {
         $adjectives = ['Amiable', 'Blissful', 'Cheerful', 'Delightful', 'Enchanting', 'Friendly', 'Gracious', 'Harmonious', 'Invigorating', 'Jovial', 'Kindhearted', 'Lively', 'Magnificent', 'Nurturing', 'Optimistic', 'Playful', 'Quaint', 'Radiant', 'Serene', 'Tranquil', 'Uplifting', 'Vibrant', 'Wholesome', 'Affectionate', 'Beautiful', 'Charming', 'Dreamy', 'Elegant', 'Festive', 'Gentle', 'Heart warming', 'Inspiring', 'Jubilant', 'Kind', 'Lovely', 'Majestic', 'Noble', 'Outstanding', 'Pleasurable', 'Radiant', 'Splendid', 'Tender', 'Unforgettable', 'Virtuous', 'Wondrous', 'Adorable', 'Breathtaking', 'Caring', 'Energetic', 'Flourishing', 'Graceful', 'Illuminating', 'Joyous', 'Kinetic', 'Luxurious', 'Opulent', 'Piquant', 'Resplendent', 'Stunning', 'Treasured', 'Verdant', 'Witty', 'Youthful', 'Zestful', 'Affirmative', 'Brilliant', 'Captivating', 'Delicate', 'Exquisite', 'Frisky', 'Gleaming', 'Ineffable', 'Juicy', 'Luminescent', 'Opalescent', 'Pearly', 'Quixotic', 'Ravishing', 'Sprightly', 'Tantalizing', 'Unblemished', 'Voluptuous', 'Winsome', 'Yummy', 'Zealous', 'Ample', 'Blissful', 'Charismatic', 'Divine', 'Ethereal', 'Fragrant', 'Grandiose', 'Heavenly', 'Incomparable', 'Jubilant', 'Kindest', 'Luminous', 'Mellifluous', 'Noble', 'Ornate'];

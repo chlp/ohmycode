@@ -3,9 +3,8 @@
 class Session
 {
     private const DEFAULT_LANG = 'php82';
-
+    private const CODE_MAX_LENGTH = 32768;
     private Db $db;
-
     public const LANGS = [
         'php82' => [
             'name' => 'PHP 8.2',
@@ -72,15 +71,71 @@ class Session
         return new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], false, null);
     }
 
-    public function save(bool $new = false): self
+    public function insert(): self
     {
-        if ($new) {
-            $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `executor` = ?, `executor_checked_at` = ?, `writer` = ?, `id` = ?;";
-        } else {
-            $query = "UPDATE `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `executor` = ?, `executor_checked_at` = ?, `writer` = ? WHERE `id` = ?;";
-        }
+        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `executor` = ?, `executor_checked_at` = ?, `writer` = ?, `id` = ?;";
         $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->executor, $this->executorCheckedAt, $this->writer, $this->id]);
         return self::getById($this->id);
+    }
+
+    public function setSessionName(string $name): bool
+    {
+        if (!Utils::isValidString($name)) {
+            return false;
+        }
+        $query = "UPDATE `sessions` SET `name` = ? WHERE `id` = ?";
+        $this->db->exec($query, [$this->id, $name, $this->id]);
+        return true;
+    }
+
+    public function setLang(string $lang): bool
+    {
+        if (!isset(self::LANGS[$lang])) {
+            return false;
+        }
+        $query = "UPDATE `sessions` SET `lang` = ? WHERE `id` = ?";
+        $this->db->exec($query, [$this->id, $lang, $this->id]);
+        return true;
+    }
+
+    public function setCode(string $code): bool
+    {
+        if (strlen($code) > self::CODE_MAX_LENGTH) {
+            return false;
+        }
+        $query = "UPDATE `sessions` SET `code` = ? WHERE `id` = ?";
+        $this->db->exec($query, [$this->id, $code, $this->id]);
+        return true;
+    }
+
+    private function updateTime(): void
+    {
+        $query = "UPDATE `sessions` SET `updated_at` = NOW(3) WHERE `id` = ?;";
+        $this->db->exec($query, [$this->id]);
+    }
+
+    public function setUserName(string $userId, string $name): bool
+    {
+        if (!Utils::isUuid($userId)) {
+            return false;
+        }
+        if (!Utils::isValidString($name)) {
+            return false;
+        }
+        $query = "INSERT INTO `session_users` SET `session` = ?, `user` = ?, `name` = ? ON DUPLICATE KEY UPDATE `name` = ?";
+        $this->db->exec($query, [$this->id, $userId, $name, $name]);
+        $this->updateTime();
+        return true;
+    }
+
+    public function setExecutor(string $executor): bool
+    {
+        if (!Utils::isUuid($executor)) {
+            return false;
+        }
+        $query = "UPDATE `sessions` SET `executor` = ? WHERE `id` = ?";
+        $this->db->exec($query, [$this->id, $executor, $this->id]);
+        return true;
     }
 
     public function getJson(): string

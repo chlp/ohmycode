@@ -40,14 +40,14 @@ if ($session === null) {
 <div class="blocks-container" id="session-name-container" style="display: none;">
     <button>save</button>
     <input type="text" id="session-name" style="width: 15em;" maxlength="32" minlength="1"
-           pattern="[0-9a-zA-Z\u0400-\u04ff\s\-]{1,32}">
+           pattern="[0-9a-zA-Z\u0400-\u04ff\s\-\']{1,32}">
     <label for="session""><- session name</label>
 </div>
 
 <div class="blocks-container" id="user-name-container" style="display: none;">
     <button>save</button>
     <input type="text" id="user-name" style="width: 15em;" maxlength="32" minlength="1"
-           pattern="[0-9a-zA-Z\u0400-\u04ff\s\-]{1,32}">
+           pattern="[0-9a-zA-Z\u0400-\u04ff\s\-\']{1,32}">
     <label for="name""><- your name</label>
 </div>
 
