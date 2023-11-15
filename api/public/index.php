@@ -41,13 +41,6 @@ if ($id !== null) {
 </div>
 
 <div class="blocks-container">
-    <button>save</button>
-    <input type="text" id="executor" style="width: 15em;" maxlength="32" minlength="1"
-           pattern="[0-9a-zA-Z]{32}">
-    <label for="executor"><- executor (input and hide / show input)</label>
-</div>
-
-<div class="blocks-container">
     Session <a href="#"><?= $session->name ?? '' ?></a>
     (<span id="session-status" class="online">online</span>),
     spectators: <span style="">Alex, <a href="#">Serg</a></span>,
@@ -62,13 +55,20 @@ if ($id !== null) {
 </div>
 
 <div class="blocks-container">
-    <button style="float: left; clear: left; margin-right: 1em;">Become a writer</button>
-    <select style="width: 120px; float: left; margin-right: 1em;">
+    <button>Become a writer</button>
+    <select style="width: 150px;">
         <option>PHP 8.2</option>
         <option>MySQL 8</option>
         <option>GoLang</option>
     </select>
-    <button style="float: left;; margin-right: 1em;">Execute code</button>
+    <button>Execute code</button>
+</div>
+
+<div class="blocks-container">
+    <button>save</button>
+    <input type="text" id="executor" style="width: 15em;" maxlength="32" minlength="1"
+           pattern="[0-9a-zA-Z]{32}">
+    <label for="executor"><- executor (input and hide / show input)</label>
 </div>
 
 <script>
@@ -77,6 +77,7 @@ if ($id !== null) {
         user = '<?= Utils::genUuid() ?>';
         localStorage['user'] = user;
     }
+    let editorLastUpdate = <?= $session->updatedAt->format('Uu') ?? 'null' ?>;
 
     window.editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
         lineNumbers: true,
@@ -92,11 +93,14 @@ if ($id !== null) {
         console.log("Imported Code:", code);
     }
 
-    function updateCode() {
+    let updateCodeFunc = () => {
         let scrollInfo = window.editor.getScrollInfo();
         window.editor.setValue("create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); create table sessions\n(\n    id                  varchar(32) not null,\n    code                blob        not null,\n    lang                varchar(32) not null,\n    executor            varchar(32),\n    executor_checked_at datetime,\n    updated_at          datetime(3) default NOW(3) on update NOW(3),\n    constraint sessions_pk\n        primary key (id)\n);\n\ncreate index sessions_executor_idx\n    on sessions (executor);\n\ncreate index sessions_updated_at_idx\n    on sessions (updated_at); asd asdasd asdasd");
         window.editor.scrollTo(scrollInfo.left, scrollInfo.top);
     }
+    setInterval(() => {
+        updateCodeFunc();
+    }, 1000);
 
     window.results = CodeMirror.fromTextArea(document.getElementById("results"), {
         lineNumbers: true,

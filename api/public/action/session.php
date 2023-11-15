@@ -1,48 +1,30 @@
 <?php
 
-if (!isset($_GET['id']) && !isset($_POST['id'])) {
+require __DIR__ . '/app/bootstrap.php';
+
+if (!isset($_POST['session'])) {
     http_response_code(400);
+    echo 'Not found: session';
+    return;
+}
+$sessionId = (string)$_POST['session'];
+if (!Utils::isUuid($sessionId)) {
+    http_response_code(400);
+    echo 'Invalid: session';
     return;
 }
 
-$conn = Db::dbConn();
-
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $sql = "SELECT * FROM `sessions` WHERE `id` = $id"; // $id as $1
-    $result = mysqli_query($conn, $sql);
-    while ($row = mysqli_fetch_assoc($result)) {
-        var_dump($row);
-    }
-    // get session
-    // get request
-    // get result
-    // if not exist -> create
-} else {
-    $id = $_POST['id'];
-    switch ($_POST['type']) {
-        case 'lang':
-            $lang = $_POST['lang'];
-            $sql = "UPDATE `sessions` SET `` WHERE `id` = $id";
-            $result = mysqli_execute_query($conn, $sql, []);
-            break;
-        case 'executor':
-            $executor = $_POST['executor'];
-            $sql = "UPDATE `sessions` SET `` WHERE `id` = $id";
-            $result = mysqli_execute_query($conn, $sql, []);
-            break;
-        case 'code':
-            $code = $_POST['code'];
-            $sql = "UPDATE `sessions` SET `` WHERE `id` = $id";
-            $result = mysqli_execute_query($conn, $sql, []);
-            break;
-        case 'executor_check':
-            $executor = $_POST['executor'];
-            $sql = "UPDATE `sessions` SET `executor_checked_at` = NOW() WHERE `id` = $id";
-            $result = mysqli_execute_query($conn, $sql, []);
-            break;
-        default:
-            http_response_code(400);
-            return;
-    }
+if (!isset($_POST['user'])) {
+    http_response_code(400);
+    return;
 }
+$userId = (string)$_POST['user'];
+if (!Utils::isUuid($userId)) {
+    http_response_code(400);
+    echo 'Invalid: user';
+    return;
+}
+
+$lastUpdate = isset($_POST['lastUpdate']) ? (string)$_POST['lastUpdate'] : null;
+
+$session = Session::get($sessionId, $userId, $lastUpdate);

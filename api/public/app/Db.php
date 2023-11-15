@@ -27,21 +27,9 @@ class Db
     {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
-            die('wrong stmt');
+            die('wrong select stmt');
         }
-        if ($params !== null) {
-            $types = '';
-            $vars = [];
-            foreach ($params as $param) {
-                if (is_string($param)) {
-                    $types .= 's';
-                } else {
-                    die('wrong type: ' . gettype($param));
-                }
-                $vars[] = $param;
-            }
-            $stmt->bind_param($types, ...$vars);
-        }
+        $this->bindParams($stmt, $params);
         $stmt->execute();
         $stmtRes = $stmt->get_result();
         $result = [];
@@ -51,29 +39,33 @@ class Db
         $stmt->close();
         return $result;
     }
+
+    public function exec(string $query, ?array $params): void
+    {
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt) {
+            die('wrong exec stmt');
+        }
+        $this->bindParams($stmt, $params);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    private function bindParams(mysqli_stmt $stmt, ?array $params): void
+    {
+        if ($params === null || count($params) === 0) {
+            return;
+        }
+        $types = '';
+        $vars = [];
+        foreach ($params as $param) {
+            if (is_string($param)) {
+                $types .= 's';
+            } else {
+                die('wrong type: ' . gettype($param));
+            }
+            $vars[] = $param;
+        }
+        $stmt->bind_param($types, ...$vars);
+    }
 }
-//
-//---
-//
-//$stmt = mysqli_prepare($link, "INSERT INTO CountryLanguage VALUES (?, ?, ?, ?)");
-//mysqli_stmt_bind_param($stmt, 'sssd', $code, $language, $official, $percent);
-//
-//$code = 'DEU';
-//$language = 'Bavarian';
-//$official = "F";
-//$percent = 11.2;
-//
-//mysqli_stmt_execute($stmt);
-//
-//printf("%d row inserted.\n", mysqli_stmt_affected_rows($stmt));
-//
-//---
-//
-//$mysqli = new mysqli('localhost', 'my_user', 'my_password', 'world');
-//
-//$stmt = $mysqli->prepare("SELECT Language FROM CountryLanguage WHERE CountryCode IN (?, ?)");
-///* Using ... to provide arguments */
-//$stmt->bind_param('ss', ...['DEU', 'POL']);
-//$stmt->execute();
-//$stmt->store_result();
-//
