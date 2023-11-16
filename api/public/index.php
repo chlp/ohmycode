@@ -98,6 +98,7 @@ if ($session === null) {
     }
     ?>
 
+    let ping = undefined;
     let session = <?= $session->getJson() ?>;
     let sessionId = '<?= $session->id ?>';
     let userId = localStorage['user'];
@@ -197,18 +198,27 @@ if ($session === null) {
     };
     fillUsersContainer();
 
-    let lastUpdateTimestamp = +new Date / 1000;
-    setInterval(() => {
-        let start = parseInt(+new Date);
+    let postRequest = (url, data, callback, final) => {
+        fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        }).then((response) => response.text()).then((text) => callback(text)).finally(() => final());
+    };
+
+    let lastUpdateTimestamp = +new Date;
+    let pageUpdater = () => {
+        let start = +new Date;
         postRequest('/action/session.php', {
             session: sessionId,
             user: userId,
             userName: userName,
             action: 'getUpdate',
         }, (response) => {
-            let ping = parseInt(+new Date) - start;
-            console.log('ping ' + ping);
-            lastUpdateTimestamp = +new Date / 1000;
+            ping = +new Date - start;
+            lastUpdateTimestamp = +new Date;
             if (response.length === 0) {
                 return;
             }
@@ -229,9 +239,12 @@ if ($session === null) {
             document.getElementById('session-name').innerHTML = session.name;
             // set lang: text area, select
             // update session: lang, executorCheckedAt, result, request
-            // set online ping
+        }, () => {
+            setTimeout(() => {
+                pageUpdater();
+            }, 1000);
         });
-        if (+new Date / 1000 - lastUpdateTimestamp > 10) {
+        if (+new Date - lastUpdateTimestamp > 10000) { // more than 10 seconds
             let sessionStatusEl = document.getElementById('session-status');
             sessionStatusEl.classList.remove('online');
             sessionStatusEl.classList.add('offline');
@@ -242,17 +255,8 @@ if ($session === null) {
             sessionStatusEl.classList.add('online');
             sessionStatusEl.innerHTML = 'online';
         }
-    }, 1000);
-
-    let postRequest = (url, data, callback) => {
-        fetch(url, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        }).then((response) => response.text()).then((text) => callback(text));
     };
+    pageUpdater();
 </script>
 
 </body>
