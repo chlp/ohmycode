@@ -27,7 +27,6 @@ let codeBlock = CodeMirror.fromTextArea(document.getElementById("code"), {
     matchBrackets: true,
     indentWithTabs: false,
 });
-let codeHash = codeBlock.getValue().hash();
 let resultBlock = CodeMirror.fromTextArea(document.getElementById("result"), {
     lineNumbers: true,
     indentWithTabs: false,
@@ -132,6 +131,21 @@ let executorBlocksUpdate = () => {
 };
 executorBlocksUpdate();
 
+let resultBlockUpdate = () => {
+    if (session.isWaitingForResult) {
+        resultBlock.setValue('In progress...');
+    } else if (session.result.length > 0) {
+        if (sessionPreviousState.result.hash() !== session.result.hash()) {
+            resultBlock.setValue(session.result);
+        }
+    } else if (session.isExecutorOnline) {
+        resultBlock.setValue('Waiting for execution...');
+    } else {
+        resultBlock.setValue('No executor');
+    }
+};
+resultBlockUpdate();
+
 let lastUpdateTimestamp = +new Date;
 let pageUpdater = () => {
     let start = +new Date;
@@ -163,8 +177,11 @@ let pageUpdater = () => {
         // update writer/spectator ui
         writerBlocksUpdate();
 
-        // update writer/spectator ui
+        // update executor ui
         executorBlocksUpdate();
+
+        // update result ui
+        resultBlockUpdate();
 
         // update session name
         if (sessionPreviousState.name !== session.name) {
@@ -172,11 +189,10 @@ let pageUpdater = () => {
         }
 
         // update code
-        if (codeHash !== session.code.hash()) {
+        if (!isWriter && sessionPreviousState.code.hash() !== session.code.hash()) {
             // if writer, not update code
-            codeHash = session.code.hash();
             let scrollInfo = codeBlock.getScrollInfo();
-            codeBlock.code.setValue(session.code);
+            codeBlock.setValue(session.code);
             codeBlock.scrollTo(scrollInfo.left, scrollInfo.top);
         }
 

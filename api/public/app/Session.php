@@ -30,8 +30,8 @@ class Session
         public ?DateTime $updatedAt,
         public string    $writer,
         public array     $users,
-        public bool      $request,
-        public ?string   $result,
+        public bool      $isWaitingForResult,
+        public string    $result,
     )
     {
         $this->db = Db::get();
@@ -43,7 +43,7 @@ class Session
             return null;
         }
         $name = date('Y-m-d');
-        return new self($id, $name, '', self::DEFAULT_LANG, '', null, null, '', [], false, null);
+        return new self($id, $name, '', self::DEFAULT_LANG, '', null, null, '', [], false, '');
     }
 
     static public function getById(string $id, ?string $updatedAfter = null): ?self
@@ -69,7 +69,7 @@ class Session
         }
         $updatedAt = DateTime::createFromFormat('Y-m-d H:i:s.u', $updatedAtStr);
 
-        $session = new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], false, null);
+        $session = new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], false, '');
         $session->loadUsers();
 
         return $session;
@@ -179,7 +179,8 @@ class Session
         return true;
     }
 
-    public function isExecutorOnline(): bool {
+    public function isExecutorOnline(): bool
+    {
         if ($this->executorCheckedAt === null) {
             return false;
         }
@@ -198,7 +199,7 @@ class Session
             'updatedAt' => $this->updatedAt,
             'writer' => $this->writer,
             'users' => $this->users,
-            'request' => $this->request,
+            'isWaitingForResult' => $this->isWaitingForResult,
             'result' => $this->result,
         ]);
     }

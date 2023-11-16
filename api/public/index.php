@@ -62,10 +62,10 @@ if ($session === null) {
 </div>
 
 <div class="code textarea">
-    <textarea id="code"><?= $session->code ?? '' ?></textarea>
+    <textarea id="code"><?= $session->code ?></textarea>
 </div>
 <div class="result textarea">
-    <textarea id="result">Waiting for execution...</textarea>
+    <textarea id="result"><?= $session->result ?? '' ?></textarea>
 </div>
 
 <div class="blocks-container">
@@ -85,9 +85,10 @@ if ($session === null) {
     <button onClick="window.open('/', '_blank');" style="float: right;">New session</button>
 </div>
 
-<div class="blocks-container" id="executor-container" style="display: <?= $session->isExecutorOnline() ? 'block' : 'none' ?>">
+<div class="blocks-container" id="executor-container"
+     style="display: <?= $session->isExecutorOnline() ? 'block' : 'none' ?>">
     <button>save</button>
-    <input type="text" id="executor" style="width: 15em;" maxlength="32" minlength="1"
+    <input type="text" id="executor" style="width: 20em;" maxlength="32" minlength="32"
            pattern="[0-9a-zA-Z]{32}">
     <label for="executor"><- executor id</label>
 </div>
