@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
+
     <link rel="stylesheet" href="codemirror/codemirror.css">
     <script src="codemirror/codemirror.js"></script>
     <script src="codemirror/mode/clike.js"></script>
@@ -33,10 +34,10 @@ if (!Utils::isUuid($id)) {
     $needChangeUrl = true;
 }
 
-$newSession = false;
+$isNewSession = false;
 $session = Session::getById($id);
 if ($session === null) {
-    $newSession = true;
+    $isNewSession = true;
     $session = Session::createNew($id);
 }
 ?>
@@ -97,167 +98,12 @@ if ($session === null) {
         echo "history.pushState({}, null, '/$id');\n";
     }
     ?>
-
-    let ping = undefined;
+    let initialName = '<?= Utils::randomName() ?>';
+    let initialUserId = '<?= Utils::genUuid() ?>';
+    let isNewSession = <?= $isNewSession ? 'true' : 'false' ?>;
     let session = <?= $session->getJson() ?>;
-    let sessionId = '<?= $session->id ?>';
-    let userId = localStorage['user'];
-    if (userId === undefined) {
-        userId = '<?= Utils::genUuid() ?>';
-        localStorage['user'] = userId;
-    }
-    let userName = undefined;
-    session.users.forEach((user) => {
-        if (user.id === userId) {
-            userName = user.name;
-        }
-    });
-    if (userName === undefined) {
-        userName = localStorage['tmpUserName'];
-        if (userName === undefined) {
-            userName = '<?= Utils::randomName() ?>';
-            localStorage['tmpUserName'] = userName;
-        }
-    }
-    let newSession = <?= $newSession ? 'true' : 'false' ?>;
-    let codeHash = undefined;
-
-    String.prototype.hash = function () {
-        let hash = 0,
-            i, chr;
-        if (this.length === 0) return hash;
-        for (i = 0; i < this.length; i++) {
-            chr = this.charCodeAt(i);
-            hash = ((hash << 5) - hash) + chr;
-            hash |= 0;
-        }
-        return hash;
-    };
-
-    window.code = CodeMirror.fromTextArea(document.getElementById("code"), {
-        lineNumbers: true,
-        mode: 'php', // javascript, go, php, sql
-        matchBrackets: true,
-        indentWithTabs: false,
-    });
-    window.results = CodeMirror.fromTextArea(document.getElementById("results"), {
-        lineNumbers: true,
-        indentWithTabs: false,
-        readOnly: true,
-    });
-
-    // window.code.setOption('readOnly', true)
-
-    function importCode() {
-        let code = window.code.getValue();
-        console.log("Imported Code:", code);
-    }
-
-    let fillUsersContainer = () => {
-        let spectators = [];
-        let writer = undefined;
-        session.users.forEach((user) => {
-            user.own = user.id === userId;
-            if (user.id === session.writer) {
-                writer = user;
-            } else {
-                spectators.push(user)
-            }
-        });
-        if (newSession) {
-            writer = {
-                id: userId,
-                name: userName,
-                own: true,
-            }
-        }
-        let html = '';
-        if (writer !== undefined) {
-            html += ', writer: ';
-            if (writer.own) {
-                html += '<a id="own-name" href="#">';
-            }
-            html += writer.name;
-            if (writer.own) {
-                html += '</a>';
-            }
-        }
-        if (spectators.length > 0) {
-            html += ', spectators: ';
-            spectators.forEach((user) => {
-                if (user.own) {
-                    html += '<a id="own-name" href="#">';
-                }
-                html += user.name;
-                if (user.own) {
-                    html += '</a>';
-                }
-            })
-        }
-        document.getElementById('users-container').innerHTML = html;
-    };
-    fillUsersContainer();
-
-    let postRequest = (url, data, callback, final) => {
-        fetch(url, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        }).then((response) => response.text()).then((text) => callback(text)).finally(() => final());
-    };
-
-    let lastUpdateTimestamp = +new Date;
-    let pageUpdater = () => {
-        let start = +new Date;
-        postRequest('/action/session.php', {
-            session: sessionId,
-            user: userId,
-            userName: userName,
-            action: 'getUpdate',
-        }, (response) => {
-            ping = +new Date - start;
-            lastUpdateTimestamp = +new Date;
-            if (response.length === 0) {
-                return;
-            }
-            let data = JSON.parse(response);
-            if (data.error !== undefined) {
-                console.log(data)
-                return
-            }
-            newSession = false;
-            session = data;
-            if (codeHash !== session.code.hash()) {
-                codeHash = session.code.hash();
-                let scrollInfo = window.code.getScrollInfo();
-                window.code.setValue(session.code);
-                window.code.scrollTo(scrollInfo.left, scrollInfo.top);
-            }
-            fillUsersContainer();
-            document.getElementById('session-name').innerHTML = session.name;
-            // set lang: text area, select
-            // update session: lang, executorCheckedAt, result, request
-        }, () => {
-            setTimeout(() => {
-                pageUpdater();
-            }, 1000);
-        });
-        if (+new Date - lastUpdateTimestamp > 10000) { // more than 10 seconds
-            let sessionStatusEl = document.getElementById('session-status');
-            sessionStatusEl.classList.remove('online');
-            sessionStatusEl.classList.add('offline');
-            sessionStatusEl.innerHTML = 'offline';
-        } else {
-            let sessionStatusEl = document.getElementById('session-status');
-            sessionStatusEl.classList.remove('offline');
-            sessionStatusEl.classList.add('online');
-            sessionStatusEl.innerHTML = 'online';
-        }
-    };
-    pageUpdater();
 </script>
+<script src="session.js"></script>
 
 </body>
 </html>
