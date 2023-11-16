@@ -9,6 +9,17 @@ String.prototype.hash = function () {
     }
     return hash;
 };
+let postRequest = (url, data, callback, final) => {
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    }).then((response) => response.text()).then((text) => callback(text)).finally(() => final());
+};
+
+// ---
 
 let codeBlock = CodeMirror.fromTextArea(document.getElementById("code"), {
     lineNumbers: true,
@@ -16,24 +27,27 @@ let codeBlock = CodeMirror.fromTextArea(document.getElementById("code"), {
     matchBrackets: true,
     indentWithTabs: false,
 });
-let resultsBlock = CodeMirror.fromTextArea(document.getElementById("results"), {
+let codeHash = codeBlock.getValue().hash();
+let resultBlock = CodeMirror.fromTextArea(document.getElementById("result"), {
     lineNumbers: true,
     indentWithTabs: false,
     readOnly: true,
 });
-// codeBlock.setOption('readOnly', true)
-let codeHash = codeBlock.getValue().hash();
 
 let usersContainerBlock = document.getElementById('users-container');
 let sessionNameBlock = document.getElementById('session-name');
 let sessionStatusBlock = document.getElementById('session-status');
+let becomeWriterButton = document.getElementById('become-writer-button');
+let langSelect = document.getElementById('lang-select');
+let executeButton = document.getElementById('execute-button');
 
 let sessionIsOnline = true;
 let ping = undefined;
-let userId = localStorage['user'];
+let isWriter = false;
+let userId = localStorage['userId'];
 if (userId === undefined) {
     userId = initialUserId;
-    localStorage['user'] = userId;
+    localStorage['userId'] = userId;
 }
 let userName = undefined;
 session.users.forEach((user) => {
@@ -42,30 +56,37 @@ session.users.forEach((user) => {
     }
 });
 if (userName === undefined) {
-    userName = localStorage['tmpUserName'];
+    userName = localStorage['initialUserName'];
     if (userName === undefined) {
         userName = initialName;
-        localStorage['tmpUserName'] = userName;
+        localStorage['initialUserName'] = userName;
     }
 }
-
-let fillUsersContainer = () => {
+let updateUsers = () => {
     let spectators = [];
     let writer = undefined;
-    session.users.forEach((user) => {
-        user.own = user.id === userId;
-        if (user.id === session.writer) {
-            writer = user;
-        } else {
-            spectators.push(user)
-        }
-    });
     if (isNewSession) {
+        isWriter = true;
         writer = {
             id: userId,
             name: userName,
             own: true,
         }
+        spectators = []
+    } else {
+        isWriter = userId === session.writer;
+        session.users.forEach((user) => {
+            user.own = false
+            if (user.id === userId) {
+                user.own = true
+                userName = user.name
+            }
+            if (user.id === session.writer) {
+                writer = user;
+            } else {
+                spectators.push(user)
+            }
+        });
     }
     let html = '';
     if (writer !== undefined) {
@@ -90,19 +111,19 @@ let fillUsersContainer = () => {
             }
         })
     }
-    usersContainerBlock.innerHTML = html;
+    if (usersContainerBlock.innerHTML !== html) {
+        usersContainerBlock.innerHTML = html;
+    }
 };
-fillUsersContainer();
+updateUsers();
 
-let postRequest = (url, data, callback, final) => {
-    fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
-        }
-    }).then((response) => response.text()).then((text) => callback(text)).finally(() => final());
+let isWriterBlocksUpdate = () => {
+    becomeWriterButton.style.display = !isWriter ? 'block' : 'none';
+    langSelect.style.display = isWriter ? 'block' : 'none';
+    executeButton.style.display = isWriter ? 'block' : 'none';
+    codeBlock.setOption('readOnly', !isWriter);
 };
+isWriterBlocksUpdate();
 
 let lastUpdateTimestamp = +new Date;
 let pageUpdater = () => {
@@ -121,11 +142,26 @@ let pageUpdater = () => {
         }
         let data = JSON.parse(response);
         if (data.error !== undefined) {
-            console.log(data)
+            console.log('getUpdate error', data);
             return
         }
+
         isNewSession = false;
+        let sessionOld = session
         session = data;
+
+        // update users
+        updateUsers();
+
+        // update writer/spectator ui
+        isWriterBlocksUpdate();
+
+        // update session name
+        if (sessionOld.name !== session.name) {
+            sessionNameBlock.innerHTML = session.name;
+        }
+
+        // update code
         if (codeHash !== session.code.hash()) {
             // if writer, not update code
             codeHash = session.code.hash();
@@ -133,8 +169,8 @@ let pageUpdater = () => {
             codeBlock.code.setValue(session.code);
             codeBlock.scrollTo(scrollInfo.left, scrollInfo.top);
         }
-        fillUsersContainer();
-        sessionNameBlock.innerHTML = session.name;
+
+        // update result & request
         // set lang: text area, select
         // update session: lang, executorCheckedAt, result, request
     }, () => {

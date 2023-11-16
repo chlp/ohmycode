@@ -557,7 +557,7 @@ blockquote footer {
         min-width: 500px;
     }
 
-    .textarea.results {
+    .textarea.result {
         width: 42vw;
         min-width: 400px;
         margin-left: 5px;
@@ -569,7 +569,7 @@ blockquote footer {
         min-width: 300px;
     }
 
-    .textarea.results {
+    .textarea.result {
         width: 95vw;
         min-width: 300px;
     }

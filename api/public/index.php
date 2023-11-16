@@ -64,13 +64,13 @@ if ($session === null) {
 <div class="code textarea">
     <textarea id="code"><?= $session->code ?? '' ?></textarea>
 </div>
-<div class="results textarea">
-    <textarea id="results">Waiting for execution...</textarea>
+<div class="result textarea">
+    <textarea id="result">Waiting for execution...</textarea>
 </div>
 
 <div class="blocks-container">
-    <button>Become a writer</button>
-    <select id="lang" style="width: 150px;">
+    <button id="become-writer-button" style="display: none;">Become a writer</button>
+    <select id="lang-select" style="width: 150px;">
         <?php
         foreach (Session::LANGS as $key => $data) {
             echo "<option value=\"$key\"";
@@ -82,7 +82,7 @@ if ($session === null) {
         ?>
     </select>
     <button id="execute-button" style="display: none">Execute code</button>
-    <button onClick="window.open('/', '_blank');">New session</button>
+    <button onClick="window.open('/', '_blank');" style="float: right;">New session</button>
 </div>
 
 <div class="blocks-container">
