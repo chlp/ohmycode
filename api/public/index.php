@@ -85,7 +85,7 @@ if ($session === null) {
     <button onClick="window.open('/', '_blank');" style="float: right;">New session</button>
 </div>
 
-<div class="blocks-container">
+<div class="blocks-container" id="executor-container" style="display: <?= $session->isExecutorOnline() ? 'block' : 'none' ?>">
     <button>save</button>
     <input type="text" id="executor" style="width: 15em;" maxlength="32" minlength="1"
            pattern="[0-9a-zA-Z]{32}">
@@ -102,6 +102,7 @@ if ($session === null) {
     let initialUserId = '<?= Utils::genUuid() ?>';
     let isNewSession = <?= $isNewSession ? 'true' : 'false' ?>;
     let session = <?= $session->getJson() ?>;
+
 </script>
 <script src="session.js"></script>
 

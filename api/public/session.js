@@ -40,7 +40,9 @@ let sessionStatusBlock = document.getElementById('session-status');
 let becomeWriterButton = document.getElementById('become-writer-button');
 let langSelect = document.getElementById('lang-select');
 let executeButton = document.getElementById('execute-button');
+let executorContainerBlock = document.getElementById('executor-container');
 
+let sessionPreviousState = session;
 let sessionIsOnline = true;
 let ping = undefined;
 let isWriter = false;
@@ -117,13 +119,18 @@ let updateUsers = () => {
 };
 updateUsers();
 
-let isWriterBlocksUpdate = () => {
+let writerBlocksUpdate = () => {
     becomeWriterButton.style.display = !isWriter ? 'block' : 'none';
     langSelect.style.display = isWriter ? 'block' : 'none';
-    executeButton.style.display = isWriter ? 'block' : 'none';
     codeBlock.setOption('readOnly', !isWriter);
 };
-isWriterBlocksUpdate();
+writerBlocksUpdate();
+
+let executorBlocksUpdate = () => {
+    executorContainerBlock.style.display = !session.isExecutorOnline ? 'block' : 'none';
+    executeButton.style.display = session.isExecutorOnline && isWriter ? 'block' : 'none';
+};
+executorBlocksUpdate();
 
 let lastUpdateTimestamp = +new Date;
 let pageUpdater = () => {
@@ -147,17 +154,20 @@ let pageUpdater = () => {
         }
 
         isNewSession = false;
-        let sessionOld = session
+        sessionPreviousState = session;
         session = data;
 
         // update users
         updateUsers();
 
         // update writer/spectator ui
-        isWriterBlocksUpdate();
+        writerBlocksUpdate();
+
+        // update writer/spectator ui
+        executorBlocksUpdate();
 
         // update session name
-        if (sessionOld.name !== session.name) {
+        if (sessionPreviousState.name !== session.name) {
             sessionNameBlock.innerHTML = session.name;
         }
 

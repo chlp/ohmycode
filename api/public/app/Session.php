@@ -179,6 +179,13 @@ class Session
         return true;
     }
 
+    public function isExecutorOnline(): bool {
+        if ($this->executorCheckedAt === null) {
+            return false;
+        }
+        return time() - $this->executorCheckedAt->getTimestamp() < 10;
+    }
+
     public function getJson(): string
     {
         return json_encode([
@@ -187,7 +194,7 @@ class Session
             'code' => $this->code,
             'lang' => $this->lang,
             'executor' => $this->executor,
-            'executorCheckedAt' => $this->executorCheckedAt,
+            'isExecutorOnline' => $this->isExecutorOnline(),
             'updatedAt' => $this->updatedAt,
             'writer' => $this->writer,
             'users' => $this->users,
