@@ -68,8 +68,14 @@ class Session
         if (!Utils::isUuid($id)) {
             return null;
         }
-        // todo: join request, result and users
-        $query = "SELECT `name`, `code`, `lang`, `executor`, `executor_checked_at`, `updated_at`, `writer` FROM `sessions` WHERE `id` = ?";
+        $query = "
+            SELECT `name`, `sessions`.`code`, `sessions`.`lang`, `sessions`.`executor`, `executor_checked_at`,
+                `sessions`.`updated_at`, `writer`, `requests`.`session` IS NOT NULL AS `isWaitingForResult`, `results`.`result`
+            FROM `sessions`
+            LEFT JOIN `requests` ON `requests`.`session` = `sessions`.`id`
+            LEFT JOIN `results` ON `results`.`session` = `sessions`.`id`
+            WHERE `id` = ?
+        ";
         $params = [$id];
         if ($updatedAfter !== null) {
             $query .= "updated_at > ?";
@@ -79,14 +85,14 @@ class Session
         if (count($res) === 0) {
             return null;
         }
-        [$sessionName, $code, $lang, $executor, $executorCheckedAtStr, $updatedAtStr, $writer] = $res[0];
+        [$sessionName, $code, $lang, $executor, $executorCheckedAtStr, $updatedAtStr, $writer, $isWaitingForResult, $result] = $res[0];
         $executorCheckedAt = null;
         if ($executorCheckedAtStr !== null) {
             $executorCheckedAt = DateTime::createFromFormat('Y-m-d H:i:s', $executorCheckedAtStr);
         }
         $updatedAt = DateTime::createFromFormat('Y-m-d H:i:s.u', $updatedAtStr);
 
-        $session = new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], false, '');
+        $session = new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], $isWaitingForResult, $result ?? '');
         $session->loadUsers();
 
         return $session;
