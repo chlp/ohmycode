@@ -3,5 +3,5 @@
   "languages": [
     "php82"
   ],
-  "api": "http://localhost:8080"
+  "api": "http://host.docker.internal:8080"
 }
