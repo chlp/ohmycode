@@ -57,6 +57,12 @@ let ownUserNameOnclick = () => {
         userNameContainerBlock.style.display = 'block';
     }
 };
+langSelect.onchange = () => {
+    if (isWriter) {
+        codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
+        // post request to change lang
+    }
+};
 
 let sessionPreviousState = session;
 let sessionIsOnline = true;
@@ -213,9 +219,11 @@ let pageUpdater = () => {
             codeBlock.scrollTo(scrollInfo.left, scrollInfo.top);
         }
 
-        // update result & request
-        // set lang: text area, select
-        // update session: lang, executorCheckedAt, result, request
+        // update lang
+        if (sessionPreviousState.lang !== session.lang) {
+            langSelect.value = session.lang;
+            codeBlock.setOption('mode', langKeyToHighlighter[session.lang]);
+        }
     }, () => {
         setTimeout(() => {
             pageUpdater();

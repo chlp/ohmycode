@@ -103,7 +103,11 @@ if ($session === null) {
     let initialUserId = '<?= Utils::genUuid() ?>';
     let isNewSession = <?= $isNewSession ? 'true' : 'false' ?>;
     let session = <?= $session->getJson() ?>;
-
+    let langKeyToHighlighter = {<?php
+        foreach (Session::LANGS as $key => $data) {
+            echo "\"$key\": \"{$data['highlighter']}\",";
+        }
+        ?>};
 </script>
 <script src="session.js"></script>
 
