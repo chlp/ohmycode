@@ -43,14 +43,14 @@ if ($session === null) {
 ?>
 
 <div class="blocks-container" id="session-name-container" style="display: none;">
-    <button onclick="setSessionName()">save</button>
+    <button onclick="actions.setSessionName()">save</button>
     <input type="text" id="session-name-input" style="width: 15em;" maxlength="64" minlength="1"
            pattern="[0-9a-zA-Z\u0400-\u04ff\s\-'\.]{1,64}">
     <label for="session""><- session name</label>
 </div>
 
 <div class="blocks-container" id="user-name-container" style="display: none;">
-    <button onclick="setUserName()">save</button>
+    <button onclick="actions.setUserName()">save</button>
     <input type="text" id="user-name-input" style="width: 15em;" maxlength="64" minlength="1"
            pattern="[0-9a-zA-Z\u0400-\u04ff\s\-'\.]{1,64}">
     <label for="name""><- your name</label>
@@ -68,7 +68,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container">
-    <button id="become-writer-button" onclick="setWriter()" style="display: none;">Become a writer</button>
+    <button id="become-writer-button" onclick="actions.setWriter()" style="display: none;">Become a writer</button>
     <select id="lang-select" style="width: 150px;">
         <?php
         foreach (Session::LANGS as $key => $data) {
@@ -80,13 +80,13 @@ if ($session === null) {
         }
         ?>
     </select>
-    <button id="execute-button" onclick="setRequest()" style="display: none">Execute code</button>
+    <button id="execute-button" onclick="actions.setRequest()" style="display: none">Execute code</button>
     <button onClick="window.open('/', '_blank');" style="float: right;">New session</button>
 </div>
 
 <div class="blocks-container" id="executor-container"
      style="float: left; margin-top: 1em; display: <?= $session->isExecutorOnline() ? 'block' : 'none' ?>">
-    <button onclick="setExecutor()">save</button>
+    <button onclick="actions.setExecutor()">save</button>
     <input type="text" id="executor-input" style="width: 20em;" maxlength="32" minlength="32"
            pattern="[0-9a-zA-Z]{32}" value="">
     <label for="executor"><- executor id</label>
@@ -108,7 +108,9 @@ if ($session === null) {
         }
         ?>};
 </script>
-<script src="session.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/session.js"></script>
 
 </body>
 </html>
