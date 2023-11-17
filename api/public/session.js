@@ -330,3 +330,19 @@ let setExecutor = () => {
     }, () => {
     });
 };
+
+let setWriter = () => {
+    isWriter = true;
+    session.writer = userId;
+    writerBlocksUpdate();
+    updateUsers();
+    postRequest('/action/session.php', {
+        session: session.id,
+        user: userId,
+        userName: userNameInput.value,
+        action: 'setWriter',
+    }, (response) => {
+        console.log('saved writer', response);
+    }, () => {
+    });
+};

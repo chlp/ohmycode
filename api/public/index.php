@@ -68,7 +68,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container">
-    <button id="become-writer-button" style="display: none;">Become a writer</button>
+    <button id="become-writer-button" onclick="setWriter()" style="display: none;">Become a writer</button>
     <select id="lang-select" style="width: 150px;">
         <?php
         foreach (Session::LANGS as $key => $data) {
@@ -88,7 +88,7 @@ if ($session === null) {
      style="float: left; margin-top: 1em; display: <?= $session->isExecutorOnline() ? 'block' : 'none' ?>">
     <button onclick="setExecutor()">save</button>
     <input type="text" id="executor-input" style="width: 20em;" maxlength="32" minlength="32"
-           pattern="[0-9a-zA-Z]{32}">
+           pattern="[0-9a-zA-Z]{32}" value="">
     <label for="executor"><- executor id</label>
 </div>
 
