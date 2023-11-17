@@ -47,7 +47,7 @@ if (userName === undefined) {
 
 let codeBlock = CodeMirror.fromTextArea(document.getElementById("code"), {
     lineNumbers: true,
-    mode: 'php', // javascript, go, php, sql
+    mode: langKeyToHighlighter[session.lang], // javascript, go, php, sql
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
@@ -89,7 +89,7 @@ let ownUserNameOnclick = () => {
 langSelect.onchange = () => {
     if (isWriter) {
         codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
-        // post request to change lang
+        setLang();
     }
 };
 
@@ -301,6 +301,19 @@ let setUserName = () => {
         userName = userNameInput.value;
         document.getElementById('own-name').innerHTML = userName;
         userNameContainerBlock.style.display = 'none';
+    }, () => {
+    });
+};
+
+let setLang = () => {
+    postRequest('/action/session.php', {
+        session: session.id,
+        user: userId,
+        userName: userNameInput.value,
+        action: 'setLang',
+        lang: langSelect.value,
+    }, (response) => {
+        console.log('saved lang', response);
     }, () => {
     });
 };
