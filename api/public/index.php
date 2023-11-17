@@ -57,8 +57,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container">
-    Session <a href="#" id="session-name"><?= $session->name ?? '' ?></a>
-    (<span id="session-status" class="online">online</span>)<span id="users-container"></span>
+    Session <a href="#" id="session-name"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span><span id="users-container"></span>
 </div>
 
 <div class="code textarea">

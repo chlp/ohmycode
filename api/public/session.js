@@ -240,14 +240,14 @@ let pageUpdater = () => {
             sessionIsOnline = false;
             sessionStatusBlock.classList.remove('online');
             sessionStatusBlock.classList.add('offline');
-            sessionStatusBlock.innerHTML = 'offline';
+            sessionStatusBlock.innerHTML = ' offline';
         }
     } else {
         if (!sessionIsOnline) {
             sessionIsOnline = true;
             sessionStatusBlock.classList.remove('offline');
             sessionStatusBlock.classList.add('online');
-            sessionStatusBlock.innerHTML = 'online';
+            sessionStatusBlock.innerHTML = '';
         }
     }
 };
