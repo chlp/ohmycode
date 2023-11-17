@@ -21,8 +21,8 @@ let postRequest = (url, data, callback, final) => {
 
 // ---
 
-let sessionPreviousState = session;
-sessionPreviousState.users = [];
+let sessionPreviousState = {...session};
+sessionPreviousState.writer = '-'; // hack to init users
 let sessionIsOnline = true;
 let ping = undefined;
 let isWriter = false;
@@ -50,10 +50,10 @@ let codeBlock = CodeMirror.fromTextArea(document.getElementById("code"), {
     mode: 'php', // javascript, go, php, sql
     matchBrackets: true,
     indentWithTabs: false,
+    tabSize: 4,
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById("result"), {
     lineNumbers: true,
-    indentWithTabs: false,
     readOnly: true,
 });
 
@@ -203,7 +203,7 @@ let pageUpdater = () => {
         }
 
         isNewSession = false;
-        sessionPreviousState = session;
+        sessionPreviousState = {...session};
         session = data;
 
         // update users
@@ -254,6 +254,21 @@ let pageUpdater = () => {
             sessionStatusBlock.classList.remove('offline');
             sessionStatusBlock.classList.add('online');
             sessionStatusBlock.innerHTML = '';
+        }
+    }
+    if (isWriter) {
+        if (session.code.hash() !== codeBlock.getValue().hash()) {
+            session.code = codeBlock.getValue();
+            postRequest('/action/session.php', {
+                session: session.id,
+                user: userId,
+                userName: userName,
+                action: 'setCode',
+                code: codeBlock.getValue(),
+            }, (response) => {
+                console.log('saved code', response);
+            }, () => {
+            });
         }
     }
 };
