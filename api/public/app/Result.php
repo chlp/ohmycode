@@ -11,5 +11,6 @@ class Result
             $request->code, $result, $request->lang,
         ]);
         Session::get($request->session)?->updateTime();
+        Request::remove($request->executor, $request->lang, $request->hash);
     }
 }

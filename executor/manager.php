@@ -8,14 +8,23 @@ if ($conf === null) {
 while (true) {
     foreach ($conf['languages'] as $lang) {
         $resultsDir = $lang . '/results';
-        $resultIds = preg_grep('/^([^.])/', scandir($resultsDir));
-        foreach ($resultIds as $resultId) {
-            $result = file_get_contents($resultsDir . '/' . $resultId);
-            var_dump($resultId, $result);
-            // send result to API
-            exit;
-            unlink($resultsDir . '/' . $resultId);
+        $files = preg_grep('/^([^.])/', scandir($resultsDir));
+        foreach ($files as $file) {
+            $result = file_get_contents($resultsDir . '/' . $file);
+            post($conf['api'] . '/action/result.php', [
+                'executor' => $conf['id'],
+                'lang' => $lang,
+                'hash' => $file,
+            ]);
+            unlink($resultsDir . '/' . $file);
         }
+    }
+
+    $requests = post($conf['api'] . '/action/request.php', [
+        'executor' => $conf['id'],
+    ]);
+    foreach ($requests as $request) {
+        file_put_contents(__DIR__. "/{$request['lang']}/{$request['hash']}", $request['code']);
     }
     sleep(1);
 }
@@ -51,6 +60,10 @@ function loadConf(): ?array {
         echo 'conf: wrong id format';
         return null;
     }
+    if (!is_string($conf['api'])) {
+        echo 'conf: wrong api format';
+        return null;
+    }
     if (!is_string($conf['name'])) {
         echo 'conf: wrong name format';
         return null;
@@ -70,4 +83,19 @@ function genUuid(): string {
         mt_rand( 0, 0x3fff ) | 0x8000,
         mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
     );
+}
+
+
+function post($url, $data): array {
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_POST, true);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+    $resp = json_decode((string)curl_exec($curl), true);
+    curl_close($curl);
+    if (!is_array($resp)) {
+        return [];
+    }
+    return $resp;
 }

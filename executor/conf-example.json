@@ -1,6 +1,7 @@
 {
-    "name": "default-name",
-    "languages": [
-        "php82"
-    ]
+  "name": "default-name",
+  "languages": [
+    "php82"
+  ],
+  "api": "http://localhost:8080"
 }
