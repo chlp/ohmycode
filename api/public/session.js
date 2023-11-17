@@ -37,6 +37,7 @@ let usersContainerBlock = document.getElementById('users-container');
 let sessionNameBlock = document.getElementById('session-name');
 let sessionNameInput = document.getElementById('session-name-input');
 let userNameContainerBlock = document.getElementById('user-name-container');
+let userNameInput = document.getElementById('user-name-input');
 let sessionNameContainerBlock = document.getElementById('session-name-container');
 let sessionStatusBlock = document.getElementById('session-status');
 let becomeWriterButton = document.getElementById('become-writer-button');
@@ -66,6 +67,7 @@ langSelect.onchange = () => {
 };
 
 let sessionPreviousState = session;
+sessionPreviousState.users = [];
 let sessionIsOnline = true;
 let ping = undefined;
 let isWriter = false;
@@ -88,6 +90,9 @@ if (userName === undefined) {
     }
 }
 let updateUsers = () => {
+    if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
+        return;
+    }
     let spectators = [];
     let writer = undefined;
     if (isNewSession) {
@@ -117,7 +122,7 @@ let updateUsers = () => {
     if (writer !== undefined) {
         html += ', writer: ';
         if (writer.own) {
-            html += '<a href="#" onclick="ownUserNameOnclick()">';
+            html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">';
         }
         html += writer.name;
         if (writer.own) {
@@ -128,7 +133,7 @@ let updateUsers = () => {
         html += ', spectators: ';
         spectators.forEach((user) => {
             if (user.own) {
-                html += '<a href="#" onclick="ownUserNameOnclick()">';
+                html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">';
             }
             html += user.name;
             if (user.own) {
@@ -256,8 +261,22 @@ let setSessionName = () => {
         action: 'setSessionName',
         sessionName: sessionNameInput.value,
     }, (response) => {
-        console.log('saved', response);
+        console.log('saved session name', response);
         sessionNameBlock.innerHTML = sessionNameInput.value;
         sessionNameContainerBlock.style.display = 'none';
+    }, () => {});
+};
+
+let setUserName = () => {
+    postRequest('/action/session.php', {
+        session: session.id,
+        user: userId,
+        userName: userNameInput.value,
+        action: 'setUserName',
+    }, (response) => {
+        console.log('saved user name', response);
+        userName = userNameInput.value;
+        document.getElementById('own-name').innerHTML = userName;
+        userNameContainerBlock.style.display = 'none';
     }, () => {});
 };

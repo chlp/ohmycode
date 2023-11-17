@@ -50,7 +50,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container" id="user-name-container" style="display: none;">
-    <button>save</button>
+    <button onclick="setUserName()">save</button>
     <input type="text" id="user-name-input" style="width: 15em;" maxlength="32" minlength="1"
            pattern="[0-9a-zA-Z\u0400-\u04ff\s\-']{1,32}">
     <label for="name""><- your name</label>
