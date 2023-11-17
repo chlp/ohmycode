@@ -121,8 +121,14 @@ function post($url, $data): array
     $json = json_decode((string)$resp, true);
     $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
-    if (!is_array($json) || $code !== 200) {
+    if ($code === 200 && $resp === '') {
+        return [200, []];
+    }
+    if (!is_array($json)) {
         return ['e' . $code, $resp];
     }
-    return [$code, $json];
+    if ($code !== 200) {
+        return [$code, $resp];
+    }
+    return [200, $json];
 }
