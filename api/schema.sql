@@ -1,7 +1,7 @@
 create table sessions
 (
     id                  varchar(32) not null,
-    name                varchar(32) not null,
+    name                varchar(64) not null,
     code                blob        not null,
     lang                varchar(32) not null,
     executor            varchar(32) not null,
@@ -22,8 +22,8 @@ create table session_users
 (
     session    varchar(32) not null,
     user       varchar(32) not null,
-    name       varchar(32) not null,
-    updated_at datetime(3) default NOW(3) on update NOW(3),
+    name       varchar(64) not null,
+    updated_at datetime default NOW() on update NOW(),
     constraint session_users_pk
         primary key (session, user)
 );

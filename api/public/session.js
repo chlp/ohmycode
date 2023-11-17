@@ -21,6 +21,30 @@ let postRequest = (url, data, callback, final) => {
 
 // ---
 
+let sessionPreviousState = session;
+sessionPreviousState.users = [];
+let sessionIsOnline = true;
+let ping = undefined;
+let isWriter = false;
+let userId = localStorage['userId'];
+if (userId === undefined) {
+    userId = initialUserId;
+    localStorage['userId'] = userId;
+}
+let userName = undefined;
+session.users.forEach((user) => {
+    if (user.id === userId) {
+        userName = user.name;
+    }
+});
+if (userName === undefined) {
+    userName = localStorage['initialUserName'];
+    if (userName === undefined) {
+        userName = initialName;
+        localStorage['initialUserName'] = userName;
+    }
+}
+
 let codeBlock = CodeMirror.fromTextArea(document.getElementById("code"), {
     lineNumbers: true,
     mode: 'php', // javascript, go, php, sql
@@ -49,6 +73,7 @@ sessionNameBlock.onclick = () => {
     if (sessionNameContainerBlock.style.display === 'block') {
         sessionNameContainerBlock.style.display = 'none';
     } else {
+        sessionNameInput.value = session.name;
         sessionNameContainerBlock.style.display = 'block';
     }
 };
@@ -56,6 +81,7 @@ let ownUserNameOnclick = () => {
     if (userNameContainerBlock.style.display === 'block') {
         userNameContainerBlock.style.display = 'none';
     } else {
+        userNameInput.value = userName;
         userNameContainerBlock.style.display = 'block';
     }
 };
@@ -66,29 +92,6 @@ langSelect.onchange = () => {
     }
 };
 
-let sessionPreviousState = session;
-sessionPreviousState.users = [];
-let sessionIsOnline = true;
-let ping = undefined;
-let isWriter = false;
-let userId = localStorage['userId'];
-if (userId === undefined) {
-    userId = initialUserId;
-    localStorage['userId'] = userId;
-}
-let userName = undefined;
-session.users.forEach((user) => {
-    if (user.id === userId) {
-        userName = user.name;
-    }
-});
-if (userName === undefined) {
-    userName = localStorage['initialUserName'];
-    if (userName === undefined) {
-        userName = initialName;
-        localStorage['initialUserName'] = userName;
-    }
-}
 let updateUsers = () => {
     if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
         return;
@@ -264,7 +267,8 @@ let setSessionName = () => {
         console.log('saved session name', response);
         sessionNameBlock.innerHTML = sessionNameInput.value;
         sessionNameContainerBlock.style.display = 'none';
-    }, () => {});
+    }, () => {
+    });
 };
 
 let setUserName = () => {
@@ -278,5 +282,6 @@ let setUserName = () => {
         userName = userNameInput.value;
         document.getElementById('own-name').innerHTML = userName;
         userNameContainerBlock.style.display = 'none';
-    }, () => {});
+    }, () => {
+    });
 };
