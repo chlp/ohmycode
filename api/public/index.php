@@ -86,8 +86,8 @@ if ($session === null) {
 
 <div class="blocks-container" id="executor-container"
      style="float: left; margin-top: 1em; display: <?= $session->isExecutorOnline() ? 'block' : 'none' ?>">
-    <button>save</button>
-    <input type="text" id="executor" style="width: 20em;" maxlength="32" minlength="32"
+    <button onclick="setExecutor()">save</button>
+    <input type="text" id="executor-input" style="width: 20em;" maxlength="32" minlength="32"
            pattern="[0-9a-zA-Z]{32}">
     <label for="executor"><- executor id</label>
 </div>

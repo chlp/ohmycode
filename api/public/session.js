@@ -68,6 +68,7 @@ let becomeWriterButton = document.getElementById('become-writer-button');
 let langSelect = document.getElementById('lang-select');
 let executeButton = document.getElementById('execute-button');
 let executorContainerBlock = document.getElementById('executor-container');
+let executorInput = document.getElementById('executor-input');
 
 sessionNameBlock.onclick = () => {
     if (sessionNameContainerBlock.style.display === 'block') {
@@ -300,6 +301,19 @@ let setUserName = () => {
         userName = userNameInput.value;
         document.getElementById('own-name').innerHTML = userName;
         userNameContainerBlock.style.display = 'none';
+    }, () => {
+    });
+};
+
+let setExecutor = () => {
+    postRequest('/action/session.php', {
+        session: session.id,
+        user: userId,
+        userName: userNameInput.value,
+        action: 'setExecutor',
+        executor: executorInput.value,
+    }, (response) => {
+        console.log('saved executor', response);
     }, () => {
     });
 };
