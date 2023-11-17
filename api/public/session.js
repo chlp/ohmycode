@@ -35,11 +35,28 @@ let resultBlock = CodeMirror.fromTextArea(document.getElementById("result"), {
 
 let usersContainerBlock = document.getElementById('users-container');
 let sessionNameBlock = document.getElementById('session-name');
+let userNameContainerBlock = document.getElementById('user-name-container');
+let sessionNameContainerBlock = document.getElementById('session-name-container');
 let sessionStatusBlock = document.getElementById('session-status');
 let becomeWriterButton = document.getElementById('become-writer-button');
 let langSelect = document.getElementById('lang-select');
 let executeButton = document.getElementById('execute-button');
 let executorContainerBlock = document.getElementById('executor-container');
+
+sessionNameBlock.onclick = () => {
+    if (sessionNameContainerBlock.style.display === 'block') {
+        sessionNameContainerBlock.style.display = 'none';
+    } else {
+        sessionNameContainerBlock.style.display = 'block';
+    }
+};
+let ownUserNameOnclick = () => {
+    if (userNameContainerBlock.style.display === 'block') {
+        userNameContainerBlock.style.display = 'none';
+    } else {
+        userNameContainerBlock.style.display = 'block';
+    }
+};
 
 let sessionPreviousState = session;
 let sessionIsOnline = true;
@@ -93,7 +110,7 @@ let updateUsers = () => {
     if (writer !== undefined) {
         html += ', writer: ';
         if (writer.own) {
-            html += '<a id="own-name" href="#">';
+            html += '<a href="#" onclick="ownUserNameOnclick()">';
         }
         html += writer.name;
         if (writer.own) {
@@ -104,7 +121,7 @@ let updateUsers = () => {
         html += ', spectators: ';
         spectators.forEach((user) => {
             if (user.own) {
-                html += '<a id="own-name" href="#">';
+                html += '<a href="#" onclick="ownUserNameOnclick()">';
             }
             html += user.name;
             if (user.own) {
