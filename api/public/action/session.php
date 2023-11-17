@@ -85,7 +85,7 @@ switch ($action) {
         break;
 }
 
-function getSession(int $sessionId, int $userId, string $userName): Session
+function getSession(string $sessionId, string $userId, string $userName): Session
 {
     $session = Session::getById($sessionId);
     if ($session === null) {

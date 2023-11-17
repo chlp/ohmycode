@@ -35,6 +35,7 @@ let resultBlock = CodeMirror.fromTextArea(document.getElementById("result"), {
 
 let usersContainerBlock = document.getElementById('users-container');
 let sessionNameBlock = document.getElementById('session-name');
+let sessionNameInput = document.getElementById('session-name-input');
 let userNameContainerBlock = document.getElementById('user-name-container');
 let sessionNameContainerBlock = document.getElementById('session-name-container');
 let sessionStatusBlock = document.getElementById('session-status');
@@ -246,3 +247,17 @@ let pageUpdater = () => {
     }
 };
 pageUpdater();
+
+let setSessionName = () => {
+    postRequest('/action/session.php', {
+        session: session.id,
+        user: userId,
+        userName: userName,
+        action: 'setSessionName',
+        sessionName: sessionNameInput.value,
+    }, (response) => {
+        console.log('saved', response);
+        sessionNameBlock.innerHTML = sessionNameInput.value;
+        sessionNameContainerBlock.style.display = 'none';
+    }, () => {});
+};

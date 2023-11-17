@@ -58,11 +58,11 @@ class Db
         }
         $types = '';
         $vars = [];
-        foreach ($params as $param) {
+        foreach ($params as $i => $param) {
             if (is_string($param)) {
                 $types .= 's';
             } else {
-                die('wrong type: ' . gettype($param));
+                die("wrong type: $i:" . gettype($param));
             }
             $vars[] = $param;
         }

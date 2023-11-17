@@ -104,8 +104,8 @@ class Session
 
     public function insert(): self
     {
-        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `executor` = ?, `executor_checked_at` = ?, `writer` = ?, `id` = ?;";
-        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->executor, $this->executorCheckedAt, $this->writer, $this->id]);
+        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `executor` = ?, `writer` = ?, `id` = ?;";
+        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->executor, $this->writer, $this->id]);
         return self::getById($this->id);
     }
 
@@ -115,7 +115,7 @@ class Session
             return false;
         }
         $query = "UPDATE `sessions` SET `name` = ? WHERE `id` = ?";
-        $this->db->exec($query, [$this->id, $name, $this->id]);
+        $this->db->exec($query, [$name, $this->id]);
         return true;
     }
 
@@ -125,7 +125,7 @@ class Session
             return false;
         }
         $query = "UPDATE `sessions` SET `lang` = ? WHERE `id` = ?";
-        $this->db->exec($query, [$this->id, $lang, $this->id]);
+        $this->db->exec($query, [$lang, $this->id]);
         return true;
     }
 
@@ -135,7 +135,7 @@ class Session
             return false;
         }
         $query = "UPDATE `sessions` SET `code` = ? WHERE `id` = ?";
-        $this->db->exec($query, [$this->id, $code, $this->id]);
+        $this->db->exec($query, [$code, $this->id]);
         return true;
     }
 
@@ -165,7 +165,7 @@ class Session
             return false;
         }
         $query = "UPDATE `sessions` SET `executor` = ? WHERE `id` = ?";
-        $this->db->exec($query, [$this->id, $executor, $this->id]);
+        $this->db->exec($query, [$executor, $this->id]);
         return true;
     }
 
@@ -175,7 +175,7 @@ class Session
             return false;
         }
         $query = "UPDATE `sessions` SET `writer` = ? WHERE `id` = ?";
-        $this->db->exec($query, [$this->id, $userId, $this->id]);
+        $this->db->exec($query, [$userId, $this->id]);
         return true;
     }
 
