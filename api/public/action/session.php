@@ -1,12 +1,6 @@
 <?php
 
-require __DIR__ . '/../app/bootstrap.php';
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    error('Method not allowed', 405);
-}
-
-$input = json_decode(file_get_contents('php://input'), true);
+$input = require __DIR__ . '/actions.php';
 
 $sessionId = (string)($input['session'] ?? '');
 if (!Utils::isUuid($sessionId)) {
@@ -24,7 +18,7 @@ $action = (string)($input['action'] ?? '');
 switch ($action) {
     case 'getUpdate':
         $lastUpdate = isset($input['lastUpdate']) ? (string)$input['lastUpdate'] : null;
-        $session = Session::getById($sessionId, $lastUpdate);
+        $session = Session::get($sessionId, $lastUpdate);
         if ($session === null) {
             if ($lastUpdate !== null) {
                 Session::updateUserOnline($sessionId, $userId);
@@ -89,7 +83,7 @@ switch ($action) {
 
 function getSession(string $sessionId, string $userId, string $userName): Session
 {
-    $session = Session::getById($sessionId);
+    $session = Session::get($sessionId);
     if ($session === null) {
         $session = Session::createNew($sessionId);
         $session->writer = $userId;
@@ -97,10 +91,4 @@ function getSession(string $sessionId, string $userId, string $userName): Sessio
         $session->setUserName($userId, $userName);
     }
     return $session;
-}
-
-function error($str, $code = 400): void
-{
-    http_response_code($code);
-    die(json_encode(['error' => $str]));
 }

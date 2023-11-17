@@ -1,17 +1,11 @@
 <?php
 
-require __DIR__ . '/../app/bootstrap.php';
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    error('Method not allowed', 405);
-}
-
-$input = json_decode(file_get_contents('php://input'), true);
+$input = require __DIR__ . '/actions.php';
 
 $action = (string)($input['action'] ?? '');
 switch ($action) {
     case 'set':
-        $session = Session::getById((string)($input['session'] ?? ''));
+        $session = Session::get((string)($input['session'] ?? ''));
         if ($session === null) {
             error('No session');
         }
@@ -22,14 +16,17 @@ switch ($action) {
         break;
     case 'get':
         $executor = (string)($input['executor'] ?? '');
-        echo json_encode(Request::get($executor));
+        $requests = Request::get($executor);
+        $output = [];
+        foreach ($requests as $request) {
+            $output[] = [
+                'code' => $request->code,
+                'lang' => $request->lang,
+                'hash' => $request->hash,
+            ];
+        }
+        echo json_encode($output);
         break;
     default:
         error('wrong action', 404);
-}
-
-function error($str, $code = 400): void
-{
-    http_response_code($code);
-    die(json_encode(['error' => $str]));
 }

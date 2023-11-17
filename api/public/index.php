@@ -35,7 +35,7 @@ if (!Utils::isUuid($id)) {
 }
 
 $isNewSession = false;
-$session = Session::getById($id);
+$session = Session::get($id);
 if ($session === null) {
     $isNewSession = true;
     $session = Session::createNew($id);

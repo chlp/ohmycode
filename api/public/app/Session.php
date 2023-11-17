@@ -63,7 +63,7 @@ class Session
         return new self($id, $name, '', self::DEFAULT_LANG, '', null, null, '', [], false, '');
     }
 
-    static public function getById(string $id, ?string $updatedAfter = null): ?self
+    static public function get(string $id, ?string $updatedAfter = null): ?self
     {
         if (!Utils::isUuid($id)) {
             return null;
@@ -123,7 +123,7 @@ class Session
     {
         $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `executor` = ?, `writer` = ?, `id` = ?;";
         $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->executor, $this->writer, $this->id]);
-        return self::getById($this->id);
+        return self::get($this->id);
     }
 
     public function setSessionName(string $name): bool
