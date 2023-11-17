@@ -80,7 +80,7 @@ if ($session === null) {
         }
         ?>
     </select>
-    <button id="execute-button" style="display: none">Execute code</button>
+    <button id="execute-button" onclick="setRequest()" style="display: none">Execute code</button>
     <button onClick="window.open('/', '_blank');" style="float: right;">New session</button>
 </div>
 

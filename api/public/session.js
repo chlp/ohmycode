@@ -257,21 +257,8 @@ let pageUpdater = () => {
             sessionStatusBlock.innerHTML = '';
         }
     }
-    if (isWriter) {
-        if (session.code.hash() !== codeBlock.getValue().hash()) {
-            session.code = codeBlock.getValue();
-            postRequest('/action/session.php', {
-                session: session.id,
-                user: userId,
-                userName: userName,
-                action: 'setCode',
-                code: codeBlock.getValue(),
-            }, (response) => {
-                console.log('saved code', response);
-            }, () => {
-            });
-        }
-    }
+    setCode(() => {
+    });
 };
 pageUpdater();
 
@@ -330,7 +317,6 @@ let setExecutor = () => {
     }, () => {
     });
 };
-
 let setWriter = () => {
     isWriter = true;
     session.writer = userId;
@@ -344,5 +330,40 @@ let setWriter = () => {
     }, (response) => {
         console.log('saved writer', response);
     }, () => {
+    });
+};
+
+let setCode = (callback) => {
+    if (!isWriter) {
+        return;
+    }
+    if (session.code.hash() !== codeBlock.getValue().hash()) {
+        session.code = codeBlock.getValue();
+        postRequest('/action/session.php', {
+            session: session.id,
+            user: userId,
+            userName: userName,
+            action: 'setCode',
+            code: codeBlock.getValue(),
+        }, (response) => {
+            console.log('saved code', response);
+            callback();
+        }, () => {
+        });
+    }
+};
+
+let setRequest = () => {
+    if (!isWriter) {
+        return;
+    }
+    setCode(() => {
+        postRequest('/action/request.php', {
+            session: session.id,
+            action: 'set',
+        }, (response) => {
+            console.log('saved request', response);
+        }, () => {
+        });
     });
 };
