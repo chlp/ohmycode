@@ -83,6 +83,8 @@ switch ($action) {
             error('Wrong lang');
         }
         break;
+    default:
+        error('wrong action', 404);
 }
 
 function getSession(string $sessionId, string $userId, string $userName): Session

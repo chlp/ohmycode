@@ -37,6 +37,23 @@ class Session
         $this->db = Db::get();
     }
 
+    public function getJson(): string
+    {
+        return json_encode([
+            'id' => $this->id,
+            'name' => $this->name,
+            'code' => $this->code,
+            'lang' => $this->lang,
+            'executor' => $this->executor,
+            'isExecutorOnline' => $this->isExecutorOnline(),
+            'updatedAt' => $this->updatedAt,
+            'writer' => $this->writer,
+            'users' => $this->users,
+            'isWaitingForResult' => $this->isWaitingForResult,
+            'result' => $this->result,
+        ]);
+    }
+
     static public function createNew(string $id): ?self
     {
         if (!Utils::isUuid($id)) {
@@ -139,7 +156,7 @@ class Session
         return true;
     }
 
-    private function updateTime(): void
+    public function updateTime(): void
     {
         $query = "UPDATE `sessions` SET `updated_at` = NOW(3) WHERE `id` = ?;";
         $this->db->exec($query, [$this->id]);
@@ -185,22 +202,5 @@ class Session
             return false;
         }
         return time() - $this->executorCheckedAt->getTimestamp() < 10;
-    }
-
-    public function getJson(): string
-    {
-        return json_encode([
-            'id' => $this->id,
-            'name' => $this->name,
-            'code' => $this->code,
-            'lang' => $this->lang,
-            'executor' => $this->executor,
-            'isExecutorOnline' => $this->isExecutorOnline(),
-            'updatedAt' => $this->updatedAt,
-            'writer' => $this->writer,
-            'users' => $this->users,
-            'isWaitingForResult' => $this->isWaitingForResult,
-            'result' => $this->result,
-        ]);
     }
 }
