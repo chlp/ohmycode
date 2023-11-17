@@ -134,9 +134,12 @@ let updateUsers = () => {
     }
     if (spectators.length > 0) {
         html += ', spectators: ';
-        spectators.forEach((user) => {
+        spectators.forEach((user, i) => {
             if (user.own) {
                 html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">';
+            }
+            if (i > 0) {
+                html += ', ';
             }
             html += user.name;
             if (user.own) {
