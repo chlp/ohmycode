@@ -1,35 +1,58 @@
 <?php
 
+echo "executor manager starting\n";
+
 $conf = loadConf();
 if ($conf === null) {
+    echo "problem with conf\n";
     return;
 }
 
+echo "id: {$conf['id']}\n";
+
 while (true) {
     foreach ($conf['languages'] as $lang) {
-        $resultsDir = $lang . '/results';
+        $resultsDir = __DIR__ . "/$lang/results";
         $files = preg_grep('/^([^.])/', scandir($resultsDir));
         foreach ($files as $file) {
             $result = file_get_contents($resultsDir . '/' . $file);
-            post($conf['api'] . '/action/result.php', [
+            [$code, $response] = post($conf['api'] . '/action/result.php', [
+                'action' => 'set',
                 'executor' => $conf['id'],
                 'lang' => $lang,
                 'hash' => $file,
+                'result' => $result,
             ]);
-            unlink($resultsDir . '/' . $file);
+            if ($code !== 200) {
+                var_dump('set result', $code, $response);
+            } else {
+                unlink($resultsDir . '/' . $file);
+            }
         }
     }
 
-    $requests = post($conf['api'] . '/action/request.php', [
+    [$code, $requests] = post($conf['api'] . '/action/request.php', [
+        'action' => 'get',
         'executor' => $conf['id'],
     ]);
-    foreach ($requests as $request) {
-        file_put_contents(__DIR__. "/{$request['lang']}/{$request['hash']}", $request['code']);
+    if ($code !== 200) {
+        var_dump('get requests', $code, $requests);
+    } else {
+        foreach ($requests as $request) {
+            file_put_contents(__DIR__ . "/{$request['lang']}/requests/{$request['hash']}", $request['code']);
+            post($conf['api'] . '/action/request.php', [
+                'action' => 'markReceived',
+                'executor' => $conf['id'],
+                'lang' => $request['lang'],
+                'hash' => $request['hash'],
+            ]);
+        }
     }
     sleep(1);
 }
 
-function loadConf(): ?array {
+function loadConf(): ?array
+{
     define('CONF_PATH', 'conf.json');
     define('CONF_EXAMPLE_PATH', 'conf-example.json');
     if (!file_exists(CONF_PATH)) {
@@ -75,27 +98,31 @@ function loadConf(): ?array {
     return $conf;
 }
 
-function genUuid(): string {
-    return sprintf( '%04x%04x%04x%04x%04x%04x%04x%04x',
-        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
-        mt_rand( 0, 0xffff ),
-        mt_rand( 0, 0x0fff ) | 0x4000,
-        mt_rand( 0, 0x3fff ) | 0x8000,
-        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+function genUuid(): string
+{
+    return sprintf('%04x%04x%04x%04x%04x%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
     );
 }
 
 
-function post($url, $data): array {
+function post($url, $data): array
+{
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_POST, true);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
-    $resp = json_decode((string)curl_exec($curl), true);
+    $resp = curl_exec($curl);
+    $json = json_decode((string)$resp, true);
+    $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
-    if (!is_array($resp)) {
-        return [];
+    if (!is_array($json) || $code !== 200) {
+        return ['e' . $code, $resp];
     }
-    return $resp;
+    return [$code, $json];
 }

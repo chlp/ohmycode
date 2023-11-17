@@ -14,8 +14,12 @@ switch ($action) {
         }
         Request::set($session);
         break;
+    case 'markReceived':
+        Request::markReceived((string)($input['executor'] ?? ''), (string)($input['lang'] ?? ''), (string)($input['hash'] ?? ''));
+        break;
     case 'get':
         $executor = (string)($input['executor'] ?? '');
+        Session::setCheckedByExecutor($executor);
         $requests = Request::get($executor);
         $output = [];
         foreach ($requests as $request) {

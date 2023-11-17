@@ -29,7 +29,7 @@ class Db
         if (!$stmt) {
             die('wrong select stmt');
         }
-        $this->bindParams($stmt, $params);
+        $this->bindParams($query, $stmt, $params);
         $stmt->execute();
         $stmtRes = $stmt->get_result();
         $result = [];
@@ -46,12 +46,12 @@ class Db
         if (!$stmt) {
             die('wrong exec stmt');
         }
-        $this->bindParams($stmt, $params);
+        $this->bindParams($query, $stmt, $params);
         $stmt->execute();
         $stmt->close();
     }
 
-    private function bindParams(mysqli_stmt $stmt, ?array $params): void
+    private function bindParams(string $query, mysqli_stmt $stmt, ?array $params): void
     {
         if ($params === null || count($params) === 0) {
             return;
@@ -61,8 +61,10 @@ class Db
         foreach ($params as $i => $param) {
             if (is_string($param)) {
                 $types .= 's';
+            } else if (is_int($param)) {
+                $types .= 'i';
             } else {
-                die("wrong type: $i:" . gettype($param));
+                die("wrong type: $i:" . gettype($param) . ' | ' . substr($query, 0, 50));
             }
             $vars[] = $param;
         }

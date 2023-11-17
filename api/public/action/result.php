@@ -10,7 +10,7 @@ switch ($action) {
             // no more need for result
             return;
         }
-        Result::set($requests[0], (string)($input['executor'] ?? ''));
+        Result::set($requests[0], (string)($input['result'] ?? ''));
         break;
     default:
         error('wrong action', 404);

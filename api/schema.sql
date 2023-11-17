@@ -33,10 +33,11 @@ create index session_users_user_idx
 
 create table requests
 (
-    session   varchar(32) not null,
-    executor  varchar(32) not null,
-    code      blob        not null,
-    lang      varchar(32) not null,
+    session  varchar(32)        not null,
+    executor varchar(32)        not null,
+    code     blob               not null,
+    lang     varchar(32)        not null,
+    received bool default false not null,
     constraint requests_pk
         primary key (session)
 );

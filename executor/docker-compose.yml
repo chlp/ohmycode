@@ -1,0 +1,9 @@
+version: '3'
+services:
+  executor-manager:
+    container_name: ohmycode-executor-manager
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./php82:/app/php82

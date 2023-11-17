@@ -83,6 +83,8 @@ let actions = {
                 callback();
             }, () => {
             });
+        } else {
+            callback();
         }
     },
     setRequest: () => {

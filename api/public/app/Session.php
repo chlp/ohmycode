@@ -192,6 +192,15 @@ class Session
         return true;
     }
 
+    static public function setCheckedByExecutor(string $executor): void
+    {
+        if (!Utils::isUuid($executor)) {
+            return;
+        }
+        $query = "UPDATE `sessions` SET `executor_checked_at` = NOW() WHERE `executor` = ?";
+        Db::get()->exec($query, [$executor]);
+    }
+
     public function setWriter(string $userId): bool
     {
         if (!Utils::isUuid($userId)) {

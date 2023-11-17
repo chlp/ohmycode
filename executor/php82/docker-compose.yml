@@ -1,6 +1,7 @@
 version: '3'
 services:
-  php-container:
+  executor-php:
+    container_name: ohmycode-executor-php82
     build:
       context: .
       dockerfile: Dockerfile

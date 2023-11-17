@@ -13,7 +13,7 @@ services:
     networks:
       - ohmycode-network
   php:
-    container_name: ohmycode-php
+    container_name: ohmycode-api
     build:
       context: .
       dockerfile: Dockerfile
