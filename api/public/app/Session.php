@@ -92,6 +92,9 @@ class Session
         }
         $updatedAt = DateTime::createFromFormat('Y-m-d H:i:s.u', $updatedAtStr);
 
+        if ($result === '') {
+            $result = '_';
+        }
         $session = new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], $isWaitingForResult, $result ?? '');
         $session->loadUsers();
 

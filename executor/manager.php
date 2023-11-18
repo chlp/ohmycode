@@ -11,11 +11,12 @@ if ($conf === null) {
 echo "id: {$conf['id']}\n";
 
 while (true) {
+//    echo "next cycle\n";
     foreach ($conf['languages'] as $lang) {
         $resultsDir = __DIR__ . "/$lang/results";
         $files = preg_grep('/^([^.])/', scandir($resultsDir));
         foreach ($files as $file) {
-            $result = file_get_contents($resultsDir . '/' . $file);
+            $result = substr(file_get_contents($resultsDir . '/' . $file), 0, 16384);
             [$code, $response] = post($conf['api'] . '/action/result.php', [
                 'action' => 'set',
                 'executor' => $conf['id'],

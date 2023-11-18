@@ -23,6 +23,7 @@ class Request
             $session->executor, $session->code, $session->lang,
         ]);
         $session->updateTime();
+        Result::remove($session->id);
     }
 
     /**
