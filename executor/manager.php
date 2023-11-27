@@ -11,7 +11,7 @@ if ($conf === null) {
 echo "id: {$conf['id']}\n";
 
 while (true) {
-//    echo "next cycle\n";
+    echo "next cycle\n";
     foreach ($conf['languages'] as $lang) {
         $resultsDir = __DIR__ . "/$lang/results";
         $files = preg_grep('/^([^.])/', scandir($resultsDir));
@@ -32,10 +32,13 @@ while (true) {
         }
     }
 
+    echo "2\n";
+
     [$code, $requests] = post($conf['api'] . '/action/request.php', [
         'action' => 'get',
         'executor' => $conf['id'],
     ]);
+    echo "3\n";
     if ($code !== 200) {
         var_dump('get requests', $code, $requests);
     } else {
@@ -49,6 +52,7 @@ while (true) {
             ]);
         }
     }
+    echo "4\n";
     sleep(1);
 }
 

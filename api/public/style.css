@@ -15,7 +15,7 @@
     --color-table: #118bee;
     --color-text: #000;
     --color-text-secondary: #999;
-    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    --font-family: monospace;
     --hover-brightness: 1.2;
     --justify-important: center;
     --justify-normal: left;
@@ -60,6 +60,7 @@ article aside {
 
 body {
     background: var(--color-bg);
+    background-image: url("./fabric-of-squares.png");
     color: var(--color-text);
     font-family: var(--font-family);
     line-height: var(--line-height);
@@ -281,7 +282,7 @@ a {
     color: var(--color-link);
     display: inline-block;
     font-weight: bold;
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 a:active {
@@ -304,7 +305,8 @@ input[type="submit"] {
 }
 
 button,
-input[type="submit"] {
+input,
+select {
     font-family: var(--font-family);
 }
 
@@ -551,6 +553,10 @@ blockquote footer {
     cursor: text;
 }
 
+.code > .CodeMirror, .result > .CodeMirror {
+    background: rgba(255, 255, 255, 0.7);
+}
+
 @media (min-width: 970px) {
     .textarea.code {
         width: 53vw;
@@ -563,6 +569,7 @@ blockquote footer {
         margin-left: 5px;
     }
 }
+
 @media (max-width: 969px) {
     .textarea.code {
         width: 95vw;
@@ -590,4 +597,13 @@ blockquote footer {
 
 input:invalid {
     background-color: lightpink;
+}
+
+button.transparent {
+    background: rgba(0,0,0,.2);
+    border: 0;
+}
+
+button.transparent:hover {
+    background: rgba(0,0,0,.7);
 }

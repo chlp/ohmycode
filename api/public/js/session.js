@@ -152,9 +152,9 @@ let resultBlockUpdate = () => {
             resultBlock.setValue(session.result);
         }
     } else if (session.isExecutorOnline) {
-        resultBlock.setValue('Waiting for execution...');
+        resultBlock.setValue('execution\'s result will be here..');
     } else {
-        resultBlock.setValue('No executor');
+        resultBlock.setValue('execution\'s result will be here...');
     }
 };
 resultBlockUpdate();
