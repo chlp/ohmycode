@@ -63,7 +63,7 @@ if ($session === null) {
 <div class="code textarea">
     <textarea id="code"><?= $session->code ?></textarea>
 </div>
-<div class="result textarea">
+<div class="result textarea" id="result-container" style="display: none;">
     <textarea id="result"><?= $session->result ?? '' ?></textarea>
 </div>
 
@@ -80,17 +80,18 @@ if ($session === null) {
         }
         ?>
     </select>
-    <button id="execute-button" onclick="actions.setRequest()" style="display: none">Execute code</button>
-    <button onClick="window.open('/', '_blank');" class="transparent" style="position: absolute; bottom: 1em; right: 1em;">+</button>
+    <button id="execute-button" onclick="actions.setRequest()" style="display: none">Run</button>
 </div>
 
-<div class="blocks-container" id="executor-container"
-     style="float: left; margin-top: 1em; display: <?= $session->isExecutorOnline() ? 'block' : 'none' ?>">
+<div class="blocks-container" id="executor-container" style="float: left; margin-top: 1em; display: none;">
     <button onclick="actions.setExecutor()">save</button>
     <input type="text" id="executor-input" style="width: 20em;" maxlength="32" minlength="32"
            pattern="[0-9a-zA-Z]{32}" value="">
-    <label for="executor"><- executor id</label>
+    <label for="executor"><- runner id</label>
 </div>
+
+<button onclick="executorEditButtonOnclick()" class="transparent" id="executor-edit-button" style="display: <?= $session->isExecutorOnline() ? 'none' : 'block' ?>; position: absolute; bottom: 1em; right: 5em;">Runner</button>
+<button onclick="window.open('/', '_blank');" class="transparent" style="position: absolute; bottom: 1em; right: 1em;">+</button>
 
 <script>
     <?php

@@ -45,7 +45,9 @@ let becomeWriterButton = document.getElementById('become-writer-button');
 let langSelect = document.getElementById('lang-select');
 let executeButton = document.getElementById('execute-button');
 let executorContainerBlock = document.getElementById('executor-container');
+let executorEditButton = document.getElementById('executor-edit-button');
 let executorInput = document.getElementById('executor-input');
+let resultContainerBlock = document.getElementById('result-container');
 
 sessionNameBlock.onclick = () => {
     if (sessionNameContainerBlock.style.display === 'block') {
@@ -139,22 +141,40 @@ let writerBlocksUpdate = () => {
 writerBlocksUpdate();
 
 let executorBlocksUpdate = () => {
-    executorContainerBlock.style.display = !session.isExecutorOnline ? 'block' : 'none';
+    if (session.isExecutorOnline) {
+        executorContainerBlock.style.display = 'none';
+    }
+    executorEditButton.style.display = session.isExecutorOnline ? 'none' : 'block';
     executeButton.style.display = session.isExecutorOnline && isWriter ? 'block' : 'none';
 };
 executorBlocksUpdate();
+let executorEditButtonOnclick = () => {
+    if (executorContainerBlock.style.display === 'block') {
+        executorContainerBlock.style.display = 'none';
+    } else {
+        executorContainerBlock.style.display = 'block';
+    }
+};
 
 let resultBlockUpdate = () => {
     if (session.isWaitingForResult) {
-        resultBlock.setValue('In progress...');
+        resultContainerBlock.style.display = 'block';
+        if (resultBlock.getValue().startsWith('In progress')) {
+            resultBlock.setValue(resultBlock.getValue() + '.');
+        } else {
+            resultBlock.setValue('In progress...');
+        }
     } else if (session.result.length > 0) {
+        resultContainerBlock.style.display = 'block';
         if (sessionPreviousState.result.hash() !== session.result.hash()) {
             resultBlock.setValue(session.result);
         }
     } else if (session.isExecutorOnline) {
-        resultBlock.setValue('execution\'s result will be here..');
+        resultContainerBlock.style.display = 'block';
+        resultBlock.setValue('runner will write result here...');
     } else {
-        resultBlock.setValue('execution\'s result will be here...');
+        resultContainerBlock.style.display = 'none';
+        resultBlock.setValue('...');
     }
 };
 resultBlockUpdate();
