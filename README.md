@@ -1,28 +1,25 @@
-Small system for meetings with code writing and its execution.
+Small System for Code-Writing Meetings
 
-api:
-* returning html, css, js with editor
-* web server:
-  * receiving and returning meetings code
-  * users info
-  * request for code execution and result
-* storing data in DB
+API:
+* returns HTML, CSS, and JS with an editor;
+* receives and returns code, user information, and requests for code execution and results;
+* stores data in the database.
 
-executor:
-* docker image with code execution
-* receives request from api for execution and puts result back
+Runner:
+* docker image with code execution capabilities;
+* receives requests from the API and returns results.
 
-On start user open new meeting session, receives session_id and link for it. All other users can join this session by link.
+At the start, user opens a new meeting page and receives a session ID along with a link. All other users can join this session using the provided link.
 
-Anyone who wants to write code just clicks the "Become a writer" button. At the same time, the code is edited by only one user.
+Anyone interested in writing code simply clicks the "Become a Writer" button. However, only one user can edit the code at a time.
 
-Executor (program) on start gets its unique id. In meeting, anyone can write this id: this is how executor understands the requests from which sessions it needs to pick up.
+The runner program receives a unique ID upon startup. During the meeting, participants can write down this ID; this helps the runner understand which session requests to prioritize.
 
-After the launch, executor starts going to the api with its id with an attempt to get a request for execution, executes it and puts the result back in the api.
+After launching, the runner contacts the API with its ID in an attempt to retrieve request. It runs the request and returns the result to the API.
 
-No one will see executor id you entered, so you can be assured that the invited users will not know the executor id and will not be able to use it without control.
+The runner ID you enter remains unseen, ensuring that invited users do not have access to it and cannot use it without control.
 
-Executor will not see session id when receiving tasks, so you can be sure that it is impossible to find out session id on the executor's side and strangers will not come to your meeting.
+Runner does not have visibility of the session ID when receiving tasks, guaranteeing that it is impossible for strangers to identify the session ID from the runner's side and intrude into your meeting.
 
 Use these projects:
 * https://codemirror.net/, https://codemirror.net/5/doc/manual.html
