@@ -21,6 +21,6 @@ The runner ID you enter remains unseen, ensuring that invited users do not have 
 
 Runner does not have visibility of the session ID when receiving tasks, guaranteeing that it is impossible for strangers to identify the session ID from the runner's side and intrude into your meeting.
 
-Use these projects:
+Utilize these projects:
 * https://codemirror.net/, https://codemirror.net/5/doc/manual.html
 * https://github.com/kevquirk/simple.css
