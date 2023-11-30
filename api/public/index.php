@@ -90,8 +90,8 @@ if ($session === null) {
     <label for="executor"><- runner id</label>
 </div>
 
-<button onclick="executorEditButtonOnclick()" class="transparent" id="executor-edit-button" style="display: <?= $session->isExecutorOnline() ? 'none' : 'block' ?>; position: absolute; bottom: 1em; right: 5em;">Runner</button>
-<button onclick="window.open('/', '_blank');" class="transparent" style="position: absolute; bottom: 1em; right: 1em;">+</button>
+<button onclick="executorEditButtonOnclick()" class="transparent" id="executor-edit-button" style="display: <?= $session->isExecutorOnline() ? 'none' : 'block' ?>; position: absolute; bottom: 1em; right: 7em;">Runner</button>
+<button onclick="window.open('/', '_blank');" class="transparent" style="position: absolute; bottom: 1em; right: 4em;">+</button>
 
 <script>
     <?php
