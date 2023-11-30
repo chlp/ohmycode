@@ -22,6 +22,39 @@ if (userName === undefined) {
     }
 }
 
+let checkForMultipleTabs = (isInitial) => {
+    // todo: remove old sessions data
+    let sessionStatusIdKey = 'session-status-id-' + session.id;
+    let sessionStatusUpdatedAtKey = 'session-status-updatedAt-' + session.id;
+    if (isInitial) {
+        localStorage[sessionStatusIdKey] = initialUserId;
+        localStorage[sessionStatusUpdatedAtKey] = +new Date;
+    } else {
+        if (localStorage[sessionStatusIdKey] !== initialUserId &&
+            +new Date - localStorage[sessionStatusUpdatedAtKey] < 1500) {
+            // stopping all intervals and timers and ask to close window
+            let newTimerId = setTimeout(() => {
+            });
+            for (let i = 0; i < newTimerId; i++) {
+                clearTimeout(i);
+            }
+            let newIntervalId = setInterval(() => {
+            });
+            for (let i = 0; i < newIntervalId; i++) {
+                clearInterval(i);
+            }
+            document.body.innerHTML = '<h1 style="text-align: center; margin-top: 2em;">OhMyCode cannot work with one session in multiple tabs.<br>Please close the other tabs of this session.</h1>';
+        } else {
+            localStorage[sessionStatusIdKey] = initialUserId;
+            localStorage[sessionStatusUpdatedAtKey] = +new Date;
+        }
+    }
+};
+checkForMultipleTabs(true);
+setInterval(() => {
+    checkForMultipleTabs(false);
+}, 2000);
+
 let codeBlock = CodeMirror.fromTextArea(document.getElementById("code"), {
     lineNumbers: true,
     mode: langKeyToHighlighter[session.lang], // javascript, go, php, sql
@@ -47,6 +80,7 @@ let executeButton = document.getElementById('execute-button');
 let executorContainerBlock = document.getElementById('executor-container');
 let executorEditButton = document.getElementById('executor-edit-button');
 let executorInput = document.getElementById('executor-input');
+let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
 
 sessionNameBlock.onclick = () => {
@@ -158,6 +192,7 @@ let executorEditButtonOnclick = () => {
 
 let resultBlockUpdate = () => {
     if (session.isWaitingForResult) {
+        codeContainerBlock.style.width = null;
         resultContainerBlock.style.display = 'block';
         if (resultBlock.getValue().startsWith('In progress')) {
             resultBlock.setValue(resultBlock.getValue() + '.');
@@ -165,14 +200,17 @@ let resultBlockUpdate = () => {
             resultBlock.setValue('In progress...');
         }
     } else if (session.result.length > 0) {
+        codeContainerBlock.style.width = null;
         resultContainerBlock.style.display = 'block';
         if (sessionPreviousState.result.hash() !== session.result.hash()) {
             resultBlock.setValue(session.result);
         }
     } else if (session.isExecutorOnline) {
+        codeContainerBlock.style.width = null;
         resultContainerBlock.style.display = 'block';
         resultBlock.setValue('runner will write result here...');
     } else {
+        codeContainerBlock.style.width = '95vw';
         resultContainerBlock.style.display = 'none';
         resultBlock.setValue('...');
     }
