@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?<?= md5_file(__DIR__ . '/style.css') ?>">
 
     <link rel="stylesheet" href="codemirror/codemirror.css">
     <script src="codemirror/codemirror.js"></script>
@@ -109,9 +109,9 @@ if ($session === null) {
         }
         ?>};
 </script>
-<script src="js/utils.js"></script>
-<script src="js/actions.js"></script>
-<script src="js/session.js"></script>
+<script src="js/utils.js?<?= md5_file(__DIR__ . '/js/utils.js') ?>"></script>
+<script src="js/actions.js?<?= md5_file(__DIR__ . '/js/actions.js') ?>"></script>
+<script src="js/session.js?<?= md5_file(__DIR__ . '/js/session.js') ?>"></script>
 
 </body>
 </html>
