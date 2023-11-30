@@ -59,6 +59,7 @@ article aside {
 }
 
 body {
+    position: absolute;
     background: var(--color-bg);
     background-image: url("./fabric-of-squares.png");
     color: var(--color-text);
