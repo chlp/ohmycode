@@ -60,6 +60,7 @@ article aside {
 
 body {
     position: absolute;
+    width: 100%;
     background: var(--color-bg);
     background-image: url("./fabric-of-squares.png");
     color: var(--color-text);
