@@ -50,7 +50,7 @@ let checkForMultipleTabs = (isInitial) => {
                     document.title = '? OhMyCode';
                 }, 1000);
             }, 2000);
-            document.body.innerHTML = '<h1 style="text-align: center; margin-top: 2em;">OhMyCode cannot work with one session in multiple tabs.<br>Please close the other tabs of this session.</h1>';
+            document.body.innerHTML = '<h1 style="text-align: center; margin-top: 2em;">OhMyCode cannot work with one session in multiple tabs.<br>Please leave just one tab for this session.</h1>';
         } else {
             localStorage[sessionStatusIdKey] = initialUserId;
             localStorage[sessionStatusUpdatedAtKey] = +new Date;
