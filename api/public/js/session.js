@@ -89,6 +89,7 @@ let executorEditButton = document.getElementById('executor-edit-button');
 let executorInput = document.getElementById('executor-input');
 let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
+resultContainerBlock.style.display = 'none';
 
 sessionNameBlock.onclick = () => {
     if (sessionNameContainerBlock.style.display === 'block') {

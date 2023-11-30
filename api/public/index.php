@@ -63,7 +63,7 @@ if ($session === null) {
 <div class="code textarea" id="code-container">
     <textarea id="code"><?= $session->code ?></textarea>
 </div>
-<div class="result textarea" id="result-container" style="display: none;">
+<div class="result textarea" id="result-container">
     <textarea id="result"><?= $session->result ?? '' ?></textarea>
 </div>
 
