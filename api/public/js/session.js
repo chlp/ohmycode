@@ -68,7 +68,7 @@ let ownUserNameOnclick = () => {
 langSelect.onchange = () => {
     if (isWriter) {
         codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
-        setLang();
+        actions.setLang();
     }
 };
 

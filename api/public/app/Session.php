@@ -14,6 +14,10 @@ class Session
             'name' => 'MySQL 8',
             'highlighter' => 'sql',
         ],
+        'java' => [
+            'name' => 'Java',
+            'highlighter' => 'text/x-java',
+        ],
         'go' => [
             'name' => 'GoLang',
             'highlighter' => 'go',
