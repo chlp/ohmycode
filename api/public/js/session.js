@@ -62,14 +62,14 @@ setInterval(() => {
     checkForMultipleTabs(false);
 }, 2000);
 
-let codeBlock = CodeMirror.fromTextArea(document.getElementById("code"), {
+let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     lineNumbers: true,
     mode: langKeyToHighlighter[session.lang], // javascript, go, php, sql
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
 });
-let resultBlock = CodeMirror.fromTextArea(document.getElementById("result"), {
+let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,
 });
@@ -98,10 +98,10 @@ sessionNameSaveButton.onclick = () => {
     actions.setSessionName()
 };
 sessionNameInput.onkeydown = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
         event.preventDefault();
         actions.setSessionName();
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
         sessionNameBlock.click();
     }
 };
@@ -119,10 +119,10 @@ userNameSaveButton.onclick = () => {
     actions.setUserName();
 };
 userNameInput.onkeydown = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
         event.preventDefault();
         actions.setUserName();
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
         ownUserNameOnclick();
     }
 };
@@ -144,6 +144,11 @@ langSelect.onchange = () => {
 
 executeButton.onclick = () => {
     actions.setRequest();
+};
+codeContainerBlock.onkeydown = (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        actions.setRequest();
+    }
 };
 
 let updateUsers = () => {
@@ -234,10 +239,10 @@ executorSaveButton.onclick = () => {
     actions.setExecutor();
 };
 executorInput.onkeydown = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
         event.preventDefault();
         actions.setExecutor();
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
         executorEditButtonOnclick();
     }
 };
