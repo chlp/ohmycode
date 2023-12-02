@@ -80,7 +80,7 @@ if ($session === null) {
         }
         ?>
     </select>
-    <button id="execute-button" onclick="actions.setRequest()" style="display: none">Run</button>
+    <button id="execute-button" style="display: none">Run</button>
 </div>
 
 <div class="blocks-container" id="executor-container" style="float: left; margin-top: 1em; display: none;">

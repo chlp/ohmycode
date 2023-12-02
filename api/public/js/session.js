@@ -142,6 +142,10 @@ langSelect.onchange = () => {
     }
 };
 
+executeButton.onclick = () => {
+    actions.setRequest();
+};
+
 let updateUsers = () => {
     if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
         return;
