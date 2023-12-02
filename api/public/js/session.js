@@ -74,12 +74,14 @@ let resultBlock = CodeMirror.fromTextArea(document.getElementById("result"), {
     readOnly: true,
 });
 
-let usersContainerBlock = document.getElementById('users-container');
+let sessionNameContainerBlock = document.getElementById('session-name-container');
 let sessionNameBlock = document.getElementById('session-name');
 let sessionNameInput = document.getElementById('session-name-input');
+let sessionNameSaveButton = document.getElementById('session-name-save-button');
+let usersContainerBlock = document.getElementById('users-container');
 let userNameContainerBlock = document.getElementById('user-name-container');
 let userNameInput = document.getElementById('user-name-input');
-let sessionNameContainerBlock = document.getElementById('session-name-container');
+let userNameSaveButton = document.getElementById('user-name-save-button');
 let sessionStatusBlock = document.getElementById('session-status');
 let becomeWriterButton = document.getElementById('become-writer-button');
 let langSelect = document.getElementById('lang-select');
@@ -87,16 +89,41 @@ let executeButton = document.getElementById('execute-button');
 let executorContainerBlock = document.getElementById('executor-container');
 let executorEditButton = document.getElementById('executor-edit-button');
 let executorInput = document.getElementById('executor-input');
+let executorSaveButton = document.getElementById('executor-save-button');
 let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
 resultContainerBlock.style.display = 'none';
 
+sessionNameSaveButton.onclick = () => {
+    actions.setSessionName()
+};
+sessionNameInput.onkeydown = (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        actions.setSessionName();
+    } else if (event.key === "Escape") {
+        sessionNameBlock.click();
+    }
+};
 sessionNameBlock.onclick = () => {
     if (sessionNameContainerBlock.style.display === 'block') {
         sessionNameContainerBlock.style.display = 'none';
     } else {
         sessionNameInput.value = session.name;
         sessionNameContainerBlock.style.display = 'block';
+        sessionNameInput.focus();
+    }
+};
+
+userNameSaveButton.onclick = () => {
+    actions.setUserName();
+};
+userNameInput.onkeydown = (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        actions.setUserName();
+    } else if (event.key === "Escape") {
+        ownUserNameOnclick();
     }
 };
 let ownUserNameOnclick = () => {
@@ -105,6 +132,7 @@ let ownUserNameOnclick = () => {
     } else {
         userNameInput.value = userName;
         userNameContainerBlock.style.display = 'block';
+        userNameInput.focus();
     }
 };
 langSelect.onchange = () => {
@@ -195,6 +223,18 @@ let executorEditButtonOnclick = () => {
         executorContainerBlock.style.display = 'none';
     } else {
         executorContainerBlock.style.display = 'block';
+        executorInput.focus();
+    }
+};
+executorSaveButton.onclick = () => {
+    actions.setExecutor();
+};
+executorInput.onkeydown = (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        actions.setExecutor();
+    } else if (event.key === "Escape") {
+        executorEditButtonOnclick();
     }
 };
 
