@@ -8,18 +8,22 @@ if ($conf === null) {
     return;
 }
 
-echo "id: {$conf['id']}\n";
+$runnerId = $conf['id'];
+$runnerLanguages = $conf['id'];
+$runnerApiUrl = $conf['api'];
+
+echo "id: $runnerId\n";
 
 while (true) {
     echo "next cycle\n";
-    foreach ($conf['languages'] as $lang) {
+    foreach ($runnerLanguages as $lang) {
         $resultsDir = __DIR__ . "/$lang/results";
         $files = preg_grep('/^([^.])/', scandir($resultsDir));
         foreach ($files as $file) {
             $result = substr(file_get_contents($resultsDir . '/' . $file), 0, 16384);
-            [$code, $response] = post($conf['api'] . '/action/result.php', [
+            [$code, $response] = post($runnerApiUrl . '/action/result.php', [
                 'action' => 'set',
-                'executor' => $conf['id'],
+                'executor' => $runnerId,
                 'lang' => $lang,
                 'hash' => $file,
                 'result' => $result,
@@ -34,22 +38,34 @@ while (true) {
 
     echo "2\n";
 
-    [$code, $requests] = post($conf['api'] . '/action/request.php', [
+    [$code, $requests] = post($runnerApiUrl . '/action/request.php', [
         'action' => 'get',
-        'executor' => $conf['id'],
+        'executor' => $runnerId,
     ]);
     echo "3\n";
     if ($code !== 200) {
         var_dump('get requests', $code, $requests);
     } else {
         foreach ($requests as $request) {
-            file_put_contents(__DIR__ . "/{$request['lang']}/requests/{$request['hash']}", $request['code']);
-            post($conf['api'] . '/action/request.php', [
-                'action' => 'markReceived',
-                'executor' => $conf['id'],
-                'lang' => $request['lang'],
-                'hash' => $request['hash'],
-            ]);
+            $lang = $request['lang'];
+            $hash = $request['hash'];
+            if (in_array($request['lang'], $runnerLanguages)) {
+                file_put_contents(__DIR__ . "/$lang/requests/$hash", $request['code']);
+                post($runnerApiUrl . '/action/request.php', [
+                    'action' => 'markReceived',
+                    'executor' => $runnerId,
+                    'lang' => $lang,
+                    'hash' => $hash,
+                ]);
+            } else {
+                post($runnerApiUrl . '/action/result.php', [
+                    'action' => 'set',
+                    'executor' => $runnerId,
+                    'lang' => $lang,
+                    'hash' => $hash,
+                    'result' => "There is no necessary runner for $lang",
+                ]);
+            }
         }
     }
     echo "4\n";
