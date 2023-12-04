@@ -9,7 +9,7 @@ if ($conf === null) {
 }
 
 $runnerId = $conf['id'];
-$runnerLanguages = $conf['id'];
+$runnerLanguages = $conf['languages'];
 $runnerApiUrl = $conf['api'];
 
 echo "id: $runnerId\n";
