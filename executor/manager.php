@@ -15,7 +15,6 @@ $runnerApiUrl = $conf['api'];
 echo "id: $runnerId\n";
 
 while (true) {
-    echo "next cycle\n";
     foreach ($runnerLanguages as $lang) {
         $resultsDir = __DIR__ . "/$lang/results";
         $files = preg_grep('/^([^.])/', scandir($resultsDir));
@@ -36,13 +35,10 @@ while (true) {
         }
     }
 
-    echo "2\n";
-
     [$code, $requests] = post($runnerApiUrl . '/action/request.php', [
         'action' => 'get',
         'executor' => $runnerId,
     ]);
-    echo "3\n";
     if ($code !== 200) {
         var_dump('get requests', $code, $requests);
     } else {
@@ -68,7 +64,6 @@ while (true) {
             }
         }
     }
-    echo "4\n";
     sleep(1);
 }
 
