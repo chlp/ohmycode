@@ -9,7 +9,7 @@ while [ True ]; do
         for REQUEST in requests/*; do
             ID=$(basename $REQUEST)
             mysql -e "CREATE DATABASE $ID;"
-            mysql $ID < $REQUEST 1>results/$ID 2>&1
+            mysql $ID --table < $REQUEST 1>results/$ID 2>&1
             mysql -e "DROP DATABASE $ID;"
             rm $REQUEST
         done
