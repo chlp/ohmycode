@@ -8,7 +8,6 @@ services:
     volumes:
       - ./requests:/app/requests
       - ./results:/app/results
-#      - ./mysql-data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root_password
     command: --default-authentication-plugin=mysql_native_password
