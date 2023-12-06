@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  executor-mysql8:
+    container_name: ohmycode-executor-mysql8
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./requests:/app/requests
+      - ./results:/app/results
+#      - ./mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+    command: --default-authentication-plugin=mysql_native_password

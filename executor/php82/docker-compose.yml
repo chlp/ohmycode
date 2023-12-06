@@ -1,6 +1,6 @@
 version: '3'
 services:
-  executor-php:
+  executor-php82:
     container_name: ohmycode-executor-php82
     build:
       context: .

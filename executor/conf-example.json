@@ -1,7 +1,8 @@
 {
   "name": "default-name",
   "languages": [
-    "php82"
+    "php82",
+    "mysql8"
   ],
   "api": "http://host.docker.internal:8080"
 }
