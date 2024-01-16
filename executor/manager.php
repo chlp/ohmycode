@@ -8,6 +8,8 @@ if ($conf === null) {
     return;
 }
 
+const ERR_REST_TIME = 2;
+
 $runnerId = $conf['id'];
 $runnerLanguages = $conf['languages'];
 $runnerApiUrl = $conf['api'];
@@ -28,7 +30,8 @@ while (true) {
                 'result' => $result,
             ]);
             if ($code !== 200) {
-                var_dump('set result', $code, $response);
+                echo json_encode([date('Y-m-d H:i:s'), 'set result', $code, $response]);
+                sleep(ERR_REST_TIME);
             } else {
                 unlink($resultsDir . '/' . $file);
             }
@@ -40,7 +43,8 @@ while (true) {
         'executor' => $runnerId,
     ]);
     if ($code !== 200) {
-        var_dump('get requests', $code, $requests);
+        echo json_encode([date('Y-m-d H:i:s'), 'get requests', $code, $requests]);
+        sleep(ERR_REST_TIME);
     } else {
         foreach ($requests as $request) {
             $lang = $request['lang'];
@@ -136,7 +140,7 @@ function post($url, $data): array
         CURLOPT_POSTFIELDS => json_encode($data),
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 2,
+        CURLOPT_TIMEOUT => ERR_REST_TIME,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
