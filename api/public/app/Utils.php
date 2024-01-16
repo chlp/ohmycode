@@ -36,4 +36,26 @@ class Utils
             return $adjectives[array_rand($adjectives)] . ' ' . $animals[array_rand($animals)];
         }
     }
+
+    static public function timer(): float
+    {
+        static $start = null;
+        if ($start == null) {
+            $start = microtime(true);
+            return 0;
+        }
+        return $start;
+    }
+
+    static public function log(string $str): void
+    {
+        $msg = (DateTime::createFromFormat('U.u', microtime(true)))->format('Y-m-d H:i:s.u');
+        $timer = self::timer();
+        if ($timer !== 0.0) {
+            $msg .= ' (' . number_format(microtime(true) - $timer, 3, '.', '') . ')';
+        }
+        $msg .= ': ';
+        $msg .= $str;
+        error_log($msg);
+    }
 }
