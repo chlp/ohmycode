@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="style.css?<?= md5_file(__DIR__ . '/style.css') ?>">
 
     <link rel="stylesheet" href="codemirror/codemirror.css">
+    <link rel="stylesheet" href="codemirror/themes/base16-light.css">
+    <link rel="stylesheet" href="codemirror/themes/base16-dark.css">
     <script src="codemirror/codemirror.js"></script>
     <script src="codemirror/mode/clike.js"></script>
     <script src="codemirror/mode/css.js"></script>

@@ -68,10 +68,12 @@ let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
+    theme: 'base16-light' // could be 'base16-dark'
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,
+    theme: 'base16-light'
 });
 
 let sessionNameContainerBlock = document.getElementById('session-name-container');
