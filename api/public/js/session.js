@@ -62,18 +62,29 @@ setInterval(() => {
     checkForMultipleTabs(false);
 }, 2000);
 
+
+let getCodeTheme = () => {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'base16-dark';
+    }
+    return 'base16-light';
+}
 let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     lineNumbers: true,
     mode: langKeyToHighlighter[session.lang], // javascript, go, php, sql
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
-    theme: 'base16-light' // could be 'base16-dark'
+    theme: getCodeTheme()
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,
-    theme: 'base16-light'
+    theme: getCodeTheme()
+});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    codeBlock.setOption('theme', getCodeTheme());
+    resultBlock.setOption('theme', getCodeTheme());
 });
 
 let sessionNameContainerBlock = document.getElementById('session-name-container');
