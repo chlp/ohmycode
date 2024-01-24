@@ -10,7 +10,7 @@ while [ True ]; do
             ID=$(basename $REQUEST)
             timeout 5 php $REQUEST 1>tmp/$ID 2>&1
             if [ $? -eq 124 ]; then
-              echo -e "\n\n---------------------\nTimeout reached, aborting\n---------------------\n" >> tmp/$ID
+              echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> tmp/$ID
             fi
             mv tmp/$ID results/$ID
             rm $REQUEST
