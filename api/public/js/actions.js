@@ -92,6 +92,7 @@ let actions = {
             return;
         }
         actions.setCode(() => {
+            session.result = 'In progress..';
             resultBlock.setValue('In progress..');
             postRequest('/action/request.php', {
                 session: session.id,
