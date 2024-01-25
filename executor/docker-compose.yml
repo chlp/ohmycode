@@ -7,3 +7,5 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./php82:/app/php82
+      - ./mysql8:/app/mysql8
+      - ./go:/app/go
