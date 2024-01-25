@@ -68,7 +68,7 @@ while (true) {
             }
         }
     }
-    sleep(1);
+    sleep(0.1);
 }
 
 function loadConf(): ?array

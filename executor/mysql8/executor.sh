@@ -22,5 +22,5 @@ while [ True ]; do
             rm $REQUEST
         done
     fi
-    sleep 1
+    sleep 0.01
 done

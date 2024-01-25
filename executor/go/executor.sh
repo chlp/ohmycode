@@ -21,5 +21,5 @@ while [ True ]; do
             rm go/$ID.go
         done
     fi
-    sleep 1
+    sleep 0.01
 done
