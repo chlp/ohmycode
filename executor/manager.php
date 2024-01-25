@@ -63,7 +63,7 @@ while (true) {
                     'executor' => $runnerId,
                     'lang' => $lang,
                     'hash' => $hash,
-                    'result' => "There is no necessary runner for $lang",
+                    'result' => "No runner for $lang",
                 ]);
             }
         }
