@@ -82,7 +82,7 @@ class Session
         ";
         $params = [$id];
         if ($updatedAfter !== null) {
-            $query .= "updated_at > ?";
+            $query .= "AND `updated_at` > ?";
             $params[] = $updatedAfter;
         }
         $res = Db::get()->select($query, $params);
@@ -144,7 +144,7 @@ class Session
         if (!Utils::isValidString($name)) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `name` = ? WHERE `id` = ?";
+        $query = "UPDATE `sessions` SET `name` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$name, $this->id]);
         return true;
     }
@@ -154,7 +154,7 @@ class Session
         if (!isset(self::LANGS[$lang])) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `lang` = ? WHERE `id` = ?";
+        $query = "UPDATE `sessions` SET `lang` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$lang, $this->id]);
         return true;
     }
@@ -164,7 +164,7 @@ class Session
         if (strlen($code) > self::CODE_MAX_LENGTH) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `code` = ? WHERE `id` = ?";
+        $query = "UPDATE `sessions` SET `code` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$code, $this->id]);
         return true;
     }
@@ -194,7 +194,7 @@ class Session
         if (!Utils::isUuid($executor)) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `executor` = ? WHERE `id` = ?";
+        $query = "UPDATE `sessions` SET `executor` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$executor, $this->id]);
         return true;
     }
@@ -213,7 +213,7 @@ class Session
         if (!Utils::isUuid($userId)) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `writer` = ? WHERE `id` = ?";
+        $query = "UPDATE `sessions` SET `writer` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$userId, $this->id]);
         return true;
     }

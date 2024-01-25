@@ -294,6 +294,7 @@ let pageUpdater = () => {
         session: session.id,
         user: userId,
         userName: userName,
+        lastUpdate: session.updatedAt.date,
         action: 'getUpdate',
     }, (response) => {
         ping = +new Date - start;
