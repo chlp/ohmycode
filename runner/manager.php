@@ -68,7 +68,7 @@ while (true) {
             }
         }
     }
-    usleep(100000); // 0.1 sec
+    usleep(500000); // 0.5 sec
 }
 
 function loadConf(): ?array

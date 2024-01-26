@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM openjdk:11
 WORKDIR /app
 COPY runner.sh /app
 RUN chmod +x runner.sh
