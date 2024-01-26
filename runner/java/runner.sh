@@ -4,10 +4,10 @@ mkdir -p java
 mkdir -p tmp
 while [ True ]; do
     if [ ! -z "$(ls java)" ]; then
-      rm java/*
+      rm -rf java/*
     fi
     if [ ! -z "$(ls tmp)" ]; then
-      rm tmp/*
+      rm -rf tmp/*
     fi
     if [ ! -z "$(ls requests)" ]; then
         for REQUEST in requests/*; do

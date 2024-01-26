@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exec docker-entrypoint.sh "$@" &
+exec docker-entrypoint.sh "$@" 1>/dev/null 2>&1 &
 sleep 15 # waiting for mysql to start
 export MYSQL_PWD=
 
