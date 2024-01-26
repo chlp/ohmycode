@@ -9,18 +9,18 @@ switch ($action) {
         if ($session === null) {
             error('No session');
         }
-        if (!$session->isExecutorOnline()) {
-            error('Executor is not ready');
+        if (!$session->isRunnerOnline()) {
+            error('Runner is not ready');
         }
         Request::set($session);
         break;
     case 'markReceived':
-        Request::markReceived((string)($input['executor'] ?? ''), (string)($input['lang'] ?? ''), (string)($input['hash'] ?? ''));
+        Request::markReceived((string)($input['runner'] ?? ''), (string)($input['lang'] ?? ''), (string)($input['hash'] ?? ''));
         break;
     case 'get':
-        $executor = (string)($input['executor'] ?? '');
-        Session::setCheckedByExecutor($executor);
-        $requests = Request::get($executor);
+        $runner = (string)($input['runner'] ?? '');
+        Session::setCheckedByRunner($runner);
+        $requests = Request::get($runner);
         $output = [];
         foreach ($requests as $request) {
             $output[] = [

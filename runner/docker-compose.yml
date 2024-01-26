@@ -1,7 +1,7 @@
 version: '3.8'
 services:
-  executor-manager:
-    container_name: ohmycode-executor-manager
+  runner-manager:
+    container_name: ohmycode-runner-manager
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,16 +9,16 @@ services:
       - ./php82:/app/php82
       - ./mysql8:/app/mysql8
       - ./go:/app/go
-  executor-php82:
-    container_name: ohmycode-executor-php82
+  runner-php82:
+    container_name: ohmycode-runner-php82
     build:
       context: ./php82
       dockerfile: Dockerfile
     volumes:
       - ./php82/requests:/app/requests
       - ./php82/results:/app/results
-  executor-mysql8:
-    container_name: ohmycode-executor-mysql8
+  runner-mysql8:
+    container_name: ohmycode-runner-mysql8
     build:
       context: ./mysql8
       dockerfile: Dockerfile
@@ -26,8 +26,8 @@ services:
       - ./mysql8/requests:/app/requests
       - ./mysql8/results:/app/results
     command: --default-authentication-plugin=mysql_native_password --skip-log-bin
-  executor-go:
-    container_name: ohmycode-executor-go
+  runner-go:
+    container_name: ohmycode-runner-go
     build:
       context: ./go
       dockerfile: Dockerfile

@@ -59,10 +59,10 @@ switch ($action) {
             error('Wrong lang');
         }
         break;
-    case 'setExecutor':
+    case 'setRunner':
         $session = getSession($sessionId, $userId, $userName);
-        if (!$session->setExecutor((string)($input['executor'] ?? ''))) {
-            error('Wrong executor');
+        if (!$session->setRunner((string)($input['runner'] ?? ''))) {
+            error('Wrong runner');
         }
         break;
     case 'setWriter':

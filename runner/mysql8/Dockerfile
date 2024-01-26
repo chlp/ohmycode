@@ -2,6 +2,6 @@
 
 FROM mysql:8
 WORKDIR /app
-COPY executor.sh /app
-RUN chmod +x executor.sh
-ENTRYPOINT ["./executor.sh"]
+COPY runner.sh /app
+RUN chmod +x runner.sh
+ENTRYPOINT ["./runner.sh"]

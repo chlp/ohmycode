@@ -39,15 +39,15 @@ let actions = {
         }, () => {
         });
     },
-    setExecutor: () => {
+    setRunner: () => {
         postRequest('/action/session.php', {
             session: session.id,
             user: userId,
             userName: userNameInput.value,
-            action: 'setExecutor',
-            executor: executorInput.value,
+            action: 'setRunner',
+            runner: runnerInput.value,
         }, (response) => {
-            console.log('saved executor', response);
+            console.log('saved runner', response);
         }, () => {
         });
     },
@@ -88,7 +88,7 @@ let actions = {
         }
     },
     setRequest: () => {
-        if (!isWriter || !session.isExecutorOnline) {
+        if (!isWriter || !session.isRunnerOnline) {
             return;
         }
         actions.setCode(() => {

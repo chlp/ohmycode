@@ -1,6 +1,6 @@
 <?php
 
-echo "executor manager starting\n";
+echo "runner manager starting\n";
 
 $conf = loadConf();
 if ($conf === null) {
@@ -24,7 +24,7 @@ while (true) {
             $result = substr(file_get_contents($resultsDir . '/' . $file), 0, 16384);
             [$code, $response] = post($runnerApiUrl . '/action/result.php', [
                 'action' => 'set',
-                'executor' => $runnerId,
+                'runner' => $runnerId,
                 'lang' => $lang,
                 'hash' => $file,
                 'result' => $result,
@@ -40,7 +40,7 @@ while (true) {
 
     [$code, $requests] = post($runnerApiUrl . '/action/request.php', [
         'action' => 'get',
-        'executor' => $runnerId,
+        'runner' => $runnerId,
     ]);
     if ($code !== 200) {
         echo json_encode([date('Y-m-d H:i:s'), 'get requests', $code, $requests]);
@@ -53,14 +53,14 @@ while (true) {
                 file_put_contents(__DIR__ . "/$lang/requests/$hash", $request['code']);
                 post($runnerApiUrl . '/action/request.php', [
                     'action' => 'markReceived',
-                    'executor' => $runnerId,
+                    'runner' => $runnerId,
                     'lang' => $lang,
                     'hash' => $hash,
                 ]);
             } else {
                 post($runnerApiUrl . '/action/result.php', [
                     'action' => 'set',
-                    'executor' => $runnerId,
+                    'runner' => $runnerId,
                     'lang' => $lang,
                     'hash' => $hash,
                     'result' => "No runner for $lang",

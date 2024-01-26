@@ -82,17 +82,17 @@ if ($session === null) {
         }
         ?>
     </select>
-    <button id="execute-button" style="display: none">Run (cmd/ctrl+enter)</button>
+    <button id="run-button" style="display: none">Run (cmd/ctrl+enter)</button>
 </div>
 
-<div class="blocks-container" id="executor-container" style="float: left; margin-top: 1em; display: none;">
-    <button id="executor-save-button">save</button>
-    <input type="text" id="executor-input" style="width: 20em;" maxlength="32" minlength="32"
+<div class="blocks-container" id="runner-container" style="float: left; margin-top: 1em; display: none;">
+    <button id="runner-save-button">save</button>
+    <input type="text" id="runner-input" style="width: 20em;" maxlength="32" minlength="32"
            pattern="[0-9a-zA-Z]{32}" value="">
-    <label for="executor"><- runner id</label>
+    <label for="runner"><- runner id</label>
 </div>
 
-<button onclick="executorEditButtonOnclick()" class="transparent" id="executor-edit-button" style="display: <?= $session->isExecutorOnline() ? 'none' : 'block' ?>; position: absolute; bottom: 1em; right: 7em;">Runner</button>
+<button onclick="runnerEditButtonOnclick()" class="transparent" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>; position: absolute; bottom: 1em; right: 7em;">Runner</button>
 <button onclick="window.open('/', '_blank');" class="transparent" style="position: absolute; bottom: 1em; right: 4em;">+</button>
 
 <script>

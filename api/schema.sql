@@ -1,19 +1,19 @@
 create table sessions
 (
-    id                  varchar(32) not null,
-    name                varchar(64) not null,
-    code                blob        not null,
-    lang                varchar(32) not null,
-    executor            varchar(32) not null,
-    executor_checked_at datetime,
-    updated_at          datetime(3) not null default NOW(3),
-    writer              varchar(32) not null,
+    id                varchar(32) not null,
+    name              varchar(64) not null,
+    code              blob        not null,
+    lang              varchar(32) not null,
+    runner            varchar(32) not null,
+    runner_checked_at datetime,
+    updated_at        datetime(3) not null default NOW(3),
+    writer            varchar(32) not null,
     constraint sessions_pk
         primary key (id)
 );
 
-create index sessions_executor_idx
-    on sessions (executor);
+create index sessions_runner_idx
+    on sessions (runner);
 
 create index sessions_updated_at_idx
     on sessions (updated_at);
@@ -34,7 +34,7 @@ create index session_users_user_idx
 create table requests
 (
     session  varchar(32)        not null,
-    executor varchar(32)        not null,
+    runner   varchar(32)        not null,
     code     blob               not null,
     lang     varchar(32)        not null,
     received bool default false not null,
@@ -42,8 +42,8 @@ create table requests
         primary key (session)
 );
 
-create index requests_executor_idx
-    on requests (executor);
+create index requests_runner_idx
+    on requests (runner);
 
 create table results
 (

@@ -29,8 +29,8 @@ class Session
         public string    $name,
         public string    $code,
         public string    $lang,
-        public string    $executor,
-        public ?DateTime $executorCheckedAt,
+        public string    $runner,
+        public ?DateTime $runnerCheckedAt,
         public ?DateTime $updatedAt,
         public string    $writer,
         public array     $users,
@@ -48,8 +48,8 @@ class Session
             'name' => $this->name,
             'code' => $this->code,
             'lang' => $this->lang,
-            'executor' => $this->executor,
-            'isExecutorOnline' => $this->isExecutorOnline(),
+            'runner' => $this->runner,
+            'isRunnerOnline' => $this->isRunnerOnline(),
             'updatedAt' => $this->updatedAt,
             'writer' => $this->writer,
             'users' => $this->users,
@@ -73,7 +73,7 @@ class Session
             return null;
         }
         $query = "
-            SELECT `name`, `sessions`.`code`, `sessions`.`lang`, `sessions`.`executor`, `executor_checked_at`,
+            SELECT `name`, `sessions`.`code`, `sessions`.`lang`, `sessions`.`runner`, `runner_checked_at`,
                 `sessions`.`updated_at`, `writer`, `requests`.`session` IS NOT NULL AS `isWaitingForResult`, `results`.`result`
             FROM `sessions`
             LEFT JOIN `requests` ON `requests`.`session` = `sessions`.`id`
@@ -89,17 +89,17 @@ class Session
         if (count($res) === 0) {
             return null;
         }
-        [$sessionName, $code, $lang, $executor, $executorCheckedAtStr, $updatedAtStr, $writer, $isWaitingForResult, $result] = $res[0];
-        $executorCheckedAt = null;
-        if ($executorCheckedAtStr !== null) {
-            $executorCheckedAt = DateTime::createFromFormat('Y-m-d H:i:s', $executorCheckedAtStr);
+        [$sessionName, $code, $lang, $runner, $runnerCheckedAtStr, $updatedAtStr, $writer, $isWaitingForResult, $result] = $res[0];
+        $runnerCheckedAt = null;
+        if ($runnerCheckedAtStr !== null) {
+            $runnerCheckedAt = DateTime::createFromFormat('Y-m-d H:i:s', $runnerCheckedAtStr);
         }
         $updatedAt = DateTime::createFromFormat('Y-m-d H:i:s.u', $updatedAtStr);
 
         if ($result === '') {
             $result = '_';
         }
-        $session = new self($id, $sessionName, $code, $lang, $executor, $executorCheckedAt, $updatedAt, $writer, [], $isWaitingForResult, $result ?? '');
+        $session = new self($id, $sessionName, $code, $lang, $runner, $runnerCheckedAt, $updatedAt, $writer, [], $isWaitingForResult, $result ?? '');
         $session->loadUsers();
 
         return $session;
@@ -134,8 +134,8 @@ class Session
 
     public function insert(): self
     {
-        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `executor` = ?, `writer` = ?, `id` = ?;";
-        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->executor, $this->writer, $this->id]);
+        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner` = ?, `writer` = ?, `id` = ?;";
+        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runner, $this->writer, $this->id]);
         return self::get($this->id);
     }
 
@@ -189,23 +189,23 @@ class Session
         return true;
     }
 
-    public function setExecutor(string $executor): bool
+    public function setRunner(string $runner): bool
     {
-        if (!Utils::isUuid($executor)) {
+        if (!Utils::isUuid($runner)) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `executor` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
-        $this->db->exec($query, [$executor, $this->id]);
+        $query = "UPDATE `sessions` SET `runner` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
+        $this->db->exec($query, [$runner, $this->id]);
         return true;
     }
 
-    static public function setCheckedByExecutor(string $executor): void
+    static public function setCheckedByRunner(string $runner): void
     {
-        if (!Utils::isUuid($executor)) {
+        if (!Utils::isUuid($runner)) {
             return;
         }
-        $query = "UPDATE `sessions` SET `executor_checked_at` = NOW() WHERE `executor` = ?";
-        Db::get()->exec($query, [$executor]);
+        $query = "UPDATE `sessions` SET `runner_checked_at` = NOW() WHERE `runner` = ?";
+        Db::get()->exec($query, [$runner]);
     }
 
     public function setWriter(string $userId): bool
@@ -218,11 +218,11 @@ class Session
         return true;
     }
 
-    public function isExecutorOnline(): bool
+    public function isRunnerOnline(): bool
     {
-        if ($this->executorCheckedAt === null) {
+        if ($this->runnerCheckedAt === null) {
             return false;
         }
-        return time() - $this->executorCheckedAt->getTimestamp() < 10;
+        return time() - $this->runnerCheckedAt->getTimestamp() < 10;
     }
 }

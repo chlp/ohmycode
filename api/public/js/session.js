@@ -98,11 +98,11 @@ let userNameSaveButton = document.getElementById('user-name-save-button');
 let sessionStatusBlock = document.getElementById('session-status');
 let becomeWriterButton = document.getElementById('become-writer-button');
 let langSelect = document.getElementById('lang-select');
-let executeButton = document.getElementById('execute-button');
-let executorContainerBlock = document.getElementById('executor-container');
-let executorEditButton = document.getElementById('executor-edit-button');
-let executorInput = document.getElementById('executor-input');
-let executorSaveButton = document.getElementById('executor-save-button');
+let runButton = document.getElementById('run-button');
+let runnerContainerBlock = document.getElementById('runner-container');
+let runnerEditButton = document.getElementById('runner-edit-button');
+let runnerInput = document.getElementById('runner-input');
+let runnerSaveButton = document.getElementById('runner-save-button');
 let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
 resultContainerBlock.style.display = 'none';
@@ -155,7 +155,7 @@ langSelect.onchange = () => {
     }
 };
 
-executeButton.onclick = () => {
+runButton.onclick = () => {
     actions.setRequest();
 };
 codeContainerBlock.onkeydown = (event) => {
@@ -232,31 +232,31 @@ let writerBlocksUpdate = () => {
 };
 writerBlocksUpdate();
 
-let executorBlocksUpdate = () => {
-    if (session.isExecutorOnline) {
-        executorContainerBlock.style.display = 'none';
+let runnerBlocksUpdate = () => {
+    if (session.isRunnerOnline) {
+        runnerContainerBlock.style.display = 'none';
     }
-    executorEditButton.style.display = session.isExecutorOnline ? 'none' : 'block';
-    executeButton.style.display = session.isExecutorOnline && isWriter ? 'block' : 'none';
+    runnerEditButton.style.display = session.isRunnerOnline ? 'none' : 'block';
+    runButton.style.display = session.isRunnerOnline && isWriter ? 'block' : 'none';
 };
-executorBlocksUpdate();
-let executorEditButtonOnclick = () => {
-    if (executorContainerBlock.style.display === 'block') {
-        executorContainerBlock.style.display = 'none';
+runnerBlocksUpdate();
+let runnerEditButtonOnclick = () => {
+    if (runnerContainerBlock.style.display === 'block') {
+        runnerContainerBlock.style.display = 'none';
     } else {
-        executorContainerBlock.style.display = 'block';
-        executorInput.focus();
+        runnerContainerBlock.style.display = 'block';
+        runnerInput.focus();
     }
 };
-executorSaveButton.onclick = () => {
-    actions.setExecutor();
+runnerSaveButton.onclick = () => {
+    actions.setRunner();
 };
-executorInput.onkeydown = (event) => {
+runnerInput.onkeydown = (event) => {
     if (event.key === 'Enter') {
         event.preventDefault();
-        actions.setExecutor();
+        actions.setRunner();
     } else if (event.key === 'Escape') {
-        executorEditButtonOnclick();
+        runnerEditButtonOnclick();
     }
 };
 
@@ -275,7 +275,7 @@ let resultBlockUpdate = () => {
         if (sessionPreviousState.result.hash() !== session.result.hash()) {
             resultBlock.setValue(session.result);
         }
-    } else if (session.isExecutorOnline) {
+    } else if (session.isRunnerOnline) {
         codeContainerBlock.style.width = null;
         resultContainerBlock.style.display = 'block';
         resultBlock.setValue('runner will write result here...');
@@ -320,8 +320,8 @@ let pageUpdater = () => {
         // update writer/spectator ui
         writerBlocksUpdate();
 
-        // update executor ui
-        executorBlocksUpdate();
+        // update runner ui
+        runnerBlocksUpdate();
 
         // update result ui
         resultBlockUpdate();
