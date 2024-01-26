@@ -301,6 +301,7 @@ let pageUpdater = () => {
         console.log((new Date).toLocaleString() + ' | ping: ' + ping);
         lastUpdateTimestamp = +new Date;
         if (response.length === 0) {
+            resultBlockUpdate(); // adding more dots to "In progress..."
             return;
         }
         let data = JSON.parse(response);
