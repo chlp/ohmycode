@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mkdir go
-mkdir tmp
+mkdir -p go
+mkdir -p tmp
 while [ True ]; do
     if [ ! -z "$(ls go)" ]; then
       rm go/*
@@ -11,6 +11,7 @@ while [ True ]; do
     fi
     if [ ! -z "$(ls requests)" ]; then
         for REQUEST in requests/*; do
+            echo $REQUEST
             ID=$(basename $REQUEST)
             mv $REQUEST go/$ID.go
             timeout 5 go run go/$ID.go 1>tmp/$ID 2>&1

@@ -1,12 +1,13 @@
 #!/bin/bash
 
-mkdir tmp
+mkdir -p tmp
 while [ True ]; do
     if [ ! -z "$(ls tmp)" ]; then
       rm tmp/*
     fi
     if [ ! -z "$(ls requests)" ]; then
         for REQUEST in requests/*; do
+            echo $REQUEST
             ID=$(basename $REQUEST)
             timeout 5 php $REQUEST 1>tmp/$ID 2>&1
             if [ $? -eq 124 ]; then

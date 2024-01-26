@@ -8,6 +8,8 @@ services:
       MYSQL_DATABASE: ohmycode
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
+    command:
+      - '--skip-log-bin'
     ports:
       - "3306:3306"
     networks:

@@ -2,15 +2,16 @@
 
 exec docker-entrypoint.sh "$@" &
 sleep 15 # waiting for mysql to start
-export MYSQL_PWD=root_password
+export MYSQL_PWD=
 
-mkdir tmp
+mkdir -p tmp
 while [ True ]; do
     if [ ! -z "$(ls tmp)" ]; then
       rm tmp/*
     fi
     if [ ! -z "$(ls requests)" ]; then
         for REQUEST in requests/*; do
+            echo $REQUEST
             ID=$(basename $REQUEST)
             mysql -e "CREATE DATABASE tmp_$ID;"
             timeout 5 mysql tmp_$ID --table < $REQUEST 1>tmp/$ID 2>&1

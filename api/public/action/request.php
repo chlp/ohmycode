@@ -18,12 +18,9 @@ switch ($action) {
         Request::markReceived((string)($input['executor'] ?? ''), (string)($input['lang'] ?? ''), (string)($input['hash'] ?? ''));
         break;
     case 'get':
-        Utils::log('request-get-0');
         $executor = (string)($input['executor'] ?? '');
         Session::setCheckedByExecutor($executor);
-        Utils::log('request-get-1');
         $requests = Request::get($executor);
-        Utils::log('request-get-2');
         $output = [];
         foreach ($requests as $request) {
             $output[] = [
