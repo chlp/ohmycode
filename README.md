@@ -1,26 +1,38 @@
-Small System for Code-Writing Meetings
+# OhMyCode. Live coding app
 
-API:
-* returns HTML, CSS, and JS with an editor;
-* receives and returns code, user information, and requests for code execution and results;
-* stores data in the database.
+![OhMyCode preview](preview.jpg)
 
-Runner:
-* docker image with code execution capabilities;
-* receives requests from the API and returns results.
+# Modules
+1. API Server
+2. Runner
+3. Front-end client
 
-At the start, user opens a new meeting page and receives a session ID along with a link. All other users can join this session using the provided link.
+## 1. API Server
 
-Anyone interested in writing code simply clicks the "Become a Writer" button. However, only one user can edit the code at a time.
+HTTP API (api/public/action), stores session data (MySQL).
 
-The runner program receives a unique ID upon startup. During the meeting, participants can write down this ID; this helps the runner understand which session requests to prioritize.
+## 2. Runner
+
+Goes to API Server, receives code for execution, executes it, gives result back.
+
+## 3. Front-end client
+
+The only window with a user interface - code editor.
+
+# How it works
+
+At the beginning, the user opens a new meeting page and receives a session ID inside URL. All other users can join the session using the same URL.
+
+Anyone interested in writing code clicks the "Become a Writer" button. Only one user can edit the code at a time.
+
+**Runner** app receives a unique ID upon startup. During the meeting, participants can write down this ID; this helps the runner understand which session requests to prioritize.
 
 After launching, the runner contacts the API with its ID in an attempt to retrieve request. It runs the request and returns the result to the API.
 
-The runner ID you enter remains unseen, ensuring that invited users do not have access to it and cannot use it without control.
+Runner ID you enter remains unseen, so all invited users cannot use it without control.
 
-Runner does not have visibility of the session ID when receiving tasks, guaranteeing that it is impossible for strangers to identify the session ID from the runner's side and intrude into your meeting.
+**Runner** does not have visibility of the session ID when receiving tasks, guaranteeing that it is impossible for strangers to identify the session ID from the runner's side and intrude into your meeting.
 
 Utilize these projects:
-* https://codemirror.net/, https://codemirror.net/5/doc/manual.html
+* https://codemirror.net/
 * https://github.com/kevquirk/simple.css
