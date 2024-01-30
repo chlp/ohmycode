@@ -14,7 +14,7 @@ while [ True ]; do
             echo $REQUEST
             ID=$(basename $REQUEST)
             mv $REQUEST go/$ID.go
-            timeout 5 go run go/$ID.go 1>tmp/$ID 2>&1
+            timeout 10 go run go/$ID.go 1>tmp/$ID 2>&1
             if [ $? -eq 124 ]; then
               echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> tmp/$ID
             fi
