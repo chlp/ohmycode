@@ -1,5 +1,8 @@
 FROM php:8.2-cli
 WORKDIR /app
 COPY conf.json /app
-COPY manager.php /app
-ENTRYPOINT ["php", "manager.php"]
+COPY conf-example.json /app
+COPY tools.php /app
+COPY requestsReceiver.php /app
+COPY resultsSender.php /app
+ENTRYPOINT ["sh", "-c", "php requestsReceiver.php & php resultsSender.php"]
