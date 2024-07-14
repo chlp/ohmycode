@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm -rf /var/lib/mysql/*
 exec docker-entrypoint.sh "$@" &
 
 export MYSQL_PWD=
