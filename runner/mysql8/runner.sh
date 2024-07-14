@@ -1,8 +1,18 @@
 #!/bin/bash
 
 exec docker-entrypoint.sh "$@" &
-sleep 15 # waiting for mysql to start
+
 export MYSQL_PWD=
+
+while true; do
+    mysql -e "SHOW DATABASES;" 1>/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "Starting mysql8 runner"
+        break
+    fi
+    echo "Waiting for mysql8"
+    sleep 2
+done
 
 mkdir -p tmp
 while [ True ]; do
