@@ -26,7 +26,7 @@ services:
     volumes:
       - ./mysql8/requests:/app/requests
       - ./mysql8/results:/app/results
-    command: --default-authentication-plugin=mysql_native_password --log_error_verbosity=1 --skip-log-bin
+    command: --mysql-native-password=ON --log_error_verbosity=1 --skip-log-bin
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
   runner-go:
