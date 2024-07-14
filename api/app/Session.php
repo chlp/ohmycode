@@ -18,6 +18,10 @@ class Session
             'name' => 'MySQL 8',
             'highlighter' => 'sql',
         ],
+        'postgres13' => [
+            'name' => 'PostgreSQL 13',
+            'highlighter' => 'sql',
+        ],
         'java' => [
             'name' => 'Java',
             'highlighter' => 'text/x-java',

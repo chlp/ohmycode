@@ -4,7 +4,8 @@
     "go",
     "java",
     "mysql8",
-    "php82"
+    "php82",
+    "postgres13"
   ],
   "api": "http://host.docker.internal:8080"
 }
