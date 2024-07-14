@@ -1,5 +1,7 @@
 <?php
 
+namespace app;
+
 class Result
 {
     static public function set(Request $request, string $result): void

@@ -1,5 +1,10 @@
 <?php
 
+namespace app;
+
+use mysqli;
+use mysqli_stmt;
+
 class Db
 {
     public function __construct(

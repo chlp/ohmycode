@@ -22,8 +22,9 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./public:/app/public
-      - ./api-conf.json:/app/api-conf.json
+      - ./public:/api/public
+      - ./app:/api/app
+      - ./api-conf.json:/api/api-conf.json
     depends_on:
       - mysql
     networks:

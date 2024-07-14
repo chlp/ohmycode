@@ -1,5 +1,8 @@
 <?php
 
+use app\Request;
+use app\Session;
+
 $input = require __DIR__ . '/actions.php';
 
 $action = (string)($input['action'] ?? '');

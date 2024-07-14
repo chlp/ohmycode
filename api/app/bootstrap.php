@@ -1,5 +1,7 @@
 <?php
 
+use app\Utils;
+
 static $loaded = false;
 if ($loaded) {
     return true;

@@ -1,5 +1,8 @@
 <?php
 
+use app\Session;
+use app\Utils;
+
 $input = require __DIR__ . '/actions.php';
 
 $sessionId = (string)($input['session'] ?? '');

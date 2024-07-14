@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/../app/bootstrap.php';
+require __DIR__ . '/../../app/bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     error('Method not allowed', 405);

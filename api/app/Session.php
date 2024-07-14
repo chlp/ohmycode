@@ -1,5 +1,9 @@
 <?php
 
+namespace app;
+
+use DateTime;
+
 class Session
 {
     private const DEFAULT_LANG = 'php82';
@@ -25,17 +29,17 @@ class Session
     ];
 
     public function __construct(
-        public string    $id,
-        public string    $name,
-        public string    $code,
-        public string    $lang,
-        public string    $runner,
+        public string $id,
+        public string $name,
+        public string $code,
+        public string $lang,
+        public string $runner,
         public ?DateTime $runnerCheckedAt,
         public ?DateTime $updatedAt,
-        public string    $writer,
-        public array     $users,
-        public bool      $isWaitingForResult,
-        public string    $result,
+        public string $writer,
+        public array $users,
+        public bool $isWaitingForResult,
+        public string $result,
     )
     {
         $this->db = Db::get();

@@ -1,3 +1,9 @@
+<?php
+
+use app\Session;
+use app\Utils;
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +29,7 @@
 <body>
 
 <?php
-require __DIR__ . '/app/bootstrap.php';
+require __DIR__ . '/../app/bootstrap.php';
 
 $id = trim($_SERVER['REQUEST_URI'], '/');
 if (str_contains($id, '?')) {

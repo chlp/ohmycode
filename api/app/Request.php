@@ -1,5 +1,7 @@
 <?php
 
+namespace app;
+
 class Request
 {
     public function __construct(
