@@ -8,8 +8,24 @@ services:
     volumes:
       - ./php82:/app/php82
       - ./mysql8:/app/mysql8
+      - ./postgres13:/app/postgres13
       - ./go:/app/go
       - ./java:/app/java
+  runner-postgres13:
+    container_name: ohmycode-runner-postgres13
+    image: postgres:13
+    restart: always
+    volumes:
+      - ./postgres13/requests:/app/requests
+      - ./postgres13/results:/app/results
+      - ./postgres13/runner.sh:/docker-entrypoint-initdb.d/runner.sh
+    tmpfs:
+      - /var/lib/postgresql/data:exec,mode=1777
+      - /app/tmp:exec,mode=1777
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
   runner-php82:
     container_name: ohmycode-runner-php82
     build:

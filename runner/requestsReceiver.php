@@ -13,7 +13,8 @@ if ($conf === null) {
 }
 $api = new Api($conf->runnerId, $conf->apiUrl);
 
-echo "requests receiver. id: $conf->runnerId\n";
+usleep(500000);
+echo "requests receiver initiating. id: $conf->runnerId\n";
 
 while (true) {
     $requests = $api->request('get');

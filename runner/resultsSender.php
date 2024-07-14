@@ -13,7 +13,7 @@ if ($conf === null) {
 }
 $api = new Api($conf->runnerId, $conf->apiUrl);
 
-echo "results sender. id: $conf->runnerId\n";
+echo "results sender initiating\n";
 
 while (true) {
     $isEmpty = true;
