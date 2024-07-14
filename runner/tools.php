@@ -154,7 +154,7 @@ readonly class Api
             if ((string)$resp === '') {
                 $resp = $err;
             }
-            return ['e' . $code, $resp];
+            return [1000 + (int)$code, $resp];
         }
         if ($code !== 200) {
             return [(int)$code, $resp];
