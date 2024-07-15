@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     volumes:
       - ./php82:/app/php82
       - ./mysql8:/app/mysql8
@@ -20,8 +21,8 @@ services:
       - ./postgres13/results:/app/results
       - ./postgres13/runner.sh:/docker-entrypoint-initdb.d/runner.sh
     tmpfs:
-      - /var/lib/postgresql/data:exec,mode=1777
-      - /app/tmp:exec,mode=1777
+      - /var/lib/postgresql/data:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -31,6 +32,7 @@ services:
     build:
       context: ./php82
       dockerfile: Dockerfile
+    restart: always
     volumes:
       - ./php82/requests:/app/requests
       - ./php82/results:/app/results
@@ -39,11 +41,12 @@ services:
     build:
       context: ./mysql8
       dockerfile: Dockerfile
+    restart: always
     volumes:
       - ./mysql8/requests:/app/requests
       - ./mysql8/results:/app/results
     tmpfs:
-      - /var/lib/mysql:exec,mode=1777
+      - /var/lib/mysql:mode=1777,uid=1000,gid=1000
     command: --mysql-native-password=ON --log_error_verbosity=1 --skip-log-bin
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
@@ -52,6 +55,7 @@ services:
     build:
       context: ./go
       dockerfile: Dockerfile
+    restart: always
     volumes:
       - ./go/requests:/app/requests
       - ./go/results:/app/results
@@ -60,6 +64,7 @@ services:
     build:
       context: ./java
       dockerfile: Dockerfile
+    restart: always
     volumes:
       - ./java/requests:/app/requests
       - ./java/results:/app/results
