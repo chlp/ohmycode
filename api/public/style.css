@@ -559,40 +559,33 @@ blockquote footer {
     margin-right: 1em;
 }
 
-.blocks-container > a {
-    color: #000;
-    padding: 4px 5px;
-    margin-bottom: .5em;
-    font-weight: normal;
+#session-name-container {
+    margin-right: 5em;
 }
 
-.blocks-container > a:hover {
-    padding: 3px 4px;
-    border: 1px solid #000;
-    cursor: text;
-}
-
-#users-container > a, #users-container > span {
+#session-name-container > a, #users-container > a, #users-container > span {
     padding: 3px 5px;
-    border: 1px solid #000;
+    background-color: var(--color-bg);
+    border: 2px solid var(--color-link);
+    border-radius: var(--border-radius);
     margin-bottom: .5em;
     margin-left: .5em;
     display: inline-block;
 }
 
 #users-container > a.writer, #users-container > span.writer {
-    background: #00bb00;
+    background-color: var(--color-link);
+    color: var(--color-bg);
 }
 
 #users-container > a {
-    color: #000;
     font-weight: bold;
 }
 
-#users-container > a:hover {
+#session-name-container > a:hover, #users-container > a:hover {
+    background: var(--color-secondary-accent);
+    color: var(--color-secondary);
     cursor: text;
-    color: #0000ff;
-    border-color: #0000ff;
 }
 
 .textarea {

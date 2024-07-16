@@ -64,7 +64,7 @@ if ($session === null) {
     <label for="name""><- your name</label>
 </div>
 
-<div class="blocks-container" style="float: left; clear: left;">
+<div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
     <a href="#" id="session-name"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
 </div>
 
