@@ -298,6 +298,10 @@ a:hover {
     filter: brightness(var(--hover-brightness));
 }
 
+span {
+    cursor: default;
+}
+
 a b,
 a em,
 a i,
@@ -553,19 +557,43 @@ blockquote footer {
 
 .blocks-container > a {
     color: #000;
-    padding: 3px;
-    margin-bottom: 1px;
+    padding: 4px 5px;
+    margin-bottom: .5em;
+    font-weight: normal;
 }
 
 .blocks-container > a:hover {
-    padding: 2px;
+    padding: 3px 4px;
     border: 1px solid #000;
     cursor: text;
 }
 
+#users-container > a, #users-container > span {
+    padding: 3px 5px;
+    border: 1px solid #000;
+    margin-bottom: .5em;
+    margin-left: .5em;
+    display: inline-block;
+}
+
+#users-container > a.writer, #users-container > span.writer {
+    background: #00bb00;
+}
+
+#users-container > a {
+    color: #000;
+    font-weight: bold;
+}
+
+#users-container > a:hover {
+    cursor: text;
+    color: #0000ff;
+    border-color: #0000ff;
+}
+
 .textarea {
     float: left;
-    margin-bottom: 1em;
+    margin-bottom: .5em;
     border: 1px solid #666;
     cursor: text;
 }

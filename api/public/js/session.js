@@ -164,6 +164,8 @@ codeContainerBlock.onkeydown = (event) => {
     }
 };
 
+let usersContainerState = '';
+
 let updateUsers = () => {
     if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
         return;
@@ -195,31 +197,23 @@ let updateUsers = () => {
     }
     let html = '';
     if (writer !== undefined) {
-        html += ' writer: ';
         if (writer.own) {
-            html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">';
-        }
-        html += writer.name;
-        if (writer.own) {
-            html += '</a>';
+            html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()"  class="writer">' + writer.name + '</a>';
+        } else {
+            html += '<span class="writer">' + writer.name + '</span>';
         }
     }
     if (spectators.length > 0) {
-        html += ' spectators: ';
         spectators.forEach((user, i) => {
             if (user.own) {
-                html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">';
-            }
-            if (i > 0) {
-                html += ', ';
-            }
-            html += user.name;
-            if (user.own) {
-                html += '</a>';
+                html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">' + user.name + '</a>';
+            } else {
+                html += '<span>' + user.name + '</span>';
             }
         })
     }
-    if (usersContainerBlock.innerHTML !== html) {
+    if (usersContainerState !== html.hash()) {
+        usersContainerState = html.hash();
         usersContainerBlock.innerHTML = html;
     }
 };
