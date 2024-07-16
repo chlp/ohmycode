@@ -195,7 +195,7 @@ let updateUsers = () => {
     }
     let html = '';
     if (writer !== undefined) {
-        html += ', writer: ';
+        html += ' writer: ';
         if (writer.own) {
             html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">';
         }
@@ -205,7 +205,7 @@ let updateUsers = () => {
         }
     }
     if (spectators.length > 0) {
-        html += ', spectators: ';
+        html += ' spectators: ';
         spectators.forEach((user, i) => {
             if (user.own) {
                 html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">';
@@ -276,11 +276,9 @@ let resultBlockUpdate = () => {
             resultBlock.setValue(session.result);
         }
     } else if (session.isRunnerOnline) {
-        codeContainerBlock.style.width = null;
         resultContainerBlock.style.display = 'block';
         resultBlock.setValue('runner will write result here...');
     } else {
-        codeContainerBlock.style.width = '95vw';
         resultContainerBlock.style.display = 'none';
         resultBlock.setValue('...');
     }

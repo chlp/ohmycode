@@ -64,15 +64,16 @@ if ($session === null) {
     <label for="name""><- your name</label>
 </div>
 
-<div class="blocks-container">
-    Session <a href="#" id="session-name"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span><span id="users-container"></span>
+<div class="blocks-container" style="float: left; clear: left;">
+    <a href="#" id="session-name"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
 </div>
 
-<div class="code textarea" id="code-container">
-    <textarea id="code"><?= $session->code ?></textarea>
+<div class="blocks-container" style="float: right; clear: right;">
+    <span id="users-container"></span>
 </div>
-<div class="result textarea" id="result-container">
-    <textarea id="result"><?= $session->result ?? '' ?></textarea>
+
+<div class="code textarea" id="code-container" style="clear: both;">
+    <textarea id="code"><?= $session->code ?></textarea>
 </div>
 
 <div class="blocks-container">
@@ -89,6 +90,8 @@ if ($session === null) {
         ?>
     </select>
     <button id="run-button" style="display: none">Run (cmd/ctrl+enter)</button>
+    <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>;">Runner</button>
+    <button onclick="window.open('/', '_blank');">+</button>
 </div>
 
 <div class="blocks-container" id="runner-container" style="float: left; margin-top: 1em; display: none;">
@@ -98,8 +101,9 @@ if ($session === null) {
     <label for="runner"><- runner id</label>
 </div>
 
-<button onclick="runnerEditButtonOnclick()" class="transparent" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>; position: absolute; bottom: 1em; right: 7em;">Runner</button>
-<button onclick="window.open('/', '_blank');" class="transparent" style="position: absolute; bottom: 1em; right: 4em;">+</button>
+<div class="result textarea" id="result-container">
+    <textarea id="result"><?= $session->result ?? '' ?></textarea>
+</div>
 
 <script>
     <?php

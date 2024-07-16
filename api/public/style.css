@@ -62,6 +62,7 @@ article aside {
 
 body {
     position: absolute;
+    box-sizing: border-box;
     width: 100%;
     background: var(--color-bg);
     background-image: url("./fabric-of-squares.png");
@@ -550,6 +551,18 @@ blockquote footer {
     margin-right: 1em;
 }
 
+.blocks-container > a {
+    color: #000;
+    padding: 3px;
+    margin-bottom: 1px;
+}
+
+.blocks-container > a:hover {
+    padding: 2px;
+    border: 1px solid #000;
+    cursor: text;
+}
+
 .textarea {
     float: left;
     margin-bottom: 1em;
@@ -561,34 +574,22 @@ blockquote footer {
     background: rgba(255, 255, 255, 0.7);
 }
 
-@media (min-width: 970px) {
-    .textarea.code {
-        width: 53vw;
-        min-width: 500px;
-    }
-
-    .textarea.result {
-        width: 42vw;
-        min-width: 400px;
-        margin-left: 5px;
-    }
+.textarea.code {
+    width: 100%;
 }
 
-@media (max-width: 969px) {
-    .textarea.code {
-        width: 95vw;
-        min-width: 300px;
-    }
-
-    .textarea.result {
-        width: 95vw;
-        min-width: 300px;
-    }
-}
-
-.textarea > div {
-    height: 80vh;
+.textarea.code > div {
+    height: 55vh;
     min-height: 300px;
+}
+
+.textarea.result {
+    width: 100%;
+}
+
+.textarea.result > div {
+    height: 30vh;
+    min-height: 200px;
 }
 
 .online {
