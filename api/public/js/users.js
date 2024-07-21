@@ -50,20 +50,20 @@ let updateUsers = () => {
             id: userId,
             name: userName,
             own: true,
-        }
-        spectators = []
+        };
+        spectators = [];
     } else {
         isWriter = userId === session.writer;
         session.users.forEach((user) => {
-            user.own = false
+            user.own = false;
             if (user.id === userId) {
-                user.own = true
-                userName = user.name
+                user.own = true;
+                userName = user.name;
             }
             if (user.id === session.writer) {
                 writer = user;
             } else {
-                spectators.push(user)
+                spectators.push(user);
             }
         });
     }
@@ -91,6 +91,4 @@ let updateUsers = () => {
         userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
     }
 };
-setTimeout(() => {
-    updateUsers();
-}, 1);
+updateUsers();

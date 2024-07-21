@@ -2,7 +2,7 @@ let sessionPreviousState = {...session};
 sessionPreviousState.writer = '-'; // hack to init users
 let sessionIsOnline = true;
 let ping = undefined;
-let isWriter = false;
+let isWriter = isNewSession;
 let userId = localStorage['userId'];
 if (userId === undefined) {
     userId = initialUserId;
@@ -75,12 +75,13 @@ let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
-    theme: getCodeTheme()
+    theme: getCodeTheme(),
+    autofocus: true,
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,
-    theme: getCodeTheme()
+    theme: getCodeTheme(),
 });
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
     codeBlock.setOption('theme', getCodeTheme());
