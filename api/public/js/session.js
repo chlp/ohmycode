@@ -105,6 +105,7 @@ let resultContainerBlock = document.getElementById('result-container');
 resultContainerBlock.style.display = 'none';
 
 let sessionNameSavingTimeout = null;
+let sessionNameEditing = false;
 sessionNameBlock.onkeydown = (event) => {
     let key = event.key;
     if (key === 'Backspace' || key === 'Delete' || key === 'ArrowLeft' || key === 'ArrowRight') {
@@ -113,6 +114,7 @@ sessionNameBlock.onkeydown = (event) => {
     if (key === 'Enter' || key === 'Escape') {
         clearTimeout(sessionNameSavingTimeout);
         sessionNameSavingTimeout = null;
+        sessionNameEditing = false;
         actions.setSessionName();
         event.preventDefault();
         sessionNameBlock.setAttribute('contenteditable', 'false');
@@ -131,10 +133,12 @@ sessionNameBlock.onkeydown = (event) => {
         event.preventDefault();
         return false;
     }
+    sessionNameEditing = true;
     clearTimeout(sessionNameSavingTimeout);
     sessionNameSavingTimeout = setTimeout(() => {
         actions.setSessionName();
-    }, 1000);
+        sessionNameEditing = false;
+    }, 5000);
 };
 
 userNameSaveButton.onclick = () => {
@@ -328,7 +332,7 @@ let pageUpdater = () => {
         resultBlockUpdate();
 
         // update session name
-        if (sessionPreviousState.name !== session.name) {
+        if (sessionPreviousState.name !== session.name && !sessionNameEditing) {
             sessionNameBlock.innerHTML = session.name;
         }
 
