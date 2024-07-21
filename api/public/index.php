@@ -50,13 +50,6 @@ if ($session === null) {
 }
 ?>
 
-<div class="blocks-container" id="session-name-container" style="display: none;">
-    <button id="session-name-save-button">save</button>
-    <input type="text" id="session-name-input" style="width: 15em;" maxlength="64" minlength="1"
-           pattern="[0-9a-zA-Z\u0400-\u04ff\s\-'\.]{1,64}">
-    <label for="session""><- session name</label>
-</div>
-
 <div class="blocks-container" id="user-name-container" style="display: none;">
     <button id="user-name-save-button">save</button>
     <input type="text" id="user-name-input" style="width: 15em;" maxlength="64" minlength="1"
@@ -65,7 +58,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
-    <a href="#" id="session-name"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
+    <a href="#" id="session-name" contenteditable="true"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">

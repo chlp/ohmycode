@@ -565,12 +565,15 @@ blockquote footer {
 
 #session-name-container > a, #users-container > a, #users-container > span {
     padding: 3px 5px;
-    background-color: var(--color-bg);
-    border: 2px solid var(--color-link);
     border-radius: var(--border-radius);
     margin-bottom: .5em;
     margin-left: .5em;
     display: inline-block;
+}
+
+#users-container > a, #users-container > span {
+    background-color: var(--color-bg);
+    border: 2px solid var(--color-link);
 }
 
 #users-container > a.writer, #users-container > span.writer {

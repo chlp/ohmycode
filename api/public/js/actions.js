@@ -5,11 +5,9 @@ let actions = {
             user: userId,
             userName: userName,
             action: 'setSessionName',
-            sessionName: sessionNameInput.value,
+            sessionName: sessionNameBlock.textContent,
         }, (response) => {
             console.log('saved session name', response);
-            sessionNameBlock.innerHTML = sessionNameInput.value;
-            sessionNameContainerBlock.style.display = 'none';
         }, () => {
         });
     },

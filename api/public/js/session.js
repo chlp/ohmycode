@@ -87,10 +87,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
     resultBlock.setOption('theme', getCodeTheme());
 });
 
-let sessionNameContainerBlock = document.getElementById('session-name-container');
 let sessionNameBlock = document.getElementById('session-name');
-let sessionNameInput = document.getElementById('session-name-input');
-let sessionNameSaveButton = document.getElementById('session-name-save-button');
 let usersContainerBlock = document.getElementById('users-container');
 let userNameContainerBlock = document.getElementById('user-name-container');
 let userNameInput = document.getElementById('user-name-input');
@@ -107,25 +104,37 @@ let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
 resultContainerBlock.style.display = 'none';
 
-sessionNameSaveButton.onclick = () => {
-    actions.setSessionName()
-};
-sessionNameInput.onkeydown = (event) => {
-    if (event.key === 'Enter') {
-        event.preventDefault();
+let sessionNameSavingTimeout = null;
+sessionNameBlock.onkeydown = (event) => {
+    let key = event.key;
+    if (key === 'Backspace' || key === 'Delete' || key === 'ArrowLeft' || key === 'ArrowRight') {
+        return true;
+    }
+    if (key === 'Enter' || key === 'Escape') {
+        clearTimeout(sessionNameSavingTimeout);
+        sessionNameSavingTimeout = null;
         actions.setSessionName();
-    } else if (event.key === 'Escape') {
-        sessionNameBlock.click();
+        event.preventDefault();
+        sessionNameBlock.setAttribute('contenteditable', 'false');
+        setTimeout(() => {
+            sessionNameBlock.setAttribute('contenteditable', 'true');
+        }, 500);
+        codeBlock.focus();
+        return false;
     }
-};
-sessionNameBlock.onclick = () => {
-    if (sessionNameContainerBlock.style.display === 'block') {
-        sessionNameContainerBlock.style.display = 'none';
-    } else {
-        sessionNameInput.value = session.name;
-        sessionNameContainerBlock.style.display = 'block';
-        sessionNameInput.focus();
+    let allowedChars = /^[0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]*$/;
+    if (!allowedChars.test(key)) {
+        event.preventDefault();
+        return false;
     }
+    if (event.target.textContent.length >= 64) {
+        event.preventDefault();
+        return false;
+    }
+    clearTimeout(sessionNameSavingTimeout);
+    sessionNameSavingTimeout = setTimeout(() => {
+        actions.setSessionName();
+    }, 1000);
 };
 
 userNameSaveButton.onclick = () => {
