@@ -51,7 +51,7 @@ if ($session === null) {
 ?>
 
 <div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
-    <a href="#" id="session-name" contenteditable="true"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
+    <a href="#" id="session-name" contenteditable="true" spellcheck="false"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">

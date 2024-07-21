@@ -70,7 +70,7 @@ let updateUsers = () => {
     let html = '';
     if (writer !== undefined) {
         if (writer.own) {
-            html += '<a href="#" id="own-name" contenteditable="true" class="writer">' + writer.name + '</a>';
+            html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false" class="writer">' + writer.name + '</a>';
         } else {
             html += '<span class="writer">' + writer.name + '</span>';
         }

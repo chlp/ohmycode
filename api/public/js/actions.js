@@ -31,7 +31,7 @@ let actions = {
         postRequest('/action/session.php', {
             session: session.id,
             user: userId,
-            userName: userNameInput.value,
+            userName: userOwnNameBlock.textContent,
             action: 'setLang',
             lang: langSelect.value,
         }, (response) => {
@@ -43,7 +43,7 @@ let actions = {
         postRequest('/action/session.php', {
             session: session.id,
             user: userId,
-            userName: userNameInput.value,
+            userName: userOwnNameBlock.textContent,
             action: 'setRunner',
             runner: runnerInput.value,
         }, (response) => {
@@ -59,7 +59,7 @@ let actions = {
         postRequest('/action/session.php', {
             session: session.id,
             user: userId,
-            userName: userNameInput.value,
+            userName: userOwnNameBlock.textContent,
             action: 'setWriter',
         }, (response) => {
             console.log('saved writer', response);
