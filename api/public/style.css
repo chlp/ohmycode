@@ -587,8 +587,7 @@ blockquote footer {
 }
 
 #users-container > a.writer, #users-container > span.writer {
-    background-color: var(--color-link);
-    color: var(--color-bg);
+    border-left: 10px solid red;
 }
 
 #users-container > a {
