@@ -21,6 +21,9 @@ let actions = {
             action: 'setUserName',
         }, (response) => {
             console.log('saved user name', newUserName, response);
+            if (response === '') {
+                localStorage['initialUserName'] = newUserName;
+            }
         }, () => {
         });
     },
