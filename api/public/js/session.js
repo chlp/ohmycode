@@ -87,11 +87,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
     resultBlock.setOption('theme', getCodeTheme());
 });
 
-let sessionNameBlock = document.getElementById('session-name');
-let usersContainerBlock = document.getElementById('users-container');
-let userNameContainerBlock = document.getElementById('user-name-container');
-let userNameInput = document.getElementById('user-name-input');
-let userNameSaveButton = document.getElementById('user-name-save-button');
 let sessionStatusBlock = document.getElementById('session-status');
 let becomeWriterButton = document.getElementById('become-writer-button');
 let langSelect = document.getElementById('lang-select');
@@ -104,63 +99,6 @@ let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
 resultContainerBlock.style.display = 'none';
 
-let sessionNameSavingTimeout = null;
-let sessionNameEditing = false;
-sessionNameBlock.onkeydown = (event) => {
-    let key = event.key;
-    if (key === 'Backspace' || key === 'Delete' || key === 'ArrowLeft' || key === 'ArrowRight') {
-        return true;
-    }
-    if (key === 'Enter' || key === 'Escape') {
-        clearTimeout(sessionNameSavingTimeout);
-        sessionNameSavingTimeout = null;
-        sessionNameEditing = false;
-        actions.setSessionName();
-        event.preventDefault();
-        sessionNameBlock.setAttribute('contenteditable', 'false');
-        setTimeout(() => {
-            sessionNameBlock.setAttribute('contenteditable', 'true');
-        }, 500);
-        codeBlock.focus();
-        return false;
-    }
-    let allowedChars = /^[0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]*$/;
-    if (!allowedChars.test(key)) {
-        event.preventDefault();
-        return false;
-    }
-    if (event.target.textContent.length >= 64) {
-        event.preventDefault();
-        return false;
-    }
-    sessionNameEditing = true;
-    clearTimeout(sessionNameSavingTimeout);
-    sessionNameSavingTimeout = setTimeout(() => {
-        actions.setSessionName();
-        sessionNameEditing = false;
-    }, 5000);
-};
-
-userNameSaveButton.onclick = () => {
-    actions.setUserName();
-};
-userNameInput.onkeydown = (event) => {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        actions.setUserName();
-    } else if (event.key === 'Escape') {
-        ownUserNameOnclick();
-    }
-};
-let ownUserNameOnclick = () => {
-    if (userNameContainerBlock.style.display === 'block') {
-        userNameContainerBlock.style.display = 'none';
-    } else {
-        userNameInput.value = userName;
-        userNameContainerBlock.style.display = 'block';
-        userNameInput.focus();
-    }
-};
 langSelect.onchange = () => {
     if (isWriter) {
         codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
@@ -176,61 +114,6 @@ codeContainerBlock.onkeydown = (event) => {
         actions.setRequest();
     }
 };
-
-let usersContainerState = '';
-
-let updateUsers = () => {
-    if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
-        return;
-    }
-    let spectators = [];
-    let writer = undefined;
-    if (isNewSession) {
-        isWriter = true;
-        writer = {
-            id: userId,
-            name: userName,
-            own: true,
-        }
-        spectators = []
-    } else {
-        isWriter = userId === session.writer;
-        session.users.forEach((user) => {
-            user.own = false
-            if (user.id === userId) {
-                user.own = true
-                userName = user.name
-            }
-            if (user.id === session.writer) {
-                writer = user;
-            } else {
-                spectators.push(user)
-            }
-        });
-    }
-    let html = '';
-    if (writer !== undefined) {
-        if (writer.own) {
-            html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()"  class="writer">' + writer.name + '</a>';
-        } else {
-            html += '<span class="writer">' + writer.name + '</span>';
-        }
-    }
-    if (spectators.length > 0) {
-        spectators.forEach((user, i) => {
-            if (user.own) {
-                html += '<a href="#" id="own-name" onclick="ownUserNameOnclick()">' + user.name + '</a>';
-            } else {
-                html += '<span>' + user.name + '</span>';
-            }
-        })
-    }
-    if (usersContainerState !== html.hash()) {
-        usersContainerState = html.hash();
-        usersContainerBlock.innerHTML = html;
-    }
-};
-updateUsers();
 
 let writerBlocksUpdate = () => {
     becomeWriterButton.style.display = !isWriter ? 'block' : 'none';

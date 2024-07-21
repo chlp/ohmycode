@@ -26,7 +26,7 @@ class Utils
 
     static public function isValidString(string $str): bool
     {
-        return preg_match('/^[0-9a-zA-Z_!?:=+\-,.\s\'а-яА-Я]{1,64}$/', $str) === 1;
+        return preg_match('/^[0-9a-zA-Z_!?:=+\-,.\s\'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя]{1,64}$/', $str) === 1;
 
     }
 

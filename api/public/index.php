@@ -50,13 +50,6 @@ if ($session === null) {
 }
 ?>
 
-<div class="blocks-container" id="user-name-container" style="display: none;">
-    <button id="user-name-save-button">save</button>
-    <input type="text" id="user-name-input" style="width: 15em;" maxlength="64" minlength="1"
-           pattern="[0-9a-zA-Z\u0400-\u04ff\s\-'\.]{1,64}">
-    <label for="name""><- your name</label>
-</div>
-
 <div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
     <a href="#" id="session-name" contenteditable="true"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
 </div>
@@ -107,7 +100,30 @@ if ($session === null) {
     let initialName = '<?= Utils::randomName() ?>';
     let initialUserId = '<?= Utils::genUuid() ?>';
     let isNewSession = <?= $isNewSession ? 'true' : 'false' ?>;
-    let session = <?= $session->getJson() ?>;
+    let session = {
+        "id": "",
+        "name": "",
+        "code": "",
+        "lang": "",
+        "runner": "",
+        "isRunnerOnline": false,
+        "updatedAt": {
+            "date": "",
+            "timezone_type": 3,
+            "timezone": "UTC"
+        },
+        "writer": "",
+        "users": [
+            {
+                "id": "",
+                "name": "",
+                "own": true
+            }
+        ],
+        "isWaitingForResult": false,
+        "result": ""
+    };
+    session = <?= $session->getJson() ?>;
     let langKeyToHighlighter = {<?php
         foreach (Session::LANGS as $key => $data) {
             echo "\"$key\": \"{$data['highlighter']}\",";
@@ -117,6 +133,8 @@ if ($session === null) {
 <script src="js/utils.js?<?= md5_file(__DIR__ . '/js/utils.js') ?>"></script>
 <script src="js/actions.js?<?= md5_file(__DIR__ . '/js/actions.js') ?>"></script>
 <script src="js/session.js?<?= md5_file(__DIR__ . '/js/session.js') ?>"></script>
+<script src="js/session_name.js?<?= md5_file(__DIR__ . '/js/session_name.js') ?>"></script>
+<script src="js/users.js?<?= md5_file(__DIR__ . '/js/users.js') ?>"></script>
 
 </body>
 </html>

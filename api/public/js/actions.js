@@ -1,27 +1,26 @@
 let actions = {
     setSessionName: () => {
+        let newSessionName = sessionNameBlock.textContent;
         postRequest('/action/session.php', {
             session: session.id,
             user: userId,
             userName: userName,
             action: 'setSessionName',
-            sessionName: sessionNameBlock.textContent,
+            sessionName: newSessionName,
         }, (response) => {
-            console.log('saved session name', response);
+            console.log('saved session name', newSessionName, response);
         }, () => {
         });
     },
     setUserName: () => {
+        let newUserName = userOwnNameBlock.textContent;
         postRequest('/action/session.php', {
             session: session.id,
             user: userId,
-            userName: userNameInput.value,
+            userName: newUserName,
             action: 'setUserName',
         }, (response) => {
-            console.log('saved user name', response);
-            userName = userNameInput.value;
-            document.getElementById('own-name').innerHTML = userName;
-            userNameContainerBlock.style.display = 'none';
+            console.log('saved user name', newUserName, response);
         }, () => {
         });
     },
