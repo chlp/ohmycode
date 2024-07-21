@@ -571,6 +571,16 @@ blockquote footer {
     display: inline-block;
 }
 
+#session-name-container > a, #users-container > a {
+    cursor: text;
+}
+
+#session-name-container > a.simple-button {
+    cursor: pointer;
+    border: 1px solid var(--color-link);
+    box-sizing: border-box;
+}
+
 #users-container > a, #users-container > span {
     background-color: var(--color-bg);
     border: 2px solid var(--color-link);
@@ -588,7 +598,6 @@ blockquote footer {
 #session-name-container > a:hover, #users-container > a:hover {
     background: var(--color-secondary-accent);
     color: var(--color-secondary);
-    cursor: text;
 }
 
 .textarea {

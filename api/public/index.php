@@ -52,6 +52,7 @@ if ($session === null) {
 
 <div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
     <a href="#" id="session-name" contenteditable="true" spellcheck="false"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
+    <a href="/" class="simple-button" target="_blank">+</a>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">
@@ -63,7 +64,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container">
-    <button id="become-writer-button" onclick="actions.setWriter()" style="display: none;">Become a writer</button>
+    <button id="become-writer-button" onclick="actions.setWriter()" style="display: none;">Edit</button>
     <select id="lang-select" style="width: 150px;">
         <?php
         foreach (Session::LANGS as $key => $data) {
@@ -77,7 +78,6 @@ if ($session === null) {
     </select>
     <button id="run-button" style="display: none">Run (cmd/ctrl+enter)</button>
     <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>;">Runner</button>
-    <button onclick="window.open('/', '_blank');">+</button>
 </div>
 
 <div class="blocks-container" id="runner-container" style="float: left; margin-top: 1em; display: none;">
