@@ -78,7 +78,7 @@ let updateUsers = () => {
     if (spectators.length > 0) {
         spectators.forEach((user, i) => {
             if (user.own) {
-                html += '<a href="#" id="own-name" contenteditable="true">' + user.name + '</a>';
+                html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false">' + user.name + '</a>';
             } else {
                 html += '<span>' + user.name + '</span>';
             }
