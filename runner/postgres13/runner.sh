@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cd /app
+
 export PGPASSWORD=password
 
 while [ True ]; do

@@ -1,5 +1,6 @@
-FROM php:8.2-cli
+FROM php:8.2-cli-alpine
+RUN apk add --no-cache bash
 WORKDIR /app
 COPY runner.sh /app
-RUN chmod +x runner.sh
+RUN chmod +x /app/runner.sh
 ENTRYPOINT ["./runner.sh"]

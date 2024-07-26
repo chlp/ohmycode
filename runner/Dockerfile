@@ -1,4 +1,5 @@
-FROM php:8.2-cli
+FROM php:8.2-cli-alpine
+RUN apk add --no-cache bash
 WORKDIR /app
 COPY conf.json /app
 COPY conf-example.json /app

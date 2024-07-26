@@ -15,6 +15,8 @@ services:
   runner-postgres13:
     container_name: ohmycode-runner-postgres13
     image: postgres:13.15
+    cap_add:
+      - SYS_NICE
     restart: always
     volumes:
       - ./postgres13/requests:/app/requests
@@ -40,15 +42,17 @@ services:
       - /app/tmp:mode=1777,uid=1000,gid=1000
   runner-mysql8:
     container_name: ohmycode-runner-mysql8
-    image: mysql:8.0.34
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
     restart: always
     volumes:
       - ./mysql8/requests:/app/requests
       - ./mysql8/results:/app/results
       - ./mysql8/runner.sh:/docker-entrypoint-initdb.d/runner.sh
     tmpfs:
-      - /var/lib/mysql:mode=1777,uid=1000,gid=1000,size=1G
-      - /app/tmp:mode=1777,uid=1000,gid=1000,size=1G
+      - /var/lib/mysql:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
     command: --default-authentication-plugin=mysql_native_password --log_error_verbosity=1 --skip-log-bin
     environment:
       MYSQL_ROOT_PASSWORD: mysql8root

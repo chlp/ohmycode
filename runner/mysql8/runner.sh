@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /app
+
 export MYSQL_PWD=mysql8root
 
 while true; do
@@ -11,8 +13,6 @@ while true; do
     echo "Waiting for mysql8"
     sleep 2
 done
-
-cd /app
 
 mkdir -p tmp
 while [ True ]; do
