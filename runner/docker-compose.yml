@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    stop_grace_period: 1s
     restart: always
     volumes:
       - ./php82:/app/php82
@@ -17,6 +18,7 @@ services:
     image: postgres:13.15
     cap_add:
       - SYS_NICE
+    stop_grace_period: 1s
     restart: always
     volumes:
       - ./postgres13/requests:/app/requests
@@ -34,6 +36,7 @@ services:
     build:
       context: ./php82
       dockerfile: Dockerfile
+    stop_grace_period: 1s
     restart: always
     volumes:
       - ./php82/requests:/app/requests
@@ -45,6 +48,7 @@ services:
     image: mysql:8.0
     cap_add:
       - SYS_NICE
+    stop_grace_period: 1s
     restart: always
     volumes:
       - ./mysql8/requests:/app/requests
@@ -61,6 +65,7 @@ services:
     build:
       context: ./go
       dockerfile: Dockerfile
+    stop_grace_period: 1s
     restart: always
     volumes:
       - ./go/requests:/app/requests
@@ -73,6 +78,7 @@ services:
     build:
       context: ./java
       dockerfile: Dockerfile
+    stop_grace_period: 1s
     restart: always
     volumes:
       - ./java/requests:/app/requests
