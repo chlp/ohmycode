@@ -28,7 +28,7 @@ class Db
         return $db;
     }
 
-    public function select(string $query, ?array $params): array
+    public function select(string $query, ?array $params = null): array
     {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
