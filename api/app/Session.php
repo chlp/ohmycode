@@ -219,7 +219,7 @@ class Session
         $query = "UPDATE `sessions` SET `runner_checked_at` = NOW() WHERE `runner` = ?";
         Db::get()->exec($query, [$runner]);
 
-        $this->setActiveRunner($runner);
+        self::setActiveRunner($runner);
     }
 
     public function setWriter(string $userId): bool
@@ -249,7 +249,7 @@ class Session
         return '';
     }
 
-    private function setActiveRunner(string $runner): void
+    static private function setActiveRunner(string $runner): void
     {
         $setActiveRunnersQuery = "INSERT INTO runners (id, checked_at) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE checked_at = NOW()";
         Db::get()->exec($query, [$runner]);
