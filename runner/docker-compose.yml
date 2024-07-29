@@ -45,7 +45,9 @@ services:
       - /app/tmp:mode=1777,uid=1000,gid=1000
   runner-mysql8:
     container_name: ohmycode-runner-mysql8
-    image: mysql:8.0
+    build:
+      context: ./mysql8
+      dockerfile: Dockerfile
     cap_add:
       - SYS_NICE
     stop_grace_period: 1s
