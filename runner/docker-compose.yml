@@ -15,7 +15,9 @@ services:
       - ./java:/app/java
   runner-postgres13:
     container_name: ohmycode-runner-postgres13
-    image: postgres:13.15
+    build:
+      context: ./postgres13
+      dockerfile: Dockerfile
     cap_add:
       - SYS_NICE
     stop_grace_period: 1s
