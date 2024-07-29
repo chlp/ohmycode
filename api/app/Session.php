@@ -142,6 +142,9 @@ class Session
 
     public function insert(): self
     {
+        if ($this->runner === '') {
+            $this->runner = $this->getRandomActiveRunner();
+        }
         $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner` = ?, `writer` = ?, `id` = ?;";
         $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runner, $this->writer, $this->id]);
         return self::get($this->id);
@@ -212,8 +215,11 @@ class Session
         if (!Utils::isUuid($runner)) {
             return;
         }
+
         $query = "UPDATE `sessions` SET `runner_checked_at` = NOW() WHERE `runner` = ?";
         Db::get()->exec($query, [$runner]);
+
+        $this->setActiveRunner();
     }
 
     public function setWriter(string $userId): bool
@@ -232,5 +238,20 @@ class Session
             return false;
         }
         return time() - $this->runnerCheckedAt->getTimestamp() < 10;
+    }
+
+    private function getRandomActiveRunner(): string
+    {
+        $runners = $this->db->select("SELECT `id` FROM `runners` WHERE checked_at >= NOW() - INTERVAL 15 SECOND ORDER BY RAND() LIMIT 1;");
+        if (count($runners) === 1) {
+            return $runners[0];
+        }
+        return '';
+    }
+
+    private function setActiveRunner(): void
+    {
+        $setActiveRunnersQuery = "INSERT INTO runners (id, checked_at) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE checked_at = NOW()";
+        Db::get()->exec($query, [$runner]);
     }
 }

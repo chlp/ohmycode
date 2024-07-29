@@ -54,3 +54,14 @@ create table results
     constraint results_pk
         primary key (session)
 );
+
+create table runners
+(
+    id         varchar(32) not null,
+    checked_at datetime,
+    constraint sessions_pk
+        primary key (id)
+);
+
+create index runners_checked_at_idx
+    on runners (checked_at);

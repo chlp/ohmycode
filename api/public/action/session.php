@@ -77,7 +77,7 @@ switch ($action) {
     case 'setCode':
         $session = getSession($sessionId, $userId, $userName);
         if (!$session->setCode((string)($input['code'] ?? ''))) {
-            error('Wrong lang');
+            error('Wrong code');
         }
         break;
     default:
