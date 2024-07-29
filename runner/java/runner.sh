@@ -3,13 +3,13 @@
 mkdir -p java
 mkdir -p tmp
 while [ True ]; do
-    if [ ! -z "$(ls java)" ]; then
+    if [ -n "$(ls java)" ]; then
       rm -rf java/*
     fi
-    if [ ! -z "$(ls tmp)" ]; then
+    if [ -n "$(ls tmp)" ]; then
       rm -rf tmp/*
     fi
-    if [ ! -z "$(ls requests)" ]; then
+    if [ -n "$(ls requests)" ]; then
         for REQUEST in requests/*; do
             echo $REQUEST
             ID=$(basename $REQUEST)
@@ -28,6 +28,7 @@ while [ True ]; do
                 echo -e "\n\n-------------------------\Compilation failed\n-------------------------\n" >> tmp/$ID
             fi
             mv tmp/$ID results/$ID
+            chmod 777 results/$ID
         done
     fi
     sleep 0.01

@@ -2,10 +2,10 @@
 
 mkdir -p tmp
 while [ True ]; do
-    if [ ! -z "$(ls tmp)" ]; then
+    if [ -n "$(ls tmp)" ]; then
       rm tmp/*
     fi
-    if [ ! -z "$(ls requests)" ]; then
+    if [ -n "$(ls requests)" ]; then
         for REQUEST in requests/*; do
             echo $REQUEST
             ID=$(basename $REQUEST)
@@ -13,8 +13,9 @@ while [ True ]; do
             if [ $? -eq 124 ]; then
               echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> tmp/$ID
             fi
-            mv tmp/$ID results/$ID
             rm $REQUEST
+            mv tmp/$ID results/$ID
+            chmod 777 results/$ID
         done
     fi
     sleep 0.01
