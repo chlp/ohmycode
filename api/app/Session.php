@@ -252,6 +252,6 @@ class Session
     static private function setActiveRunner(string $runner): void
     {
         $setActiveRunnersQuery = "INSERT INTO runners (id, checked_at) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE checked_at = NOW()";
-        Db::get()->exec($query, [$runner]);
+        Db::get()->exec($setActiveRunnersQuery, [$runner]);
     }
 }
