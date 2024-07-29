@@ -72,6 +72,7 @@ class Session
             return null;
         }
         $name = date('Y-m-d');
+        // set default runner
         return new self($id, $name, '', self::DEFAULT_LANG, '', null, null, '', [], false, '');
     }
 
@@ -244,7 +245,7 @@ class Session
     {
         $runners = $this->db->select("SELECT `id` FROM `runners` WHERE checked_at >= NOW() - INTERVAL 15 SECOND ORDER BY RAND() LIMIT 1;");
         if (count($runners) === 1) {
-            return $runners[0];
+            return $runners[0][0];
         }
         return '';
     }
