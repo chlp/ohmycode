@@ -73,7 +73,11 @@ class Session
         }
         $name = date('Y-m-d');
         $runner = self::getRandomActiveRunner();
-        return new self($id, $name, '', self::DEFAULT_LANG, $runner, null, null, '', [], false, '');
+        $runnerCheckedAt = null;
+        if ($runner !== '') {
+            $runnerCheckedAt = new DateTime();
+        }
+        return new self($id, $name, '', self::DEFAULT_LANG, $runner, $runnerCheckedAt, null, '', [], false, '');
     }
 
     static public function get(string $id, ?string $updatedAfter = null): ?self
