@@ -72,8 +72,8 @@ class Session
             return null;
         }
         $name = date('Y-m-d');
-        // set default runner
-        return new self($id, $name, '', self::DEFAULT_LANG, '', null, null, '', [], false, '');
+        $runner = $this->getRandomActiveRunner();
+        return new self($id, $name, '', self::DEFAULT_LANG, $runner, null, null, '', [], false, '');
     }
 
     static public function get(string $id, ?string $updatedAfter = null): ?self
@@ -143,9 +143,6 @@ class Session
 
     public function insert(): self
     {
-        if ($this->runner === '') {
-            $this->runner = $this->getRandomActiveRunner();
-        }
         $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner` = ?, `writer` = ?, `id` = ?;";
         $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runner, $this->writer, $this->id]);
         return self::get($this->id);
