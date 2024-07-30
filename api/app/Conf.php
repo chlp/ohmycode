@@ -4,7 +4,7 @@ namespace app;
 
 class Conf
 {
-    static public function loadApiConf(): array
+    public static function loadApiConf(): array
     {
         static $conf = null;
         if ($conf !== null) {

@@ -4,7 +4,7 @@ namespace app;
 
 class Result
 {
-    static public function set(Request $request, string $result): void
+    public static function set(Request $request, string $result): void
     {
         $query = "INSERT INTO `results` SET `session` = ?, `code` = ?, `result` = ?, `lang` = ?
                        ON DUPLICATE KEY UPDATE `code` = ?, `result` = ?, `lang` = ?";
@@ -16,7 +16,7 @@ class Result
         Request::remove($request->runner, $request->lang, $request->hash);
     }
 
-    static public function remove(string $session): void
+    public static function remove(string $session): void
     {
         if (!Utils::isUuid($session)) {
             return;

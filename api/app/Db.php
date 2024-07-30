@@ -9,11 +9,10 @@ class Db
 {
     public function __construct(
         public mysqli $conn,
-    )
-    {
+    ) {
     }
 
-    static public function get(): self
+    public static function get(): self
     {
         static $db = null;
         if ($db !== null) {
@@ -66,7 +65,7 @@ class Db
         foreach ($params as $i => $param) {
             if (is_string($param)) {
                 $types .= 's';
-            } else if (is_int($param)) {
+            } elseif (is_int($param)) {
                 $types .= 'i';
             } else {
                 die("wrong type: $i:" . gettype($param) . ' | ' . substr($query, 0, 50));

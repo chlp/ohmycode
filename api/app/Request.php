@@ -10,13 +10,12 @@ class Request
         public string $code,
         public string $lang,
         public string $hash,
-    )
-    {
+    ) {
     }
 
     const MAX_REQUESTS_FOR_RUNNER_PER_REQUEST = 5;
 
-    static public function set(Session $session): void
+    public static function set(Session $session): void
     {
         $query = "INSERT INTO `requests` SET `session` = ?, `runner` = ?, `code` = ?, `lang` = ?
                        ON DUPLICATE KEY UPDATE `runner` = ?, `code` = ?, `lang` = ?, `received` = 0";
@@ -34,7 +33,7 @@ class Request
      * @param string|null $hash
      * @return self[]
      */
-    static public function get(string $runner, ?string $lang = null, ?string $hash = null): array
+    public static function get(string $runner, ?string $lang = null, ?string $hash = null): array
     {
         if (!Utils::isUuid($runner)) {
             return [];
@@ -58,7 +57,7 @@ class Request
         return $requests;
     }
 
-    static public function markReceived(string $runner, string $lang, string $hash): void
+    public static function markReceived(string $runner, string $lang, string $hash): void
     {
         if (!Utils::isUuid($runner)) {
             return;
@@ -67,7 +66,7 @@ class Request
         Db::get()->exec($query, [$runner, $lang, $hash]);
     }
 
-    static public function remove(string $runner, string $lang, string $hash): void
+    public static function remove(string $runner, string $lang, string $hash): void
     {
         if (!Utils::isUuid($runner)) {
             return;

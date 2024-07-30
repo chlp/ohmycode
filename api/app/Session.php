@@ -44,8 +44,7 @@ class Session
         public array $users,
         public bool $isWaitingForResult,
         public string $result,
-    )
-    {
+    ) {
         $this->db = Db::get();
     }
 
@@ -66,7 +65,7 @@ class Session
         ]);
     }
 
-    static public function createNew(string $id): ?self
+    public static function createNew(string $id): ?self
     {
         if (!Utils::isUuid($id)) {
             return null;
@@ -80,7 +79,7 @@ class Session
         return new self($id, $name, '', self::DEFAULT_LANG, $runner, $runnerCheckedAt, null, '', [], false, '');
     }
 
-    static public function get(string $id, ?string $updatedAfter = null): ?self
+    public static function get(string $id, ?string $updatedAfter = null): ?self
     {
         if (!Utils::isUuid($id)) {
             return null;
@@ -131,14 +130,14 @@ class Session
         $this->users = $users;
     }
 
-    static public function updateUserOnline(string $sessionId, string $userId): void
+    public static function updateUserOnline(string $sessionId, string $userId): void
     {
         if (Utils::isUuid($sessionId) && Utils::isUuid($userId)) {
             Db::get()->exec("update `session_users` set updated_at = NOW(3) where session = ? and user = ?", [$sessionId, $userId]);
         }
     }
 
-    static public function removeOldUsers(string $sessionId): void
+    public static function removeOldUsers(string $sessionId): void
     {
         if (Utils::isUuid($sessionId)) {
             Db::get()->exec("delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL 20 second", [$sessionId]);
@@ -212,7 +211,7 @@ class Session
         return true;
     }
 
-    static public function setCheckedByRunner(string $runner): void
+    public static function setCheckedByRunner(string $runner): void
     {
         if (!Utils::isUuid($runner)) {
             return;
@@ -242,7 +241,7 @@ class Session
         return time() - $this->runnerCheckedAt->getTimestamp() < 10;
     }
 
-    static private function getRandomActiveRunner(): string
+    private static function getRandomActiveRunner(): string
     {
         $runners = Db::get()->select("SELECT `id` FROM `runners` WHERE checked_at >= NOW() - INTERVAL 15 SECOND ORDER BY RAND() LIMIT 1;");
         if (count($runners) === 1) {
@@ -251,7 +250,7 @@ class Session
         return '';
     }
 
-    static private function setActiveRunner(string $runner): void
+    private static function setActiveRunner(string $runner): void
     {
         $setActiveRunnersQuery = "INSERT INTO runners (id, checked_at) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE checked_at = NOW()";
         Db::get()->exec($setActiveRunnersQuery, [$runner]);
