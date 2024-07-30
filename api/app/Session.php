@@ -8,6 +8,7 @@ class Session
 {
     private const DEFAULT_LANG = 'php82';
     private const CODE_MAX_LENGTH = 32768;
+    private const IS_ACTIVE_FROM_LAST_UPDATE_SEC = 20;
     private Db $db;
     public const LANGS = [
         'php82' => [
@@ -140,7 +141,8 @@ class Session
     public static function removeOldUsers(string $sessionId): void
     {
         if (Utils::isUuid($sessionId)) {
-            Db::get()->exec("delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL 20 second", [$sessionId]);
+            $query = "delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL " . self::IS_ACTIVE_FROM_LAST_UPDATE_SEC . " second";
+            Db::get()->exec($query, [$sessionId]);
         }
     }
 
@@ -238,12 +240,13 @@ class Session
         if ($this->runnerCheckedAt === null) {
             return false;
         }
-        return time() - $this->runnerCheckedAt->getTimestamp() < 10;
+        return time() - $this->runnerCheckedAt->getTimestamp() < self::IS_ACTIVE_FROM_LAST_UPDATE_SEC;
     }
 
     private static function getRandomActiveRunner(): string
     {
-        $runners = Db::get()->select("SELECT `id` FROM `runners` WHERE checked_at >= NOW() - INTERVAL 15 SECOND ORDER BY RAND() LIMIT 1;");
+        $query = "SELECT `id` FROM `runners` WHERE checked_at >= NOW() - INTERVAL " . self::IS_ACTIVE_FROM_LAST_UPDATE_SEC . " SECOND ORDER BY RAND() LIMIT 1;";
+        $runners = Db::get()->select($query);
         if (count($runners) === 1) {
             return $runners[0][0];
         }
