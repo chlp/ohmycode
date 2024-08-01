@@ -64,7 +64,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container">
-    <button id="become-writer-button" onclick="actions.setWriter()" style="display: none;">Edit</button>
+    <button id="become-writer-button" onclick="actions.setWriter()" style="display: <?= $session->writer === '' ? 'block' : 'none' ?>;">Edit</button>
     <select id="lang-select" style="width: 150px;">
         <?php
         foreach (Session::LANGS as $key => $data) {
@@ -74,9 +74,9 @@ if ($session === null) {
             }
             echo ">{$data['name']}</option>\n";
         }
-        ?>
+?>
     </select>
-    <button id="run-button" style="display: none">Run (cmd/ctrl+enter)</button>
+    <button id="run-button" style="display: <?= $session->writer === '' && $session->isRunnerOnline() ? 'block' : 'none' ?>">Run (cmd/ctrl+enter)</button>
     <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>;">Runner</button>
 </div>
 
@@ -96,7 +96,7 @@ if ($session === null) {
     if ($needChangeUrl) {
         echo "history.pushState({}, null, '/$id');\n";
     }
-    ?>
+?>
     let initialName = '<?= Utils::randomName() ?>';
     let initialUserId = '<?= Utils::genUuid() ?>';
     let isNewSession = <?= $isNewSession ? 'true' : 'false' ?>;
@@ -125,10 +125,10 @@ if ($session === null) {
     };
     session = <?= $session->getJson() ?>;
     let langKeyToHighlighter = {<?php
-        foreach (Session::LANGS as $key => $data) {
-            echo "\"$key\": \"{$data['highlighter']}\",";
-        }
-        ?>};
+    foreach (Session::LANGS as $key => $data) {
+        echo "\"$key\": \"{$data['highlighter']}\",";
+    }
+?>};
 </script>
 <script src="js/utils.js?<?= md5_file(__DIR__ . '/js/utils.js') ?>"></script>
 <script src="js/actions.js?<?= md5_file(__DIR__ . '/js/actions.js') ?>"></script>
