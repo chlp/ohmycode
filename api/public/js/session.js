@@ -64,10 +64,12 @@ setInterval(() => {
 
 
 let getCodeTheme = () => {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'base16-dark';
-    }
-    return 'base16-light';
+    // todo: temporary turned off light/dark scheme changing
+    return 'base16-dark';
+    // if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    //     return 'base16-dark';
+    // }
+    // return 'base16-light';
 }
 let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     lineNumbers: true,
