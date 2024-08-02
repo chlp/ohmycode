@@ -77,7 +77,7 @@ if ($session === null) {
         }
 ?>
     </select>
-    <button id="run-button" style="display: <?= $session->writer === '' && $session->isRunnerOnline() ? 'block' : 'none' ?>">Run (cmd/ctrl+enter)</button>
+    <button id="run-button" style="display: <?= $session->writer === '' && $session->isRunnerOnline() ? 'block' : 'none' ?>" title="Cmd/Ctrl + Enter">Run</button>
     <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>;">Runner</button>
 </div>
 
