@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultBlockUpdate();
 });
 
+let isDebug = false;
 let lastUpdateTimestamp = +new Date;
 let pageUpdater = () => {
     let start = +new Date;
@@ -200,7 +201,9 @@ let pageUpdater = () => {
         action: 'getUpdate',
     }, (response) => {
         ping = +new Date - start;
-        console.log((new Date).toLocaleString() + ' | ping: ' + ping);
+        if (isDebug) {
+            console.log((new Date).toLocaleString() + ' | ping: ' + ping);
+        }
         lastUpdateTimestamp = +new Date;
         if (response.length === 0) {
             resultBlockUpdate(); // adding more dots to "In progress..."
