@@ -604,28 +604,25 @@ blockquote footer {
     margin-bottom: .5em;
     border: 1px solid #666;
     cursor: text;
-}
-
-.code > .CodeMirror, .result > .CodeMirror {
-    background: rgba(255, 255, 255, 0.7);
-}
-
-.textarea.code {
     width: 100%;
 }
 
-.textarea.code > div {
+.textarea > div.CodeMirror {
+    height: 100%;
+}
+
+.textarea.code {
     height: 55vh;
     min-height: 300px;
 }
 
 .textarea.result {
-    width: 100%;
-}
-
-.textarea.result > div {
     height: 30vh;
     min-height: 200px;
+}
+
+.textarea > textarea {
+    display: none;
 }
 
 .online {
