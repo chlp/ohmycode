@@ -609,7 +609,12 @@ blockquote footer {
 }
 
 .textarea > div.CodeMirror {
+    background: rgba(0, 0, 0, .7);
     height: 100%;
+}
+
+.textarea > div.CodeMirror > .CodeMirror-scroll > .CodeMirror-gutters {
+    background: rgba(0, 0, 0, .3);
 }
 
 .textarea.code {
