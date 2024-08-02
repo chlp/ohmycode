@@ -16,6 +16,7 @@ use app\Utils;
     <link rel="stylesheet" href="codemirror/codemirror.css">
     <link rel="stylesheet" href="codemirror/themes/base16-light.css">
     <link rel="stylesheet" href="codemirror/themes/base16-dark.css">
+    <link rel="stylesheet" href="codemirror/themes/tomorrow-night-bright.css">
     <script src="codemirror/codemirror.js"></script>
     <script src="codemirror/mode/clike.js"></script>
     <script src="codemirror/mode/css.js"></script>

@@ -64,13 +64,17 @@ setInterval(() => {
 
 
 let getCodeTheme = () => {
+    // https://codemirror.net/5/demo/theme.html
     // todo: temporary turned off light/dark scheme changing
     return 'base16-dark';
     // if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     //     return 'base16-dark';
     // }
     // return 'base16-light';
-}
+};
+let getResultTheme = () => {
+    return 'tomorrow-night-bright';
+};
 let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     lineNumbers: true,
     mode: langKeyToHighlighter[session.lang], // javascript, go, php, sql
@@ -83,11 +87,11 @@ let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,
-    theme: getCodeTheme(),
+    theme: getResultTheme(),
 });
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
     codeBlock.setOption('theme', getCodeTheme());
-    resultBlock.setOption('theme', getCodeTheme());
+    resultBlock.setOption('theme', getResultTheme());
 });
 
 let sessionStatusBlock = document.getElementById('session-status');
