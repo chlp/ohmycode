@@ -91,4 +91,6 @@ let updateUsers = () => {
         userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
     }
 };
-updateUsers();
+document.addEventListener('DOMContentLoaded', () => {
+    updateUsers();
+});

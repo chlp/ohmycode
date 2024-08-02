@@ -121,7 +121,9 @@ let writerBlocksUpdate = () => {
     langSelect.style.display = isWriter ? 'block' : 'none';
     codeBlock.setOption('readOnly', !isWriter);
 };
-writerBlocksUpdate();
+document.addEventListener('DOMContentLoaded', () => {
+    writerBlocksUpdate();
+});
 
 let runnerBlocksUpdate = () => {
     if (session.isRunnerOnline) {
@@ -130,7 +132,10 @@ let runnerBlocksUpdate = () => {
     runnerEditButton.style.display = session.isRunnerOnline ? 'none' : 'block';
     runButton.style.display = session.isRunnerOnline && isWriter ? 'block' : 'none';
 };
-runnerBlocksUpdate();
+document.addEventListener('DOMContentLoaded', () => {
+    runnerBlocksUpdate();
+});
+
 let runnerEditButtonOnclick = () => {
     if (runnerContainerBlock.style.display === 'block') {
         runnerContainerBlock.style.display = 'none';
@@ -174,7 +179,9 @@ let resultBlockUpdate = () => {
         resultBlock.setValue('...');
     }
 };
-resultBlockUpdate();
+document.addEventListener('DOMContentLoaded', () => {
+    resultBlockUpdate();
+});
 
 let lastUpdateTimestamp = +new Date;
 let pageUpdater = () => {
