@@ -90,6 +90,7 @@ readonly class ApiResponse
 readonly class Api
 {
     private const DEFAULT_TIMEOUT_SEC = 2;
+    private const KEEPALIVE_TIMEOUT_SEC = 15;
 
     public function __construct(
         private string $runnerId,
@@ -98,7 +99,7 @@ readonly class Api
     {
     }
 
-    public function request(string $action, ?array $moreData = null): ApiResponse
+    public function request(string $action, ?array $moreData = null, bool $isKeepAlive = false): ApiResponse
     {
         $data = [
             'action' => $action,
@@ -107,7 +108,7 @@ readonly class Api
         if ($moreData !== null) {
             $data = array_merge($data, $moreData);
         }
-        [$code, $requests] = self::post($this->url . '/action/request.php', $data);
+        [$code, $requests] = self::post($this->url . '/action/request.php', $data, $isKeepAlive);
         return new ApiResponse($code, $requests);
     }
 
@@ -124,7 +125,7 @@ readonly class Api
         return new ApiResponse($code, $requests);
     }
 
-    private static function post($url, $data): array
+    private static function post(string $url, array $data, bool $isKeepAlive = false): array
     {
         $curl = curl_init($url);
         curl_setopt_array($curl, [
@@ -134,7 +135,8 @@ readonly class Api
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => self::DEFAULT_TIMEOUT_SEC,
+            CURLOPT_TIMEOUT => $isKeepAlive ? self::KEEPALIVE_TIMEOUT_SEC : self::DEFAULT_TIMEOUT_SEC,
+            CURLOPT_CONNECTTIMEOUT => self::DEFAULT_TIMEOUT_SEC,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],

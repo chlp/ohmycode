@@ -21,6 +21,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      PHP_CLI_SERVER_WORKERS: 20
     ports:
       - "8080:80"
     volumes:

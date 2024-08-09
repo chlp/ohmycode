@@ -13,11 +13,11 @@ if ($conf === null) {
 }
 $api = new Api($conf->runnerId, $conf->apiUrl);
 
-usleep(500000);
+usleep(500000); // 0.5 sec
 echo "requests receiver initiating. id: $conf->runnerId\n";
 
 while (true) {
-    $requests = $api->request('get');
+    $requests = $api->request('get', ['isKeepAlive' => true], true);
 
     if (!$requests->isOk()) {
         echo json_encode([date('Y-m-d H:i:s'), 'get requests', $requests->code, $requests->data]);
@@ -45,5 +45,5 @@ while (true) {
         }
     }
 
-    usleep(500000); // 0.5 sec
+    usleep(200000); // 0.2 sec
 }

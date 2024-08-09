@@ -53,7 +53,7 @@ class Utils
             $start = microtime(true);
             return 0;
         }
-        return $start;
+        return microtime(true) - $start;
     }
 
     public static function log(string $str): void
@@ -61,7 +61,7 @@ class Utils
         $msg = (DateTime::createFromFormat('U.u', microtime(true)))->format('Y-m-d H:i:s.u');
         $timer = self::timer();
         if ($timer !== 0.0) {
-            $msg .= ' (' . number_format(microtime(true) - $timer, 3, '.', '') . ')';
+            $msg .= ' (' . number_format($timer, 3, '.', '') . ')';
         }
         $msg .= ': ';
         $msg .= $str;
