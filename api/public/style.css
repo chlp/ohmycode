@@ -587,10 +587,6 @@ blockquote footer {
     border: 2px solid var(--color-link);
 }
 
-#users-container > a.writer, #users-container > span.writer {
-    border-left: 10px solid red;
-}
-
 #users-container > a {
     font-weight: bold;
 }

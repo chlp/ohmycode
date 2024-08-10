@@ -120,10 +120,10 @@ class Session
 
     private function loadUsers(): void
     {
-        $res = $this->db->select("select `user`, `name` from `session_users` where session = ?", [$this->id]);
+        $res = $this->db->select("select `user`, `name` from `session_users` where session = ? ORDER BY `name`", [$this->id]);
         $users = [];
         foreach ($res as $row) {
-            $users[] = [
+            $users[$row[0]] = [
                 'id' => $row[0],
                 'name' => $row[1],
             ];

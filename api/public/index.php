@@ -64,7 +64,7 @@ if ($session === null) {
     <textarea id="code"><?= $session->code ?></textarea>
 </div>
 
-<div class="blocks-container">
+<div class="blocks-container" style="float: left; clear: left;">
     <button id="become-writer-button" onclick="actions.setWriter()" style="display: <?= $session->writer === '' ? 'block' : 'none' ?>;">Edit</button>
     <select id="lang-select" style="width: 150px;">
         <?php
@@ -79,6 +79,12 @@ if ($session === null) {
     </select>
     <button id="run-button" style="display: <?= $session->writer === '' && $session->isRunnerOnline() ? 'block' : 'none' ?>" title="Cmd/Ctrl + Enter">Run</button>
     <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>;">Runner</button>
+</div>
+
+<div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
+    <span id="current-writer-info" style="padding: 0.4rem 0.8rem;">
+        Code is writing now by <span id="current-writer-name"></span>
+    </span>
 </div>
 
 <div class="blocks-container" id="runner-container" style="float: left; margin-top: 1em; display: none;">

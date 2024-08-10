@@ -42,48 +42,34 @@ let updateUsers = () => {
     if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
         return;
     }
-    let spectators = [];
-    let writer = undefined;
+    let users = [];
     if (isNewSession) {
         isWriter = true;
-        writer = {
+        users = [{
             id: userId,
             name: userName,
             own: true,
-        };
-        spectators = [];
+        }];
     } else {
         isWriter = userId === session.writer;
-        session.users.forEach((user) => {
+        Object.keys(session.users).forEach((key) => {
+            let user = session.users[key];
             user.own = false;
             if (user.id === userId) {
                 user.own = true;
                 userName = user.name;
             }
-            if (user.id === session.writer) {
-                writer = user;
-            } else {
-                spectators.push(user);
-            }
+            users.push(user);
         });
     }
     let html = '';
-    if (writer !== undefined) {
-        if (writer.own) {
-            html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false" class="writer">' + writer.name + '</a>';
+    users.forEach((user) => {
+        if (user.own) {
+            html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false">' + user.name + '</a>';
         } else {
-            html += '<span class="writer">' + writer.name + '</span>';
+            html += '<span>' + user.name + '</span>';
         }
-    }
-    if (spectators.length > 0) {
-        spectators.forEach((user, i) => {
-            if (user.own) {
-                html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false">' + user.name + '</a>';
-            } else {
-                html += '<span>' + user.name + '</span>';
-            }
-        })
-    }
+    })
     if (usersContainerState !== html.hash() && !userNameEditing) {
         usersContainerState = html.hash();
         usersContainerBlock.innerHTML = html;

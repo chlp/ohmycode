@@ -8,12 +8,7 @@ if (userId === undefined) {
     userId = initialUserId;
     localStorage['userId'] = userId;
 }
-let userName = undefined;
-session.users.forEach((user) => {
-    if (user.id === userId) {
-        userName = user.name;
-    }
-});
+let userName = session.users[userId] ? session.users[userId].name : undefined;
 if (userName === undefined) {
     userName = localStorage['initialUserName'];
     if (userName === undefined) {
@@ -96,6 +91,8 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
 
 let sessionStatusBlock = document.getElementById('session-status');
 let becomeWriterButton = document.getElementById('become-writer-button');
+let currentWriterInfo = document.getElementById('current-writer-info');
+let currentWriterName = document.getElementById('current-writer-name');
 let langSelect = document.getElementById('lang-select');
 let runButton = document.getElementById('run-button');
 let runnerContainerBlock = document.getElementById('runner-container');
@@ -117,6 +114,17 @@ let writerBlocksUpdate = () => {
     becomeWriterButton.style.display = !isWriter ? 'block' : 'none';
     langSelect.style.display = isWriter ? 'block' : 'none';
     codeBlock.setOption('readOnly', !isWriter);
+    if (session.writer === '') {
+        currentWriterName.innerHTML = '';
+        currentWriterInfo.setAttribute('display', 'none');
+    } else {
+        if (session.writer === userId) {
+            currentWriterName.innerHTML = 'you';
+        } else {
+            currentWriterName.innerHTML = session.users[session.writer] ?? '???';
+        }
+        currentWriterInfo.removeAttribute('display');
+    }
 };
 document.addEventListener('DOMContentLoaded', () => {
     writerBlocksUpdate();
