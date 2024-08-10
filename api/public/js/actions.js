@@ -51,11 +51,10 @@ let actions = {
         }, () => {
         });
     },
-    setWriter: () => {
+    setWriter: (callback) => {
+        isSetWriterInProgress = true;
         isWriter = true;
         session.writer = userId;
-        writerBlocksUpdate();
-        updateUsers();
         postRequest('/action/session.php', {
             session: session.id,
             user: userId,
@@ -63,32 +62,58 @@ let actions = {
             action: 'setWriter',
         }, (response) => {
             console.log('setWriter: result', response);
+            if (response.length !== 0) {
+                let data = JSON.parse(response);
+                if (data.error !== undefined) {
+                    console.log('setWriter: error', data);
+                    return;
+                }
+                session.writer = data.writer;
+                isWriter = userId === session.writer;
+            }
+            isSetWriterInProgress = false;
+            writerBlocksUpdate();
+            updateUsers();
         }, () => {
+            isSetWriterInProgress = false;
+            callback();
         });
     },
     setCode: (callback) => {
-        if (!isWriter) {
+        if (session.code.hash() === codeBlock.getValue().hash()) {
+            callback();
             return;
         }
-        if (session.code.hash() !== codeBlock.getValue().hash()) {
-            session.code = codeBlock.getValue();
-            postRequest('/action/session.php', {
-                session: session.id,
-                user: userId,
-                userName: userName,
-                action: 'setCode',
-                code: codeBlock.getValue(),
-            }, (response) => {
-                console.log('setCode: result', response);
-                callback();
-            }, () => {
-            });
-        } else {
+        if (session.writer !== '' && session.writer !== userId) {
             callback();
+            return;
+        }
+        let sendRequest = (innerCallback) => {
+                session.code = codeBlock.getValue();
+                postRequest('/action/session.php', {
+                    session: session.id,
+                    user: userId,
+                    userName: userName,
+                    action: 'setCode',
+                    code: codeBlock.getValue(),
+                }, (response) => {
+                    console.log('setCode: result', response);
+                }, () => {
+                    innerCallback();
+                });
+        }
+        if (isWriter) {
+            sendRequest(callback);
+        } else {
+            actions.setWriter(() => {
+                if (isWriter) {
+                    sendRequest(callback);
+                }
+            });
         }
     },
     runCode: (callback) => {
-        actions.setCode(() => {
+        let sendRequest = (innerCallback) => {
             session.result = 'In progress..';
             resultBlock.setValue('In progress..');
             postRequest('/action/request.php', {
@@ -97,8 +122,15 @@ let actions = {
             }, (response) => {
                 console.log('runCode->setCode: result', response);
             }, () => {
-                callback();
+                innerCallback();
             });
-        });
+        };
+        if (isWriter) {
+            actions.setCode(() => {
+                sendRequest(callback);
+            });
+        } else {
+            sendRequest(callback);
+        }
     },
 };

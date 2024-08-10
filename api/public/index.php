@@ -57,7 +57,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">
-    <span id="users-container"></span>
+    <span id="users-container"><a href="#" id="own-name" contenteditable="true" spellcheck="false"></a></span>
 </div>
 
 <div class="code textarea" id="code-container" style="clear: both;">
@@ -65,7 +65,6 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container" style="float: left; clear: left;">
-    <button id="become-writer-button" onclick="actions.setWriter()" style="display: <?= $session->writer === '' ? 'block' : 'none' ?>;">Edit</button>
     <select id="lang-select" style="width: 150px;">
         <?php
         foreach (Session::LANGS as $key => $data) {
@@ -77,7 +76,7 @@ if ($session === null) {
         }
 ?>
     </select>
-    <button id="run-button" style="display: <?= $session->writer === '' && $session->isRunnerOnline() ? 'block' : 'none' ?>" title="Cmd/Ctrl + Enter">Run</button>
+    <button id="run-button" title="Cmd/Ctrl + Enter">Run</button>
     <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>;">Runner</button>
 </div>
 

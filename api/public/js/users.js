@@ -1,4 +1,4 @@
-let userOwnNameBlock = null;
+let userOwnNameBlock = document.getElementById('own-name');
 let userNameSavingTimeout = null;
 let userNameEditing = false;
 let userOwnNameEditingFunc = (event) => {
@@ -38,7 +38,11 @@ let userOwnNameEditingFunc = (event) => {
 
 let usersContainerBlock = document.getElementById('users-container');
 let usersContainerState = '';
+let isSetWriterInProgress = false;
 let updateUsers = () => {
+    if (isSetWriterInProgress) {
+        return;
+    }
     if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
         return;
     }
@@ -52,15 +56,24 @@ let updateUsers = () => {
         }];
     } else {
         isWriter = userId === session.writer;
+        let isOwnUserFound = false;
         Object.keys(session.users).forEach((key) => {
             let user = session.users[key];
             user.own = false;
             if (user.id === userId) {
                 user.own = true;
                 userName = user.name;
+                isOwnUserFound = true;
             }
             users.push(user);
         });
+        if (!isOwnUserFound) {
+            users.push({
+                id: userId,
+                name: userName,
+                own: true,
+            });
+        }
     }
     let html = '';
     users.forEach((user) => {

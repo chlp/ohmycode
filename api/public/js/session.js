@@ -90,7 +90,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
 });
 
 let sessionStatusBlock = document.getElementById('session-status');
-let becomeWriterButton = document.getElementById('become-writer-button');
 let currentWriterInfo = document.getElementById('current-writer-info');
 let currentWriterName = document.getElementById('current-writer-name');
 let langSelect = document.getElementById('lang-select');
@@ -104,16 +103,12 @@ let resultContainerBlock = document.getElementById('result-container');
 resultContainerBlock.style.display = 'none';
 
 langSelect.onchange = () => {
-    if (isWriter) {
-        codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
-        actions.setLang();
-    }
+    codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
+    actions.setLang();
 };
 
 let writerBlocksUpdate = () => {
-    becomeWriterButton.style.display = !isWriter ? 'block' : 'none';
-    langSelect.style.display = isWriter ? 'block' : 'none';
-    codeBlock.setOption('readOnly', !isWriter);
+    codeBlock.setOption('readOnly', session.writer !== '' && session.writer !== userId);
     if (session.writer === '') {
         currentWriterName.innerHTML = '';
         currentWriterInfo.style.display = 'none';
@@ -135,7 +130,6 @@ let runnerBlocksUpdate = () => {
         runnerContainerBlock.style.display = 'none';
     }
     runnerEditButton.style.display = session.isRunnerOnline ? 'none' : 'block';
-    runButton.style.display = session.isRunnerOnline && isWriter ? 'block' : 'none';
 };
 document.addEventListener('DOMContentLoaded', () => {
     runnerBlocksUpdate();
@@ -214,7 +208,7 @@ let pageUpdater = () => {
         let data = JSON.parse(response);
         if (data.error !== undefined) {
             console.log('getUpdate error', data);
-            return
+            return;
         }
 
         isNewSession = false;
@@ -278,7 +272,8 @@ let pageUpdater = () => {
 pageUpdater();
 
 let runCode = () => {
-    if (!isWriter || !session.isRunnerOnline) {
+    if (!session.isRunnerOnline) {
+        resultBlock.setValue('No runner is available to run your code :(');
         return;
     }
     clearTimeout(pageUpdaterTimer);

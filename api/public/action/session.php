@@ -75,6 +75,7 @@ switch ($action) {
         if (!$session->setWriter($userId)) {
             error('Wrong userId');
         }
+        echo $session->getJson();
         break;
     case 'setCode':
         $session = getSession($sessionId, $userId, $userName);
