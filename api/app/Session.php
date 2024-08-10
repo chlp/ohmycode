@@ -243,6 +243,7 @@ class Session
         if (!Utils::isUuid($userId)) {
             return false;
         }
+        $this->writer = $userId;
         $query = "UPDATE `sessions` SET `writer` = ?, `updated_at` = NOW(3), `code_updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$userId, $this->id]);
         return true;

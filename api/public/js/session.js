@@ -266,10 +266,24 @@ let pageUpdater = () => {
             sessionStatusBlock.innerHTML = '';
         }
     }
-    actions.setCode(() => {
-    });
 };
 pageUpdater();
+
+let codeSender = () => {
+    console.log('codeSender');
+    if (session.code.hash() !== codeBlock.getValue().hash()) {
+        actions.setCode(() => {
+            setTimeout(() => {
+                codeSender();
+            }, 1000);
+        });
+    } else {
+        setTimeout(() => {
+            codeSender();
+        }, 300);
+    }
+};
+codeSender();
 
 let runCode = () => {
     if (!session.isRunnerOnline) {
@@ -277,7 +291,13 @@ let runCode = () => {
         return;
     }
     clearTimeout(pageUpdaterTimer);
-    actions.runCode(pageUpdater);
+    if (isWriter && session.code.hash() !== codeBlock.getValue().hash()) {
+        actions.setCode(() => {
+            actions.runCode(pageUpdater);
+        });
+    } else {
+        actions.runCode(pageUpdater);
+    }
 };
 runButton.onclick = () => {
     runCode();
