@@ -116,14 +116,14 @@ let writerBlocksUpdate = () => {
     codeBlock.setOption('readOnly', !isWriter);
     if (session.writer === '') {
         currentWriterName.innerHTML = '';
-        currentWriterInfo.setAttribute('display', 'none');
+        currentWriterInfo.style.display = 'none';
     } else {
         if (session.writer === userId) {
             currentWriterName.innerHTML = 'you';
         } else {
-            currentWriterName.innerHTML = session.users[session.writer] ?? '???';
+            currentWriterName.innerHTML = session.users[session.writer].name ?? '???';
         }
-        currentWriterInfo.removeAttribute('display');
+        currentWriterInfo.style.removeProperty('display');
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
@@ -192,7 +192,7 @@ let isDebug = false;
 let lastUpdateTimestamp = +new Date;
 let pageUpdaterTimer = 0;
 let pageUpdater = () => {
-    console.log('pageUpdated');
+    console.log('pageUpdater: start');
     let start = +new Date;
     postRequest('/action/session.php', {
         session: session.id,
@@ -201,6 +201,7 @@ let pageUpdater = () => {
         lastUpdate: session.updatedAt ? session.updatedAt.data : null,
         action: 'getUpdate',
     }, (response) => {
+        console.log('pageUpdater: result', response);
         ping = +new Date - start;
         if (isDebug) {
             console.log((new Date).toLocaleString() + ' | ping: ' + ping);

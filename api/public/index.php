@@ -82,8 +82,8 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
-    <span id="current-writer-info" style="padding: 0.4rem 0.8rem;">
-        Code is writing now by <span id="current-writer-name"></span>
+    <span id="current-writer-info" style="padding: 0.4rem 0.8rem; display: none;">
+        Code is writing now by <span id="current-writer-name"><?= $session->users[$session->writer]['name'] ?? '' ?></span>
     </span>
 </div>
 
