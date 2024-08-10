@@ -9,6 +9,7 @@ class Session
     private const DEFAULT_LANG = 'php82';
     private const CODE_MAX_LENGTH = 32768;
     private const IS_ACTIVE_FROM_LAST_UPDATE_SEC = 20;
+    private const IS_WRITER_STILL_WRITING_SEC = 3;
     private Db $db;
     public const LANGS = [
         'php82' => [
@@ -41,6 +42,7 @@ class Session
         public string $runner,
         public ?DateTime $runnerCheckedAt,
         public ?DateTime $updatedAt,
+        public ?DateTime $codeUpdatedAt,
         public string $writer,
         public array $users,
         public bool $isWaitingForResult,
@@ -59,6 +61,7 @@ class Session
             'runner' => $this->runner,
             'isRunnerOnline' => $this->isRunnerOnline(),
             'updatedAt' => $this->updatedAt,
+            'codeUpdatedAt' => $this->codeUpdatedAt,
             'writer' => $this->writer,
             'users' => $this->users,
             'isWaitingForResult' => $this->isWaitingForResult,
@@ -77,7 +80,7 @@ class Session
         if ($runner !== '') {
             $runnerCheckedAt = new DateTime();
         }
-        return new self($id, $name, '', self::DEFAULT_LANG, $runner, $runnerCheckedAt, null, '', [], false, '');
+        return new self($id, $name, '', self::DEFAULT_LANG, $runner, $runnerCheckedAt, null, null, '', [], false, '');
     }
 
     public static function get(string $id, ?string $updatedAfter = null): ?self
@@ -87,7 +90,8 @@ class Session
         }
         $query = "
             SELECT `name`, `sessions`.`code`, `sessions`.`lang`, `sessions`.`runner`, `runner_checked_at`,
-                `sessions`.`updated_at`, `writer`, `requests`.`session` IS NOT NULL AS `isWaitingForResult`, `results`.`result`
+                `sessions`.`updated_at`, `sessions`.`code_updated_at`, `writer`,
+                `requests`.`session` IS NOT NULL AS `isWaitingForResult`, `results`.`result`
             FROM `sessions`
             LEFT JOIN `requests` ON `requests`.`session` = `sessions`.`id`
             LEFT JOIN `results` ON `results`.`session` = `sessions`.`id`
@@ -102,17 +106,18 @@ class Session
         if (count($res) === 0) {
             return null;
         }
-        [$sessionName, $code, $lang, $runner, $runnerCheckedAtStr, $updatedAtStr, $writer, $isWaitingForResult, $result] = $res[0];
+        [$sessionName, $code, $lang, $runner, $runnerCheckedAtStr, $updatedAtStr, $codeUpdatedAtStr, $writer, $isWaitingForResult, $result] = $res[0];
         $runnerCheckedAt = null;
         if ($runnerCheckedAtStr !== null) {
             $runnerCheckedAt = DateTime::createFromFormat('Y-m-d H:i:s', $runnerCheckedAtStr);
         }
         $updatedAt = DateTime::createFromFormat('Y-m-d H:i:s.u', $updatedAtStr);
+        $codeUpdatedAt = DateTime::createFromFormat('Y-m-d H:i:s.u', $codeUpdatedAtStr);
 
         if ($result === '') {
             $result = '_';
         }
-        $session = new self($id, $sessionName, $code, $lang, $runner, $runnerCheckedAt, $updatedAt, $writer, [], $isWaitingForResult, $result ?? '');
+        $session = new self($id, $sessionName, $code, $lang, $runner, $runnerCheckedAt, $updatedAt, $codeUpdatedAt, $writer, [], $isWaitingForResult, $result ?? '');
         $session->loadUsers();
 
         return $session;
@@ -142,6 +147,14 @@ class Session
     {
         if (Utils::isUuid($sessionId)) {
             $query = "delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL " . self::IS_ACTIVE_FROM_LAST_UPDATE_SEC . " second";
+            Db::get()->exec($query, [$sessionId]);
+        }
+    }
+
+    public static function updateWriter(string $sessionId): void
+    {
+        if (Utils::isUuid($sessionId)) {
+            $query = "update `sessions` set writer = '' where `id` = ? and `code_updated_at` < NOW(3) - INTERVAL " . self::IS_WRITER_STILL_WRITING_SEC . " second";
             Db::get()->exec($query, [$sessionId]);
         }
     }
@@ -178,7 +191,7 @@ class Session
         if (strlen($code) > self::CODE_MAX_LENGTH) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `code` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
+        $query = "UPDATE `sessions` SET `code` = ?, `updated_at` = NOW(3), `code_updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$code, $this->id]);
         return true;
     }
@@ -230,7 +243,7 @@ class Session
         if (!Utils::isUuid($userId)) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `writer` = ?, `updated_at` = NOW(3) WHERE `id` = ?";
+        $query = "UPDATE `sessions` SET `writer` = ?, `updated_at` = NOW(3), `code_updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$userId, $this->id]);
         return true;
     }

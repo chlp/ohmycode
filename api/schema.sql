@@ -7,6 +7,7 @@ create table sessions
     runner            varchar(32) not null,
     runner_checked_at datetime,
     updated_at        datetime(3) not null default NOW(3),
+    code_updated_at   datetime(3) not null default NOW(3),
     writer            varchar(32) not null,
     constraint sessions_pk
         primary key (id)

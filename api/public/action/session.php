@@ -26,6 +26,7 @@ switch ($action) {
             if ($lastUpdate !== null) {
                 Session::updateUserOnline($sessionId, $userId);
                 Session::removeOldUsers($sessionId);
+                Session::updateWriter($sessionId);
             }
             return;
         }
@@ -42,6 +43,7 @@ switch ($action) {
             Session::updateUserOnline($sessionId, $userId);
         }
         Session::removeOldUsers($sessionId);
+        Session::updateWriter($sessionId);
         echo $session->getJson();
         break;
     case 'setSessionName':
