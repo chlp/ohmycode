@@ -113,15 +113,6 @@ langSelect.onchange = () => {
     }
 };
 
-runButton.onclick = () => {
-    actions.setRequest();
-};
-codeContainerBlock.onkeydown = (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        actions.setRequest();
-    }
-};
-
 let writerBlocksUpdate = () => {
     becomeWriterButton.style.display = !isWriter ? 'block' : 'none';
     langSelect.style.display = isWriter ? 'block' : 'none';
@@ -191,7 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let isDebug = false;
 let lastUpdateTimestamp = +new Date;
+let pageUpdaterTimer = 0;
 let pageUpdater = () => {
+    console.log('pageUpdated');
     let start = +new Date;
     postRequest('/action/session.php', {
         session: session.id,
@@ -250,7 +243,8 @@ let pageUpdater = () => {
             codeBlock.setOption('mode', langKeyToHighlighter[session.lang]);
         }
     }, () => {
-        setTimeout(() => {
+        clearTimeout(pageUpdaterTimer);
+        pageUpdaterTimer = setTimeout(() => {
             pageUpdater();
         }, 1000);
     });
@@ -273,3 +267,19 @@ let pageUpdater = () => {
     });
 };
 pageUpdater();
+
+let runCode = () => {
+    if (!isWriter || !session.isRunnerOnline) {
+        return;
+    }
+    clearTimeout(pageUpdaterTimer);
+    actions.runCode(pageUpdater);
+};
+runButton.onclick = () => {
+    runCode();
+};
+codeContainerBlock.onkeydown = (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        runCode();
+    }
+};

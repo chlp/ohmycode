@@ -8,7 +8,7 @@ let actions = {
             action: 'setSessionName',
             sessionName: newSessionName,
         }, (response) => {
-            console.log('saved session name', newSessionName, response);
+            console.log('setSessionName: result', newSessionName, response);
         }, () => {
         });
     },
@@ -20,7 +20,7 @@ let actions = {
             userName: newUserName,
             action: 'setUserName',
         }, (response) => {
-            console.log('saved user name', newUserName, response);
+            console.log('setUserName: result', newUserName, response);
             if (response === '') {
                 localStorage['initialUserName'] = newUserName;
             }
@@ -35,7 +35,7 @@ let actions = {
             action: 'setLang',
             lang: langSelect.value,
         }, (response) => {
-            console.log('saved lang', response);
+            console.log('setLang: result', response);
         }, () => {
         });
     },
@@ -47,7 +47,7 @@ let actions = {
             action: 'setRunner',
             runner: runnerInput.value,
         }, (response) => {
-            console.log('saved runner', response);
+            console.log('setRunner: result', response);
         }, () => {
         });
     },
@@ -62,7 +62,7 @@ let actions = {
             userName: userOwnNameBlock.textContent,
             action: 'setWriter',
         }, (response) => {
-            console.log('saved writer', response);
+            console.log('setWriter: result', response);
         }, () => {
         });
     },
@@ -79,7 +79,7 @@ let actions = {
                 action: 'setCode',
                 code: codeBlock.getValue(),
             }, (response) => {
-                console.log('saved code', response);
+                console.log('setCode: result', response);
                 callback();
             }, () => {
             });
@@ -87,10 +87,7 @@ let actions = {
             callback();
         }
     },
-    setRequest: () => {
-        if (!isWriter || !session.isRunnerOnline) {
-            return;
-        }
+    runCode: (callback) => {
         actions.setCode(() => {
             session.result = 'In progress..';
             resultBlock.setValue('In progress..');
@@ -98,8 +95,9 @@ let actions = {
                 session: session.id,
                 action: 'set',
             }, (response) => {
-                console.log('saved request', response);
+                console.log('runCode->setCode: result', response);
             }, () => {
+                callback();
             });
         });
     },
