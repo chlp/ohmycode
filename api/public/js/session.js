@@ -236,9 +236,11 @@ let pageUpdater = () => {
         // update code
         if (!codeIsSending && !isWriter && sessionPreviousState.code.ohMySimpleHash() !== session.code.ohMySimpleHash()) {
             // if writer, not update code
-            let scrollInfo = codeBlock.getScrollInfo();
+            let {left, top} = codeBlock.getScrollInfo();
+            let {line, ch} = codeBlock.getCursor();
             codeBlock.setValue(session.code);
-            codeBlock.scrollTo(scrollInfo.left, scrollInfo.top);
+            codeBlock.scrollTo(left, top);
+            codeBlock.setCursor({line: line, ch: ch});
         }
 
         // update lang
