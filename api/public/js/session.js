@@ -167,7 +167,7 @@ let resultBlockUpdate = () => {
     } else if (session.result.length > 0) {
         codeContainerBlock.style.width = null;
         resultContainerBlock.style.display = 'block';
-        if (sessionPreviousState.result.hash() !== session.result.hash()) {
+        if (sessionPreviousState.result.ohMySimpleHash() !== session.result.ohMySimpleHash()) {
             resultBlock.setValue(session.result);
         }
     } else if (session.isRunnerOnline) {
@@ -233,7 +233,7 @@ let pageUpdater = () => {
         }
 
         // update code
-        if (!isWriter && sessionPreviousState.code.hash() !== session.code.hash()) {
+        if (!isWriter && sessionPreviousState.code.ohMySimpleHash() !== session.code.ohMySimpleHash()) {
             // if writer, not update code
             let scrollInfo = codeBlock.getScrollInfo();
             codeBlock.setValue(session.code);
@@ -269,16 +269,19 @@ let pageUpdater = () => {
 };
 pageUpdater();
 
+let codeSenderTimer = 0;
 let codeSender = () => {
     console.log('codeSender');
-    if (session.code.hash() !== codeBlock.getValue().hash()) {
+    if (session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
         actions.setCode(() => {
-            setTimeout(() => {
+            clearTimeout(codeSenderTimer);
+            codeSenderTimer = setTimeout(() => {
                 codeSender();
             }, 1000);
         });
     } else {
-        setTimeout(() => {
+        clearTimeout(codeSenderTimer);
+        codeSenderTimer = setTimeout(() => {
             codeSender();
         }, 300);
     }
@@ -291,7 +294,7 @@ let runCode = () => {
         return;
     }
     clearTimeout(pageUpdaterTimer);
-    if (isWriter && session.code.hash() !== codeBlock.getValue().hash()) {
+    if (isWriter && session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
         actions.setCode(() => {
             actions.runCode(pageUpdater);
         });

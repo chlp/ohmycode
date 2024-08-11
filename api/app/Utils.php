@@ -67,4 +67,15 @@ class Utils
         $msg .= $str;
         error_log($msg);
     }
+
+    public static function ohMySimpleHash(string $str): int
+    {
+        $hash = 0;
+        for ($i = 0; $i < strlen($str); $i++) {
+            $char = ord($str[$i]);
+            $hash = ($hash << 5) - $hash + $char;
+            $hash = $hash & 0xFFFFFFFF;
+        }
+        return $hash;
+    }
 }

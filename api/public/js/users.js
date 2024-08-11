@@ -83,8 +83,8 @@ let updateUsers = () => {
             html += '<span>' + user.name + '</span>';
         }
     })
-    if (usersContainerState !== html.hash() && !userNameEditing) {
-        usersContainerState = html.hash();
+    if (usersContainerState !== html.ohMySimpleHash() && !userNameEditing) {
+        usersContainerState = html.ohMySimpleHash();
         usersContainerBlock.innerHTML = html;
         userOwnNameBlock = document.getElementById('own-name');
         userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
