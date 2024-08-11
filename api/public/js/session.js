@@ -187,16 +187,14 @@ let isDebug = false;
 let lastUpdateTimestamp = +new Date;
 let pageUpdaterTimer = 0;
 let pageUpdater = () => {
-    console.log('pageUpdater: start');
     let start = +new Date;
-    postRequest('/action/session.php', {
+    postRequest('/action/session.php?action=getUpdate', {
         session: session.id,
         user: userId,
         userName: userName,
-        lastUpdate: session.updatedAt ? session.updatedAt.data : null,
+        lastUpdate: session.updatedAt ? session.updatedAt.date : null,
         action: 'getUpdate',
     }, (response) => {
-        console.log('pageUpdater: result', response);
         ping = +new Date - start;
         if (isDebug) {
             console.log((new Date).toLocaleString() + ' | ping: ' + ping);
@@ -219,7 +217,7 @@ let pageUpdater = () => {
         // update users
         updateUsers();
 
-        // update writer/spectator ui
+        // update "Code is writing now by" block
         writerBlocksUpdate();
 
         // update runner ui
@@ -274,7 +272,6 @@ pageUpdater();
 
 let codeSenderTimer = 0;
 let codeSender = () => {
-    console.log('codeSender');
     if (session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
         codeIsSending = true;
         actions.setCode(() => {

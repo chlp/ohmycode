@@ -8,8 +8,8 @@ class Session
 {
     private const DEFAULT_LANG = 'php82';
     private const CODE_MAX_LENGTH = 32768;
-    private const IS_ACTIVE_FROM_LAST_UPDATE_SEC = 20;
-    private const IS_WRITER_STILL_WRITING_SEC = 3;
+    private const IS_ACTIVE_FROM_LAST_UPDATE_SEC = 10;
+    private const IS_WRITER_STILL_WRITING_SEC = 2;
     private Db $db;
     public const LANGS = [
         'php82' => [
@@ -57,6 +57,7 @@ class Session
             'id' => $this->id,
             'name' => $this->name,
             'code' => $this->code,
+            'codeHash' => Utils::ohMySimpleHash($this->code),
             'lang' => $this->lang,
             'runner' => $this->runner,
             'isRunnerOnline' => $this->isRunnerOnline(),
@@ -148,13 +149,14 @@ class Session
         if (Utils::isUuid($sessionId)) {
             $query = "delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL " . self::IS_ACTIVE_FROM_LAST_UPDATE_SEC . " second";
             Db::get()->exec($query, [$sessionId]);
+            // todo: if affected > 0, update updated_at
         }
     }
 
     public static function updateWriter(string $sessionId): void
     {
         if (Utils::isUuid($sessionId)) {
-            $query = "update `sessions` set writer = '' where `id` = ? and `code_updated_at` < NOW(3) - INTERVAL " . self::IS_WRITER_STILL_WRITING_SEC . " second";
+            $query = "update `sessions` set writer = '', updated_at = NOW(3) where `id` = ? and `code_updated_at` < NOW(3) - INTERVAL " . self::IS_WRITER_STILL_WRITING_SEC . " second";
             Db::get()->exec($query, [$sessionId]);
         }
     }

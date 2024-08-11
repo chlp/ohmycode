@@ -1,7 +1,7 @@
 let actions = {
     setSessionName: () => {
         let newSessionName = sessionNameBlock.textContent;
-        postRequest('/action/session.php', {
+        postRequest('/action/session.php?action=setSessionName', {
             session: session.id,
             user: userId,
             userName: userName,
@@ -14,7 +14,7 @@ let actions = {
     },
     setUserName: () => {
         let newUserName = userOwnNameBlock.textContent;
-        postRequest('/action/session.php', {
+        postRequest('/action/session.php?action=setUserName', {
             session: session.id,
             user: userId,
             userName: newUserName,
@@ -28,7 +28,7 @@ let actions = {
         });
     },
     setLang: () => {
-        postRequest('/action/session.php', {
+        postRequest('/action/session.php?action=setLang', {
             session: session.id,
             user: userId,
             userName: userOwnNameBlock.textContent,
@@ -40,7 +40,7 @@ let actions = {
         });
     },
     setRunner: () => {
-        postRequest('/action/session.php', {
+        postRequest('/action/session.php?action=setRunner', {
             session: session.id,
             user: userId,
             userName: userOwnNameBlock.textContent,
@@ -55,13 +55,12 @@ let actions = {
         isSetWriterInProgress = true;
         isWriter = true;
         session.writer = userId;
-        postRequest('/action/session.php', {
+        postRequest('/action/session.php?action=setWriter', {
             session: session.id,
             user: userId,
             userName: userOwnNameBlock.textContent,
             action: 'setWriter',
         }, (response) => {
-            console.log('setWriter: result', response);
             if (response.length !== 0) {
                 let data = JSON.parse(response);
                 if (data.error !== undefined) {
@@ -86,7 +85,7 @@ let actions = {
         }
         let sendRequest = () => {
             session.code = codeBlock.getValue();
-            postRequest('/action/session.php', {
+            postRequest('/action/session.php?action=setCode' , {
                 session: session.id,
                 user: userId,
                 userName: userName,
