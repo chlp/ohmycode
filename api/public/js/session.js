@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultBlockUpdate();
 });
 
+let codeIsSending = false;
 let isDebug = false;
 let lastUpdateTimestamp = +new Date;
 let pageUpdaterTimer = 0;
@@ -233,7 +234,7 @@ let pageUpdater = () => {
         }
 
         // update code
-        if (!isWriter && sessionPreviousState.code.ohMySimpleHash() !== session.code.ohMySimpleHash()) {
+        if (!codeIsSending && !isWriter && sessionPreviousState.code.ohMySimpleHash() !== session.code.ohMySimpleHash()) {
             // if writer, not update code
             let scrollInfo = codeBlock.getScrollInfo();
             codeBlock.setValue(session.code);
@@ -273,7 +274,9 @@ let codeSenderTimer = 0;
 let codeSender = () => {
     console.log('codeSender');
     if (session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
+        codeIsSending = true;
         actions.setCode(() => {
+            codeIsSending = false;
             clearTimeout(codeSenderTimer);
             codeSenderTimer = setTimeout(() => {
                 codeSender();
