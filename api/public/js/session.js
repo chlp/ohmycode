@@ -79,11 +79,32 @@ let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     theme: getCodeTheme(),
     autofocus: true,
 });
+codeBlock.on('keydown', function (codemirror, event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+        return;
+    }
+    const nonTextKeys = [
+        'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab',
+        'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        'Enter', 'Backspace', 'Delete', 'Home', 'End', 'PageUp',
+        'PageDown', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7',
+        'F8', 'F9', 'F10', 'F11', 'F12', 'Insert', 'Pause',
+        'NumLock', 'ScrollLock', 'ContextMenu'
+    ];
+    if (nonTextKeys.includes(event.key)) {
+        return;
+    }
+    if (session.writer !== '' && session.writer !== userId) {
+        // todo: show hint
+        console.log('someone else is changing code now. wait please');
+    }
+});
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,
     theme: getResultTheme(),
 });
+// todo: here we could show hint that it is not editable result
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
     codeBlock.setOption('theme', getCodeTheme());
     resultBlock.setOption('theme', getResultTheme());
