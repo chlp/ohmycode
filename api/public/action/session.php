@@ -20,15 +20,31 @@ $userName = (string)($input['userName'] ?? '');
 $action = (string)($input['action'] ?? '');
 switch ($action) {
     case 'getUpdate':
+        $isKeepAlive = (bool)($input['isKeepAlive'] ?? false);
+        $keepAliveRequestTimeSec = 30;
+        if ($isKeepAlive) {
+            ini_set('max_execution_time', $keepAliveRequestTimeSec + 3);
+        }
         $lastUpdate = isset($input['lastUpdate']) ? (string)$input['lastUpdate'] : null;
-        $session = Session::get($sessionId, $lastUpdate);
-        if ($session === null) {
-            if ($lastUpdate !== null) {
-                Session::updateUserOnline($sessionId, $userId);
-                Session::removeOldUsers($sessionId);
-                Session::updateWriter($sessionId);
+        while (true) {
+            $session = Session::get($sessionId, $lastUpdate);
+            if ($session !== null) {
+                break;
+            } else {
+                if ($lastUpdate !== null) {
+                    // todo: do this only 1 per sec
+                    Session::updateUserOnline($sessionId, $userId);
+                    Session::cleanupUsers($sessionId);
+                    Session::cleanupWriter($sessionId);
+                }
+                if (Utils::timer() > $keepAliveRequestTimeSec) {
+                    return;
+                }
+                if (connection_status() !== CONNECTION_NORMAL) {
+                    return;
+                }
+                usleep(200000); // 0.2 sec
             }
-            return;
         }
         $userFound = false;
         foreach ($session->users as $user) {
@@ -42,8 +58,8 @@ switch ($action) {
         } else {
             Session::updateUserOnline($sessionId, $userId);
         }
-        Session::removeOldUsers($sessionId);
-        Session::updateWriter($sessionId);
+        Session::cleanupUsers($sessionId);
+        Session::cleanupWriter($sessionId);
         echo $session->getJson();
         break;
     case 'setSessionName':

@@ -194,6 +194,7 @@ let pageUpdater = () => {
         userName: userName,
         lastUpdate: session.updatedAt ? session.updatedAt.date : null,
         action: 'getUpdate',
+        isKeepAlive: true,
     }, (response) => {
         ping = +new Date - start;
         if (isDebug) {

@@ -144,21 +144,14 @@ class Session
         }
     }
 
-    public static function removeOldUsers(string $sessionId): void
+    public static function cleanupUsers(string $sessionId): void
     {
         if (Utils::isUuid($sessionId)) {
             $query = "delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL " . self::IS_ACTIVE_FROM_LAST_UPDATE_SEC . " second";
             if (Db::get()->exec($query, [$sessionId]) > 0) {
+                error_log('removeOldUsers');
                 self::updateTime($sessionId);
             }
-        }
-    }
-
-    public static function updateWriter(string $sessionId): void
-    {
-        if (Utils::isUuid($sessionId)) {
-            $query = "update `sessions` set writer = '', updated_at = NOW(3) where `id` = ? and `code_updated_at` < NOW(3) - INTERVAL " . self::IS_WRITER_STILL_WRITING_SEC . " second";
-            Db::get()->exec($query, [$sessionId]);
         }
     }
 
@@ -253,6 +246,14 @@ class Session
         $query = "UPDATE `sessions` SET `writer` = ?, `updated_at` = NOW(3), `code_updated_at` = NOW(3) WHERE `id` = ?";
         $this->db->exec($query, [$userId, $this->id]);
         return true;
+    }
+
+    public static function cleanupWriter(string $sessionId): void
+    {
+        if (Utils::isUuid($sessionId)) {
+            $query = "update `sessions` set `writer` = '', `updated_at` = NOW(3) where `id` = ? and `writer` != '' and `code_updated_at` < NOW(3) - INTERVAL " . self::IS_WRITER_STILL_WRITING_SEC . " second";
+            Db::get()->exec($query, [$sessionId]);
+        }
     }
 
     public function isRunnerOnline(): bool
