@@ -194,7 +194,7 @@ class Session
 
     public static function updateTime(string $sessionId): void
     {
-        if (Utils::isUuid($sessionId)) {
+        if (!Utils::isUuid($sessionId)) {
             return;
         }
         $query = "UPDATE `sessions` SET `updated_at` = NOW(3) WHERE `id` = ?;";

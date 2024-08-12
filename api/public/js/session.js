@@ -186,8 +186,13 @@ let codeIsSending = false;
 let isDebug = false;
 let lastUpdateTimestamp = +new Date;
 let pageUpdaterTimer = 0;
+let pageUpdaterIsInProgress = false;
 let pageUpdater = () => {
     let start = +new Date;
+    if (pageUpdaterIsInProgress) {
+        return;
+    }
+    pageUpdaterIsInProgress = true;
     postRequest('/action/session.php?action=getUpdate', {
         session: session.id,
         user: userId,
@@ -196,6 +201,7 @@ let pageUpdater = () => {
         action: 'getUpdate',
         isKeepAlive: true,
     }, (response) => {
+        pageUpdaterIsInProgress = false;
         ping = +new Date - start;
         if (isDebug) {
             console.log((new Date).toLocaleString() + ' | ping: ' + ping);
