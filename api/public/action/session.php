@@ -26,16 +26,21 @@ switch ($action) {
             ini_set('max_execution_time', $keepAliveRequestTimeSec + 3);
         }
         $lastUpdate = isset($input['lastUpdate']) ? (string)$input['lastUpdate'] : null;
+        $lastInCycleUpdateTime = 0;
         while (true) {
             $session = Session::get($sessionId, $lastUpdate);
             if ($session !== null) {
                 break;
             } else {
                 if ($lastUpdate !== null) {
-                    // todo: do this only 1 per sec
-                    Session::updateUserOnline($sessionId, $userId);
-                    Session::cleanupUsers($sessionId);
-                    Session::cleanupWriter($sessionId);
+                    $currentTime = microtime(true);
+                    if ($currentTime - $lastInCycleUpdateTime >= 1) {
+                        // updating max one time per second
+                        $lastInCycleUpdateTime = $currentTime;
+                        Session::updateUserOnline($sessionId, $userId);
+                        Session::cleanupUsers($sessionId);
+                        Session::cleanupWriter($sessionId);
+                    }
                 }
                 if (Utils::timer() > $keepAliveRequestTimeSec) {
                     return;

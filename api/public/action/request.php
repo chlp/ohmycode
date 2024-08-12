@@ -32,8 +32,14 @@ switch ($action) {
             error('not valid runner', 404);
         }
         $requests = [];
+        $lastInCycleUpdateTime = 0;
         while (true) {
-            Session::setCheckedByRunner($runner); // todo: do this only 1 per sec
+            $currentTime = microtime(true);
+            if ($currentTime - $lastInCycleUpdateTime >= 1) {
+                // updating max one time per second
+                $lastInCycleUpdateTime = $currentTime;
+                Session::setCheckedByRunner($runner);
+            }
             $requests = Request::get($runner);
             if (!$isKeepAlive) {
                 break;
