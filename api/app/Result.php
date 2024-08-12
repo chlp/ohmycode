@@ -12,7 +12,7 @@ class Result
             $request->session, $request->code, $result, $request->lang,
             $request->code, $result, $request->lang,
         ]);
-        Session::get($request->session)?->updateTime();
+        Session::updateTime($request->session);
         Request::remove($request->runner, $request->lang, $request->hash);
     }
 

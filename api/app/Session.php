@@ -148,8 +148,9 @@ class Session
     {
         if (Utils::isUuid($sessionId)) {
             $query = "delete from `session_users` where `session` = ? and `updated_at` < NOW(3) - INTERVAL " . self::IS_ACTIVE_FROM_LAST_UPDATE_SEC . " second";
-            Db::get()->exec($query, [$sessionId]);
-            // todo: if affected > 0, update updated_at
+            if (Db::get()->exec($query, [$sessionId]) > 0) {
+                self::updateTime($sessionId);
+            }
         }
     }
 
@@ -198,10 +199,13 @@ class Session
         return true;
     }
 
-    public function updateTime(): void
+    public static function updateTime(string $sessionId): void
     {
+        if (Utils::isUuid($sessionId)) {
+            return;
+        }
         $query = "UPDATE `sessions` SET `updated_at` = NOW(3) WHERE `id` = ?;";
-        $this->db->exec($query, [$this->id]);
+        Db::get()->exec($query, [$sessionId]);
     }
 
     public function setUserName(string $userId, string $name): bool
@@ -214,7 +218,7 @@ class Session
         }
         $query = "INSERT INTO `session_users` SET `session` = ?, `user` = ?, `name` = ? ON DUPLICATE KEY UPDATE `name` = ?";
         $this->db->exec($query, [$this->id, $userId, $name, $name]);
-        $this->updateTime();
+        self::updateTime($this->id);
         return true;
     }
 

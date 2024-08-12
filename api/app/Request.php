@@ -23,7 +23,7 @@ class Request
             $session->id, $session->runner, $session->code, $session->lang,
             $session->runner, $session->code, $session->lang,
         ]);
-        $session->updateTime();
+        Session::updateTime($session->id);
         Result::remove($session->id);
     }
 

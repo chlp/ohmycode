@@ -44,7 +44,7 @@ class Db
         return $result;
     }
 
-    public function exec(string $query, ?array $params): void
+    public function exec(string $query, ?array $params): int
     {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
@@ -52,7 +52,9 @@ class Db
         }
         $this->bindParams($query, $stmt, $params);
         $stmt->execute();
+        $affectedRows = (int)$stmt->affected_rows;
         $stmt->close();
+        return $affectedRows;
     }
 
     private function bindParams(string $query, mysqli_stmt $stmt, ?array $params): void

@@ -110,7 +110,7 @@ let actions = {
     runCode: (callback) => {
         session.result = 'In progress..';
         resultBlock.setValue('In progress..');
-        postRequest('/action/request.php', {
+        postRequest('/action/request.php?action=set', {
             session: session.id,
             action: 'set',
         }, (response) => {
