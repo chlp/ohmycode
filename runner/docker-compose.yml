@@ -15,6 +15,8 @@ services:
       - ./java:/app/java
   runner-postgres13:
     container_name: ohmycode-runner-postgres13
+    networks:
+      - isolated-network-postgres13
     build:
       context: ./postgres13
       dockerfile: Dockerfile
@@ -35,6 +37,8 @@ services:
       POSTGRES_DB: mydatabase
   runner-php82:
     container_name: ohmycode-runner-php82
+    networks:
+      - isolated-network-php82
     build:
       context: ./php82
       dockerfile: Dockerfile
@@ -47,6 +51,8 @@ services:
       - /app/tmp:mode=1777,uid=1000,gid=1000
   runner-mysql8:
     container_name: ohmycode-runner-mysql8
+    networks:
+      - isolated-network-mysql8
     build:
       context: ./mysql8
       dockerfile: Dockerfile
@@ -66,6 +72,8 @@ services:
       MYSQL_ROOT_PASSWORD: mysql8root
   runner-go:
     container_name: ohmycode-runner-go
+    networks:
+      - isolated-network-go
     build:
       context: ./go
       dockerfile: Dockerfile
@@ -79,6 +87,8 @@ services:
       - /app/tmp:mode=1777,uid=1000,gid=1000
   runner-java:
     container_name: ohmycode-runner-java
+    networks:
+      - isolated-network-java
     build:
       context: ./java
       dockerfile: Dockerfile
@@ -90,5 +100,22 @@ services:
     tmpfs:
       - /app/java:mode=1777,uid=1000,gid=1000
       - /app/tmp:mode=1777,uid=1000,gid=1000
+
+networks:
+  isolated-network-postgres13:
+    driver: bridge
+    internal: true
+  isolated-network-php82:
+    driver: bridge
+    internal: true
+  isolated-network-mysql8:
+    driver: bridge
+    internal: true
+  isolated-network-go:
+    driver: bridge
+    internal: true
+  isolated-network-java:
+    driver: bridge
+    internal: true
 
 # docker-compose up --build --remove-orphans --force-recreate
