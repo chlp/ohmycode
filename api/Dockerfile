@@ -1,5 +1,3 @@
-# docker-compose up --build --remove-orphans
-
 FROM php:8.2
 RUN docker-php-ext-install mysqli
 WORKDIR /app

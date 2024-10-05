@@ -12,6 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     error('Method not allowed', 405);
 }
 
+header('Content-Type: application/json; charset=utf-8');
+
 session_write_close();
 
 return json_decode(file_get_contents('php://input'), true);
