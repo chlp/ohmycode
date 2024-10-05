@@ -14,5 +14,5 @@ https://ohmycode.work/
 
 # Build and run
 
-1. cd api and run `docker-compose up --build --remove-orphans --force-recreate`
-2. cd runner and run `docker-compose up --build --remove-orphans --force-recreate`
+1. cd api and run `docker compose up --build --remove-orphans --force-recreate`
+2. cd runner and run `docker compose up --build --remove-orphans --force-recreate`
