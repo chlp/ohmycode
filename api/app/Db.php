@@ -2,6 +2,7 @@
 
 namespace app;
 
+use DateTime;
 use mysqli;
 use mysqli_stmt;
 
@@ -69,6 +70,12 @@ class Db
                 $types .= 's';
             } elseif (is_int($param)) {
                 $types .= 'i';
+            } elseif (is_bool($param)) {
+                $types .= 'i';
+                $param = (int)$param;
+            } elseif ($param instanceof DateTime) {
+                $types .= 's';
+                $param = $param->format('Y-m-d H:i:s');
             } else {
                 die("wrong type: $i:" . gettype($param) . ' | ' . substr($query, 0, 50));
             }
