@@ -11,7 +11,7 @@ if ($conf === null) {
     echo "problem with conf\n";
     return;
 }
-$api = new Api($conf->runnerId, $conf->apiUrl);
+$api = new Api($conf->runnerId, $conf->isPublic, $conf->apiUrl);
 
 usleep(500000); // 0.5 sec
 echo "requests receiver initiating. id: $conf->runnerId\n";

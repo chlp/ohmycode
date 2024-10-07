@@ -25,7 +25,7 @@ switch ($action) {
         if ($isKeepAlive) {
             ini_set('max_execution_time', $keepAliveRequestTimeSec + 3);
         }
-        $lastUpdate = isset($input['lastUpdate']) ? (string)$input['lastUpdate'] : null;
+        $lastUpdate = (isset($input['lastUpdate']) && is_string($input['lastUpdate'])) ? $input['lastUpdate'] : null;
         $lastInCycleUpdateTime = 0;
         while (true) {
             $session = Session::get($sessionId, $lastUpdate);

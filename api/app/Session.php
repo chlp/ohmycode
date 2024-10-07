@@ -39,6 +39,7 @@ class Session
         public string $name,
         public string $code,
         public string $lang,
+        public bool $runnerIsPublic,
         public string $runner,
         public ?DateTime $runnerCheckedAt,
         public ?DateTime $updatedAt,
@@ -47,7 +48,8 @@ class Session
         public array $users,
         public bool $isWaitingForResult,
         public string $result,
-    ) {
+    )
+    {
         $this->db = Db::get();
     }
 
@@ -59,8 +61,10 @@ class Session
             'code' => $this->code,
             'codeHash' => Utils::ohMySimpleHash($this->code),
             'lang' => $this->lang,
+            'runnerIsPublic' => $this->runnerIsPublic,
             'runner' => $this->runner,
-            'isRunnerOnline' => $this->isRunnerOnline(),
+            'runnerCA' => $this->runnerCheckedAt,
+            'runnerIsOnline' => $this->runnerIsOnline(),
             'updatedAt' => $this->updatedAt,
             'codeUpdatedAt' => $this->codeUpdatedAt,
             'writer' => $this->writer,
@@ -76,12 +80,8 @@ class Session
             return null;
         }
         $name = date('Y-m-d');
-        $runner = self::getRandomActiveRunner();
-        $runnerCheckedAt = null;
-        if ($runner !== '') {
-            $runnerCheckedAt = new DateTime();
-        }
-        return new self($id, $name, '', self::DEFAULT_LANG, $runner, $runnerCheckedAt, null, null, '', [], false, '');
+        $runnerCheckedAt = self::getNewestPublicRunnerCheckedAt();
+        return new self($id, $name, '', self::DEFAULT_LANG, true, '', $runnerCheckedAt, null, null, '', [], false, '');
     }
 
     public static function get(string $id, ?string $updatedAfter = null): ?self
@@ -90,7 +90,8 @@ class Session
             return null;
         }
         $query = "
-            SELECT `name`, `sessions`.`code`, `sessions`.`lang`, `sessions`.`runner`, `runner_checked_at`,
+            SELECT `name`, `sessions`.`code`, `sessions`.`lang`,
+                `sessions`.`runner_is_public`, `sessions`.`runner`, `runner_checked_at`,
                 `sessions`.`updated_at`, `sessions`.`code_updated_at`, `writer`,
                 `requests`.`session` IS NOT NULL AS `isWaitingForResult`, `results`.`result`
             FROM `sessions`
@@ -107,7 +108,7 @@ class Session
         if (count($res) === 0) {
             return null;
         }
-        [$sessionName, $code, $lang, $runner, $runnerCheckedAtStr, $updatedAtStr, $codeUpdatedAtStr, $writer, $isWaitingForResult, $result] = $res[0];
+        [$sessionName, $code, $lang, $runnerIsPublic, $runner, $runnerCheckedAtStr, $updatedAtStr, $codeUpdatedAtStr, $writer, $isWaitingForResult, $result] = $res[0];
         $runnerCheckedAt = null;
         if ($runnerCheckedAtStr !== null) {
             $runnerCheckedAt = DateTime::createFromFormat('Y-m-d H:i:s', $runnerCheckedAtStr);
@@ -118,7 +119,7 @@ class Session
         if ($result === '') {
             $result = '_';
         }
-        $session = new self($id, $sessionName, $code, $lang, $runner, $runnerCheckedAt, $updatedAt, $codeUpdatedAt, $writer, [], $isWaitingForResult, $result ?? '');
+        $session = new self($id, $sessionName, $code, $lang, $runnerIsPublic, $runner, $runnerCheckedAt, $updatedAt, $codeUpdatedAt, $writer, [], $isWaitingForResult, $result ?? '');
         $session->loadUsers();
 
         return $session;
@@ -157,8 +158,8 @@ class Session
 
     public function insert(): self
     {
-        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner` = ?, `writer` = ?, `id` = ?;";
-        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runner, $this->writer, $this->id]);
+        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner_is_public` = ?, `runner` = ?, `runner_checked_at` = ?, `writer` = ?, `id` = ?;";
+        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runnerIsPublic, $this->runner, $this->runnerCheckedAt, $this->writer, $this->id]);
         return self::get($this->id);
     }
 
@@ -225,16 +226,21 @@ class Session
         return true;
     }
 
-    public static function setCheckedByRunner(string $runner): void
+    public static function setCheckedByRunner(string $runner, bool $isPublic): void
     {
         if (!Utils::isUuid($runner)) {
             return;
         }
 
-        $query = "UPDATE `sessions` SET `runner_checked_at` = NOW() WHERE `runner` = ?";
-        Db::get()->exec($query, [$runner]);
+        if ($isPublic) {
+            $query = "UPDATE `sessions` SET `runner_checked_at` = NOW() WHERE `runner` = ''";
+            Db::get()->exec($query, []);
+        } else {
+            $query = "UPDATE `sessions` SET `runner_checked_at` = NOW() WHERE `runner` = ?";
+            Db::get()->exec($query, [$runner]);
+        }
 
-        self::setActiveRunner($runner);
+        self::setActiveRunner($runner, $isPublic);
     }
 
     public function setWriter(string $userId): bool
@@ -256,7 +262,7 @@ class Session
         }
     }
 
-    public function isRunnerOnline(): bool
+    public function runnerIsOnline(): bool
     {
         if ($this->runnerCheckedAt === null) {
             return false;
@@ -264,17 +270,21 @@ class Session
         return time() - $this->runnerCheckedAt->getTimestamp() < self::IS_ACTIVE_FROM_LAST_UPDATE_SEC;
     }
 
-    private static function getRandomActiveRunner(): string
+    private static function getNewestPublicRunnerCheckedAt(): ?DateTime
     {
-        $query = "SELECT `id` FROM `runners` WHERE checked_at >= NOW() - INTERVAL " . self::IS_ACTIVE_FROM_LAST_UPDATE_SEC . " SECOND ORDER BY RAND() LIMIT 1;";
-        $runners = Db::get()->select($query);
-        if (count($runners) === 1) {
-            return $runners[0][0];
+        $checkedAt = null;
+        $query = "SELECT `checked_at` FROM `runners` WHERE `is_public` = true ORDER BY `checked_at` DESC LIMIT 1;";
+        $res = Db::get()->select($query);
+        if (count($res) === 1) {
+            $checkedAtStr = $res[0][0];
+            if ($checkedAtStr !== null) {
+                $checkedAt = DateTime::createFromFormat('Y-m-d H:i:s', $checkedAtStr);
+            }
         }
-        return '';
+        return $checkedAt;
     }
 
-    private static function setActiveRunner(string $runner): void
+    private static function setActiveRunner(string $runner, bool $isPublic): void
     {
         $setActiveRunnersQuery = "INSERT INTO runners (id, checked_at) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE checked_at = NOW()";
         Db::get()->exec($setActiveRunnersQuery, [$runner]);

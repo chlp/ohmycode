@@ -10,7 +10,8 @@ class Request
         public string $code,
         public string $lang,
         public string $hash,
-    ) {
+    )
+    {
     }
 
     const MAX_REQUESTS_FOR_RUNNER_PER_REQUEST = 5;
@@ -29,17 +30,22 @@ class Request
 
     /**
      * @param string $runner
+     * @param bool $isPublic
      * @param string|null $lang
      * @param string|null $hash
      * @return self[]
      */
-    public static function get(string $runner, ?string $lang = null, ?string $hash = null): array
+    public static function get(string $runner, bool $isPublic, ?string $lang = null, ?string $hash = null): array
     {
         if (!Utils::isUuid($runner)) {
             return [];
         }
         $query = "SELECT `session`, `code`, `lang`, md5(`code`) as `hash` FROM `requests` WHERE `runner` = ?";
-        $params = [$runner];
+        if ($isPublic) {
+            $params = [''];
+        } else {
+            $params = [$runner];
+        }
         if ($lang !== null && $hash !== null) {
             $query .= " AND `lang` = ? AND md5(`code`) = ?";
             $params[] = $lang;
@@ -57,12 +63,16 @@ class Request
         return $requests;
     }
 
-    public static function markReceived(string $runner, string $lang, string $hash): void
+    public static function markReceived(string $runner, bool $isPublic, string $lang, string $hash): void
     {
         if (!Utils::isUuid($runner)) {
             return;
         }
-        $query = "UPDATE `requests` SET `received` = 1 WHERE `runner` = ? and `lang` = ? and md5(`code`) = ?";
+        if ($isPublic) {
+            $query = "UPDATE `requests` SET `received` = 1, `runner` = ? WHERE `runner` = '' and `lang` = ? and md5(`code`) = ?";
+        } else {
+            $query = "UPDATE `requests` SET `received` = 1 WHERE `runner` = ? and `lang` = ? and md5(`code`) = ?";
+        }
         Db::get()->exec($query, [$runner, $lang, $hash]);
     }
 

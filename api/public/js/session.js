@@ -147,10 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let runnerBlocksUpdate = () => {
-    if (session.isRunnerOnline) {
+    if (session.runnerIsOnline) {
         runnerContainerBlock.style.display = 'none';
     }
-    runnerEditButton.style.display = session.isRunnerOnline ? 'none' : 'block';
+    runnerEditButton.style.display = session.runnerIsOnline ? 'none' : 'block';
 };
 document.addEventListener('DOMContentLoaded', () => {
     runnerBlocksUpdate();
@@ -177,6 +177,7 @@ runnerInput.onkeydown = (event) => {
 };
 
 let resultBlockUpdate = () => {
+    console.log('resultBlockUpdate', session.runnerIsOnline, session);
     if (session.isWaitingForResult) {
         codeContainerBlock.style.width = null;
         resultContainerBlock.style.display = 'block';
@@ -191,7 +192,7 @@ let resultBlockUpdate = () => {
         if (sessionPreviousState.result.ohMySimpleHash() !== session.result.ohMySimpleHash()) {
             resultBlock.setValue(session.result);
         }
-    } else if (session.isRunnerOnline) {
+    } else if (session.runnerIsOnline) {
         resultContainerBlock.style.display = 'block';
         resultBlock.setValue('runner will write result here...');
     } else {
@@ -200,6 +201,7 @@ let resultBlockUpdate = () => {
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded');
     resultBlockUpdate();
 });
 
@@ -229,6 +231,7 @@ let pageUpdater = () => {
         }
         lastUpdateTimestamp = +new Date;
         if (response.length === 0) {
+            console.log('getUpdate empty response');
             resultBlockUpdate(); // adding more dots to "In progress..."
             return;
         }
@@ -252,6 +255,7 @@ let pageUpdater = () => {
         runnerBlocksUpdate();
 
         // update result ui
+        console.log('getUpdate ui', response);
         resultBlockUpdate();
 
         // update session name
@@ -319,7 +323,7 @@ let codeSender = () => {
 codeSender();
 
 let runCode = () => {
-    if (!session.isRunnerOnline) {
+    if (!session.runnerIsOnline) {
         resultBlock.setValue('No runner is available to run your code :(');
         return;
     }

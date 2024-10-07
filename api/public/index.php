@@ -77,7 +77,7 @@ if ($session === null) {
 ?>
     </select>
     <button id="run-button" title="Cmd/Ctrl + Enter">Run</button>
-    <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->isRunnerOnline() ? 'none' : 'block' ?>;">Runner</button>
+    <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->runnerIsOnline() ? 'none' : 'block' ?>;">Runner</button>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
@@ -112,7 +112,7 @@ if ($session === null) {
         "code": "",
         "lang": "",
         "runner": "",
-        "isRunnerOnline": false,
+        "runnerIsOnline": false,
         "updatedAt": {
             "date": "",
             "timezone_type": 3,

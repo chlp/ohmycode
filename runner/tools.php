@@ -9,6 +9,7 @@ class Conf
 
     public function __construct(
         public readonly string $runnerId,
+        public readonly bool $isPublic,
         public readonly string $runnerName,
         public readonly string $apiUrl,
         public readonly array $languages
@@ -45,6 +46,10 @@ class Conf
             echo 'conf: wrong id format';
             return null;
         }
+        if (!is_bool($conf['is_public'])) {
+            echo 'conf: wrong is_public format';
+            return null;
+        }
         if (!is_string($conf['api'])) {
             echo 'conf: wrong api format';
             return null;
@@ -57,7 +62,7 @@ class Conf
             echo 'conf: wrong id format';
             return null;
         }
-        return new self($conf['id'], $conf['name'], $conf['api'], $conf['languages']);
+        return new self($conf['id'], $conf['is_public'], $conf['name'], $conf['api'], $conf['languages']);
     }
 
     private static function genUuid(): string
@@ -94,6 +99,7 @@ readonly class Api
 
     public function __construct(
         private string $runnerId,
+        private bool $isPublic,
         private string $url,
     )
     {
@@ -103,6 +109,7 @@ readonly class Api
     {
         $data = [
             'action' => $action,
+            'isPublic' => $this->isPublic,
             'runner' => $this->runnerId,
         ];
         if ($moreData !== null) {
@@ -116,6 +123,7 @@ readonly class Api
     {
         $data = [
             'action' => $action,
+            'isPublic' => $this->isPublic,
             'runner' => $this->runnerId,
         ];
         if ($moreData !== null) {

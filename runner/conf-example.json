@@ -1,5 +1,6 @@
 {
   "name": "default-name",
+  "is_public": true,
   "languages": [
     "go",
     "java",
