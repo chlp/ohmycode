@@ -177,7 +177,6 @@ runnerInput.onkeydown = (event) => {
 };
 
 let resultBlockUpdate = () => {
-    console.log('resultBlockUpdate', session.runnerIsOnline, session);
     if (session.isWaitingForResult) {
         codeContainerBlock.style.width = null;
         resultContainerBlock.style.display = 'block';
@@ -201,7 +200,6 @@ let resultBlockUpdate = () => {
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded');
     resultBlockUpdate();
 });
 
@@ -231,7 +229,6 @@ let pageUpdater = () => {
         }
         lastUpdateTimestamp = +new Date;
         if (response.length === 0) {
-            console.log('getUpdate empty response');
             resultBlockUpdate(); // adding more dots to "In progress..."
             return;
         }
@@ -255,7 +252,6 @@ let pageUpdater = () => {
         runnerBlocksUpdate();
 
         // update result ui
-        console.log('getUpdate ui', response);
         resultBlockUpdate();
 
         // update session name
