@@ -169,7 +169,7 @@ class Session
     public function insert(): self
     {
         $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner_is_public` = ?, `runner` = ?, `writer` = ?, `id` = ?;";
-        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runnerIsPublic, $this->runner, $this->runnerCheckedAt, $this->writer, $this->id]);
+        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runnerIsPublic, $this->runner, $this->writer, $this->id]);
         return self::get($this->id);
     }
 
