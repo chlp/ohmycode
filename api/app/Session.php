@@ -63,7 +63,7 @@ class Session
             'lang' => $this->lang,
             'runnerIsPublic' => $this->runnerIsPublic,
             'runner' => $this->runner,
-            'runnerCA' => $this->runnerCheckedAt,
+            'runnerCheckedAt' => $this->runnerCheckedAt,
             'runnerIsOnline' => $this->runnerIsOnline(),
             'updatedAt' => $this->updatedAt,
             'codeUpdatedAt' => $this->codeUpdatedAt,
@@ -91,13 +91,23 @@ class Session
         }
         $query = "
             SELECT `name`, `sessions`.`code`, `sessions`.`lang`,
-                `sessions`.`runner_is_public`, `sessions`.`runner`, `runner_checked_at`,
+                `sessions`.`runner_is_public`, `sessions`.`runner`,
+                CASE
+                    WHEN `sessions`.`runner_is_public` = 0 AND `sessions`.`runner` = '' THEN NULL
+                    WHEN `sessions`.`runner_is_public` = 0 AND `sessions`.`runner` != '' THEN (
+                        SELECT `runners`.`checked_at` FROM `runners` WHERE `runners`.`id` = `sessions`.`runner`
+                    )
+                    WHEN `sessions`.`runner_is_public` = 1 THEN (
+                        SELECT `runners`.`checked_at` FROM `runners` WHERE `runners`.`is_public` = 1 ORDER BY `checked_at` DESC LIMIT 1
+                    )
+                END AS `checked_at`,
                 `sessions`.`updated_at`, `sessions`.`code_updated_at`, `writer`,
                 `requests`.`session` IS NOT NULL AS `isWaitingForResult`, `results`.`result`
             FROM `sessions`
             LEFT JOIN `requests` ON `requests`.`session` = `sessions`.`id`
             LEFT JOIN `results` ON `results`.`session` = `sessions`.`id`
-            WHERE `id` = ?
+            LEFT JOIN `runners` ON `runners`.`id` = `sessions`.`runner`
+            WHERE `sessions`.`id` = ?
         ";
         $params = [$id];
         if ($updatedAfter !== null) {
@@ -158,7 +168,7 @@ class Session
 
     public function insert(): self
     {
-        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner_is_public` = ?, `runner` = ?, `runner_checked_at` = ?, `writer` = ?, `id` = ?;";
+        $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner_is_public` = ?, `runner` = ?, `writer` = ?, `id` = ?;";
         $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runnerIsPublic, $this->runner, $this->runnerCheckedAt, $this->writer, $this->id]);
         return self::get($this->id);
     }
@@ -232,21 +242,13 @@ class Session
         return true;
     }
 
-    public static function setCheckedByRunner(string $runner, bool $isPublic): void
+    public static function updateRunnerCheckedAt(string $runner, bool $isPublic): void
     {
         if (!Utils::isUuid($runner)) {
             return;
         }
-
-        if ($isPublic) {
-            $query = "UPDATE `sessions` SET `runner_checked_at` = NOW() WHERE `runner` = ''";
-            Db::get()->exec($query, []);
-        } else {
-            $query = "UPDATE `sessions` SET `runner_checked_at` = NOW() WHERE `runner` = ?";
-            Db::get()->exec($query, [$runner]);
-        }
-
-        self::setActiveRunner($runner, $isPublic);
+        $updateRunnerCheckedAt = "INSERT INTO `runners` (`id`, `checked_at`, `is_public`) VALUES (?, NOW(), ?) ON DUPLICATE KEY UPDATE `checked_at` = NOW(), `is_public` = ?";
+        Db::get()->exec($updateRunnerCheckedAt, [$runner, $isPublic, $isPublic]);
     }
 
     public static function cleanupWriter(string $sessionId): void
@@ -277,11 +279,5 @@ class Session
             }
         }
         return $checkedAt;
-    }
-
-    private static function setActiveRunner(string $runner, bool $isPublic): void
-    {
-        $setActiveRunnersQuery = "INSERT INTO runners (id, checked_at) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE checked_at = NOW()";
-        Db::get()->exec($setActiveRunnersQuery, [$runner]);
     }
 }

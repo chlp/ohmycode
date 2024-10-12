@@ -6,7 +6,6 @@ create table sessions
     lang              varchar(32) not null,
     runner_is_public  bool        not null default true,
     runner            varchar(32) not null,
-    runner_checked_at datetime,
     updated_at        datetime(3) not null default NOW(3),
     code_updated_at   datetime(3) not null default NOW(3),
     writer            varchar(32) not null,

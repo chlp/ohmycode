@@ -66,7 +66,9 @@ let actions = {
             action: 'setCode',
             code: newCode,
         }, (response, statusCode) => {
-            console.log('setCode: result', response, statusCode);
+            if (statusCode !== 200) {
+                console.log('setCode: result', response, statusCode);
+            }
             if (statusCode === 403) {
                 if (session.writer === userId) {
                     session.writer = '?';

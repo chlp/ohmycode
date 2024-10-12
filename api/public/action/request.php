@@ -39,7 +39,7 @@ switch ($action) {
             if ($currentTime - $lastInCycleUpdateTime >= 1) {
                 // updating max one time per second
                 $lastInCycleUpdateTime = $currentTime;
-                Session::setCheckedByRunner($runner, $isPublic);
+                Session::updateRunnerCheckedAt($runner, $isPublic);
             }
             $requests = Request::get($runner, $isPublic);
             if (!$isKeepAlive) {
