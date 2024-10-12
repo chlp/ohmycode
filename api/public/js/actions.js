@@ -84,8 +84,10 @@ let actions = {
         postRequest('/action/request.php?action=set', {
             session: session.id,
             action: 'set',
-        }, (response) => {
-            console.log('runCode->setCode: result', response);
+        }, (response, statusCode) => {
+            if (statusCode !== 200) {
+                console.log('runCode->setCode: result', response);
+            }
         }, () => {
             callback();
         });
