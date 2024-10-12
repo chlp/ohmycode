@@ -91,17 +91,13 @@ switch ($action) {
             error('Wrong runner');
         }
         break;
-    case 'setWriter':
-        $session = getSession($sessionId, $userId, $userName);
-        if (!$session->setWriter($userId)) {
-            error('Wrong userId');
-        }
-        echo $session->getJson();
-        break;
     case 'setCode':
         $session = getSession($sessionId, $userId, $userName);
-        if (!$session->setCode((string)($input['code'] ?? ''))) {
-            error('Wrong code');
+        if ($session->writer !== '' && $session->writer !== $userId) {
+            error('Temporary forbidden 1', 403);
+        }
+        if (!$session->setCode((string)($input['code'] ?? ''), $userId)) {
+            error('Temporary forbidden 2', 403);
         }
         break;
     default:

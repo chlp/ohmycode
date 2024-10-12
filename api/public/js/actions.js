@@ -51,61 +51,30 @@ let actions = {
         }, () => {
         });
     },
-    setWriter: (callback) => {
-        isSetWriterInProgress = true;
-        isWriter = true;
-        session.writer = userId;
-        postRequest('/action/session.php?action=setWriter', {
-            session: session.id,
-            user: userId,
-            userName: userOwnNameBlock.textContent,
-            action: 'setWriter',
-        }, (response) => {
-            if (response.length !== 0) {
-                let data = JSON.parse(response);
-                if (data.error !== undefined) {
-                    console.log('setWriter: error', data);
-                    return;
-                }
-                session.writer = data.writer;
-                isWriter = userId === session.writer;
-            }
-            isSetWriterInProgress = false;
-            writerBlocksUpdate();
-            updateUsers();
-        }, () => {
-            isSetWriterInProgress = false;
-            callback();
-        });
-    },
     setCode: (callback) => {
         if (session.writer !== '' && session.writer !== userId) {
             callback();
             return;
         }
-        let sendRequest = () => {
-            session.code = codeBlock.getValue();
-            postRequest('/action/session.php?action=setCode' , {
-                session: session.id,
-                user: userId,
-                userName: userName,
-                action: 'setCode',
-                code: codeBlock.getValue(),
-            }, (response) => {
-                console.log('setCode: result', response);
-            }, () => {
-                callback();
-            });
-        }
-        if (isWriter) {
-            sendRequest();
-        } else {
-            actions.setWriter(() => {
-                if (isWriter) {
-                    sendRequest();
+        session.writer = userId;
+        let newCode = codeBlock.getValue();
+        session.code = newCode;
+        postRequest('/action/session.php?action=setCode', {
+            session: session.id,
+            user: userId,
+            userName: userName,
+            action: 'setCode',
+            code: newCode,
+        }, (response, statusCode) => {
+            console.log('setCode: result', response, statusCode);
+            if (statusCode === 403) {
+                if (session.writer === userId) {
+                    session.writer = '?';
                 }
-            });
-        }
+            }
+        }, () => {
+            callback();
+        });
     },
     runCode: (callback) => {
         session.result = 'In progress..';

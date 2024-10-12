@@ -183,14 +183,20 @@ class Session
         return true;
     }
 
-    public function setCode(string $code): bool
+    public function setCode(string $code, string $userId): bool
     {
         if (strlen($code) > self::CODE_MAX_LENGTH) {
             return false;
         }
-        $query = "UPDATE `sessions` SET `code` = ?, `updated_at` = NOW(3), `code_updated_at` = NOW(3) WHERE `id` = ?";
-        $this->db->exec($query, [$code, $this->id]);
-        return true;
+        $query = "
+            UPDATE `sessions` SET
+                `code` = ?,
+                `updated_at` = NOW(3),
+                `code_updated_at` = NOW(3),
+                `writer` = ?
+            WHERE `id` = ? AND (`writer` = ? OR `writer` = '');
+        ";
+        return 1 === $this->db->exec($query, [$code, $userId, $this->id, $userId]);
     }
 
     public static function updateTime(string $sessionId): void
@@ -241,17 +247,6 @@ class Session
         }
 
         self::setActiveRunner($runner, $isPublic);
-    }
-
-    public function setWriter(string $userId): bool
-    {
-        if (!Utils::isUuid($userId)) {
-            return false;
-        }
-        $this->writer = $userId;
-        $query = "UPDATE `sessions` SET `writer` = ?, `updated_at` = NOW(3), `code_updated_at` = NOW(3) WHERE `id` = ?";
-        $this->db->exec($query, [$userId, $this->id]);
-        return true;
     }
 
     public static function cleanupWriter(string $sessionId): void

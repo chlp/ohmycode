@@ -14,5 +14,8 @@ let postRequest = (url, data, callback, final) => {
         headers: {
             "Content-type": "application/json; charset=UTF-8"
         }
-    }).then((response) => response.text()).then((text) => callback(text)).finally(() => final());
+    }).then((response) => {
+        const statusCode = response.status;
+        return response.text().then((text) => ({ text, statusCode }));
+    }).then(({ text, statusCode }) => callback(text, statusCode)).finally(() => final());
 };

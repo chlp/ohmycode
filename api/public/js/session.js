@@ -2,7 +2,6 @@ let sessionPreviousState = {...session};
 sessionPreviousState.writer = '-'; // hack to init users
 let sessionIsOnline = true;
 let ping = undefined;
-let isWriter = isNewSession;
 let userId = localStorage['userId'];
 if (userId === undefined) {
     userId = initialUserId;
@@ -96,7 +95,7 @@ codeBlock.on('keydown', function (codemirror, event) {
     }
     if (session.writer !== '' && session.writer !== userId) {
         // todo: show hint
-        console.log('someone else is changing code now. wait please');
+        console.log('someone else is changing code now. wait please:', session.writer, userId);
     }
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
@@ -130,17 +129,19 @@ langSelect.onchange = () => {
 
 let writerBlocksUpdate = () => {
     codeBlock.setOption('readOnly', session.writer !== '' && session.writer !== userId);
-    if (session.writer === '') {
-        currentWriterName.innerHTML = '';
+    let newWriterName = '?';
+    if (session.writer === '' || session.writer === userId) {
+        newWriterName = '';
         currentWriterInfo.style.display = 'none';
     } else {
-        if (session.writer === userId) {
-            currentWriterName.innerHTML = 'you';
+        if (session.users[session.writer]) {
+            newWriterName = session.users[session.writer].name;
         } else {
-            currentWriterName.innerHTML = session.users[session.writer].name ?? '???';
+            newWriterName = '???';
         }
         currentWriterInfo.style.removeProperty('display');
     }
+    currentWriterName.innerHTML = newWriterName;
 };
 document.addEventListener('DOMContentLoaded', () => {
     writerBlocksUpdate();
@@ -203,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
     resultBlockUpdate();
 });
 
-let codeIsSending = false;
 let isDebug = false;
 let lastUpdateTimestamp = +new Date;
 let pageUpdaterTimer = 0;
@@ -260,8 +260,10 @@ let pageUpdater = () => {
         }
 
         // update code
-        if (!codeIsSending && !isWriter && sessionPreviousState.code.ohMySimpleHash() !== session.code.ohMySimpleHash()) {
-            // if writer, not update code
+        if (
+            session.writer !== userId && // do not update if current user is writer
+            sessionPreviousState.code.ohMySimpleHash() !== session.code.ohMySimpleHash() // do not update if code is the same already
+        ) {
             let {left, top} = codeBlock.getScrollInfo();
             let {line, ch} = codeBlock.getCursor();
             codeBlock.setValue(session.code);
@@ -301,9 +303,7 @@ pageUpdater();
 let codeSenderTimer = 0;
 let codeSender = () => {
     if (session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
-        codeIsSending = true;
         actions.setCode(() => {
-            codeIsSending = false;
             clearTimeout(codeSenderTimer);
             codeSenderTimer = setTimeout(() => {
                 codeSender();
@@ -324,7 +324,7 @@ let runCode = () => {
         return;
     }
     clearTimeout(pageUpdaterTimer);
-    if (isWriter && session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
+    if (session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
         actions.setCode(() => {
             actions.runCode(pageUpdater);
         });

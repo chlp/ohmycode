@@ -38,24 +38,18 @@ let userOwnNameEditingFunc = (event) => {
 
 let usersContainerBlock = document.getElementById('users-container');
 let usersContainerState = '';
-let isSetWriterInProgress = false;
 let updateUsers = () => {
-    if (isSetWriterInProgress) {
-        return;
-    }
     if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
         return;
     }
     let users = [];
     if (isNewSession) {
-        isWriter = true;
         users = [{
             id: userId,
             name: userName,
             own: true,
         }];
     } else {
-        isWriter = userId === session.writer;
         let isOwnUserFound = false;
         Object.keys(session.users).forEach((key) => {
             let user = session.users[key];
