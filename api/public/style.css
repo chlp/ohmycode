@@ -34,13 +34,14 @@
         --color-bg: #333;
         --color-bg-secondary: #555;
         --color-bg-transparent: rgba(250,250,250,.2);
-        --color-link: #0097fc;
-        --color-secondary: #e20de9;
-        --color-secondary-accent: #e20de94f;
+        --color-link: #f0f0f0;
+        --color-secondary: #a0a0a0;
+        --color-secondary-accent: #a0a0a0f;
         --color-shadow: #bbbbbb20;
         --color-table: #0097fc;
         --color-text: #f7f7f7;
         --color-text-secondary: #aaa;
+        --hover-brightness: 0.8;
     }
 /*}*/
 
@@ -307,6 +308,7 @@ a em,
 a i,
 a strong,
 button,
+a.button,
 input[type="submit"] {
     border-radius: var(--border-radius);
     display: inline-block;
@@ -315,16 +317,19 @@ input[type="submit"] {
 
 button,
 input,
-select {
+select,
+a.button {
     font-family: var(--font-family);
 }
 
 button:active,
+a.button:active,
 input[type="submit"]:active {
     filter: brightness(var(--active-brightness));
 }
 
 button:hover,
+a.button:hover,
 input[type="submit"]:hover {
     cursor: pointer;
     filter: brightness(var(--hover-brightness));
@@ -333,10 +338,13 @@ input[type="submit"]:hover {
 a b,
 a strong,
 button,
+a.button,
 input[type="submit"] {
     background-color: var(--color-link);
     border: 2px solid var(--color-link);
     color: var(--color-bg);
+    font-weight: normal;
+    line-height: normal;
 }
 
 a em,
@@ -368,6 +376,7 @@ figure figcaption {
 
 /* Forms */
 button:disabled,
+a.button:disabled,
 input:disabled {
     background: var(--color-bg-secondary);
     border-color: var(--color-bg-secondary);
@@ -376,6 +385,7 @@ input:disabled {
 }
 
 button[disabled]:hover,
+a.button[disabled]:hover,
 input[type="submit"][disabled]:hover {
     filter: none;
 }
@@ -431,7 +441,8 @@ textarea {
     padding: 0.4rem 0.8rem;
 }
 
-button {
+button,
+a.button {
     margin-bottom: .5em;
 }
 
@@ -552,6 +563,7 @@ blockquote footer {
 }
 
 .blocks-container button,
+.blocks-container a.button,
 .blocks-container label,
 .blocks-container input,
 .blocks-container select {
@@ -573,12 +585,6 @@ blockquote footer {
 
 #session-name-container > a, #users-container > a {
     cursor: text;
-}
-
-#session-name-container > a.simple-button {
-    cursor: pointer;
-    border: 1px solid var(--color-link);
-    box-sizing: border-box;
 }
 
 #users-container > a, #users-container > span {

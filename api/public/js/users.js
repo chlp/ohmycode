@@ -72,7 +72,7 @@ let updateUsers = () => {
     let html = '';
     users.forEach((user) => {
         if (user.own) {
-            html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false">' + user.name + '</a>';
+            html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false" title="Change name">' + user.name + '</a>';
         } else {
             html += '<span>' + user.name + '</span>';
         }

@@ -52,12 +52,11 @@ if ($session === null) {
 ?>
 
 <div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
-    <a href="#" id="session-name" contenteditable="true" spellcheck="false"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
-    <a href="/" class="simple-button" target="_blank">+</a>
+    <a href="#" id="session-name" contenteditable="true" spellcheck="false" title="Rename file"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">
-    <span id="users-container"><a href="#" id="own-name" contenteditable="true" spellcheck="false"></a></span>
+    <span id="users-container"><a href="#" id="own-name" contenteditable="true" spellcheck="false" title="Change name"></a></span>
 </div>
 
 <div class="code textarea" id="code-container" style="clear: both;">
@@ -76,8 +75,9 @@ if ($session === null) {
         }
 ?>
     </select>
-    <button id="run-button" title="Cmd/Ctrl + Enter">Run</button>
+    <button id="run-button" title="Cmd/Ctrl + Enter">Run code</button>
     <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->runnerIsOnline() ? 'none' : 'block' ?>;">Runner</button>
+    <a href="/" class="button" target="_blank">New file</a>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
