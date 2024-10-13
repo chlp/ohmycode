@@ -19,3 +19,10 @@ let postRequest = (url, data, callback, final) => {
         return response.text().then((text) => ({ text, statusCode }));
     }).then(({ text, statusCode }) => callback(text, statusCode)).finally(() => final());
 };
+
+document.addEventListener('keydown', function(event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        console.log('Already saved :)');
+    }
+});
