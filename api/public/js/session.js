@@ -114,6 +114,7 @@ let currentWriterInfo = document.getElementById('current-writer-info');
 let currentWriterName = document.getElementById('current-writer-name');
 let langSelect = document.getElementById('lang-select');
 let runButton = document.getElementById('run-button');
+let cleanResultButton = document.getElementById('clean-result-button');
 let runnerContainerBlock = document.getElementById('runner-container');
 let runnerEditButton = document.getElementById('runner-edit-button');
 let runnerInput = document.getElementById('runner-input');
@@ -192,17 +193,21 @@ let resultBlockUpdate = () => {
     } else {
         resultBlock.setValue('...');
     }
-    console.log(session.isWaitingForResult, session.result.length);
     if (session.isWaitingForResult || session.result.length > 0) {
         resultContainerBlock.style.display = 'block';
         codeContainerBlock.style.height = 'calc(68vh - 90px)';
+        cleanResultButton.style.display = 'block';
     } else {
         resultContainerBlock.style.display = 'none';
         codeContainerBlock.style.height = 'calc(98vh - 90px)';
+        cleanResultButton.style.display = 'none';
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
     resultBlockUpdate();
+    setTimeout(() => {
+        codeContainerBlock.style.transition = 'height 0.5s ease';
+    }, 100);
 });
 
 let isDebug = false;
@@ -340,4 +345,10 @@ codeContainerBlock.onkeydown = (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
         runCode();
     }
+};
+
+cleanResultButton.onclick = () => {
+    actions.cleanCode(() => {
+        resultBlockUpdate();
+    });
 };

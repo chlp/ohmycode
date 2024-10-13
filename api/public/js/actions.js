@@ -78,6 +78,20 @@ let actions = {
             callback();
         });
     },
+    cleanCode: (callback) => {
+        session.result = '';
+        resultBlock.setValue('');
+        postRequest('/action/result.php?action=clean', {
+            session: session.id,
+            action: 'clean',
+        }, (response, statusCode) => {
+            if (statusCode !== 200) {
+                console.log('cleanCode: result', response, statusCode);
+            }
+        }, () => {
+            callback();
+        });
+    },
     runCode: (callback) => {
         session.result = 'In progress..';
         resultBlock.setValue('In progress..');
@@ -86,7 +100,7 @@ let actions = {
             action: 'set',
         }, (response, statusCode) => {
             if (statusCode !== 200) {
-                console.log('runCode->setCode: result', response);
+                console.log('runCode: result', response, statusCode);
             }
         }, () => {
             callback();

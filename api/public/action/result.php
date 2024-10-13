@@ -17,6 +17,9 @@ switch ($action) {
         $result = substr($result, 0, 16384);
         Result::set($requests[0], $result);
         break;
+    case 'clean':
+        Result::remove((string)($input['session'] ?? ''));
+        break;
     default:
         error('wrong action', 404);
 }
