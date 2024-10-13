@@ -120,7 +120,6 @@ let runnerInput = document.getElementById('runner-input');
 let runnerSaveButton = document.getElementById('runner-save-button');
 let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
-resultContainerBlock.style.display = 'none';
 
 langSelect.onchange = () => {
     codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
@@ -179,25 +178,27 @@ runnerInput.onkeydown = (event) => {
 
 let resultBlockUpdate = () => {
     if (session.isWaitingForResult) {
-        codeContainerBlock.style.width = null;
-        resultContainerBlock.style.display = 'block';
         if (resultBlock.getValue().startsWith('In progress')) {
             resultBlock.setValue(resultBlock.getValue() + '.');
         } else {
             resultBlock.setValue('In progress...');
         }
     } else if (session.result.length > 0) {
-        codeContainerBlock.style.width = null;
-        resultContainerBlock.style.display = 'block';
         if (sessionPreviousState.result.ohMySimpleHash() !== session.result.ohMySimpleHash()) {
             resultBlock.setValue(session.result);
         }
     } else if (session.runnerIsOnline) {
-        resultContainerBlock.style.display = 'block';
         resultBlock.setValue('runner will write result here...');
     } else {
-        resultContainerBlock.style.display = 'none';
         resultBlock.setValue('...');
+    }
+    console.log(session.isWaitingForResult, session.result.length);
+    if (session.isWaitingForResult || session.result.length > 0) {
+        resultContainerBlock.style.display = 'block';
+        codeContainerBlock.style.height = 'calc(68vh - 90px)';
+    } else {
+        resultContainerBlock.style.display = 'none';
+        codeContainerBlock.style.height = 'calc(98vh - 90px)';
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
