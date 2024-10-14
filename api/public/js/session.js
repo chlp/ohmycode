@@ -178,7 +178,9 @@ runnerInput.onkeydown = (event) => {
 };
 
 let resultBlockUpdate = () => {
+    let isRunBtnShouldBeDisabled = isNewSession;
     if (session.isWaitingForResult) {
+        isRunBtnShouldBeDisabled = true;
         if (resultBlock.getValue().startsWith('In progress')) {
             resultBlock.setValue(resultBlock.getValue() + '.');
         } else {
@@ -191,8 +193,16 @@ let resultBlockUpdate = () => {
     } else if (session.runnerIsOnline) {
         resultBlock.setValue('runner will write result here...');
     } else {
+        isRunBtnShouldBeDisabled = true;
         resultBlock.setValue('...');
     }
+
+    if (isRunBtnShouldBeDisabled) {
+        runButton.setAttribute('disabled', 'true');
+    } else {
+        runButton.removeAttribute('disabled');
+    }
+
     if (session.isWaitingForResult || session.result.length > 0) {
         resultContainerBlock.style.display = 'block';
         codeContainerBlock.style.height = 'calc(68vh - 90px)';
@@ -338,12 +348,18 @@ let runCode = () => {
         return;
     }
     clearTimeout(pageUpdaterTimer);
+    let runCodeCall = () => {
+        session.result = 'In progress..';
+        resultBlock.setValue('In progress..');
+        runButton.setAttribute('disabled', 'true');
+        actions.runCode(pageUpdater);
+    };
     if (session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
         actions.setCode(() => {
-            actions.runCode(pageUpdater);
+            runCodeCall();
         });
     } else {
-        actions.runCode(pageUpdater);
+        runCodeCall();
     }
 };
 runButton.onclick = () => {
@@ -356,6 +372,8 @@ codeContainerBlock.onkeydown = (event) => {
 };
 
 cleanResultButton.onclick = () => {
+    session.result = '';
+    resultBlock.setValue('');
     actions.cleanCode(() => {
         resultBlockUpdate();
     });
