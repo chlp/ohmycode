@@ -238,9 +238,16 @@ let pageUpdater = () => {
             resultBlockUpdate(); // adding more dots to "In progress..."
             return;
         }
-        let data = JSON.parse(response);
+        let data = {};
+        try {
+            data = JSON.parse(response);
+        } catch (error) {
+            console.error("session::pageUpdater: failed to parse JSON:", error, response);
+            return;
+        }
+
         if (data.error !== undefined) {
-            console.log('getUpdate error', data);
+            console.log('session::pageUpdater: getUpdate error', data);
             return;
         }
 

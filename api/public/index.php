@@ -47,7 +47,7 @@ $isNewSession = false;
 $session = Session::get($id);
 if ($session === null) {
     $isNewSession = true;
-    $session = Session::createNew($id);
+    $session = Session::createNew($id); // todo: create new with user and writer
 }
 ?>
 
@@ -56,7 +56,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">
-    <span id="users-container"><a href="#" id="own-name" contenteditable="true" spellcheck="false" title="Change name"></a></span>
+    <span id="users-container"></span>
 </div>
 
 <div class="code textarea" id="code-container" style="clear: both;">
@@ -131,6 +131,7 @@ if ($session === null) {
         "result": ""
     };
     session = <?= $session->getJson() ?>;
+    session.updatedAt = null;
     let langKeyToHighlighter = {<?php
     foreach (Session::LANGS as $key => $data) {
         echo "\"$key\": \"{$data['highlighter']}\",";

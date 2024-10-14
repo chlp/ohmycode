@@ -9,6 +9,11 @@ let userOwnNameEditingFunc = (event) => {
     if (key === 'Enter' || key === 'Escape') {
         clearTimeout(userNameSavingTimeout);
         userNameSavingTimeout = null;
+        if (userNameEditing) {
+            setTimeout(() => {
+                updateUsers();
+            }, 500);
+        }
         userNameEditing = false;
         actions.setUserName();
         event.preventDefault();
@@ -32,6 +37,11 @@ let userOwnNameEditingFunc = (event) => {
     clearTimeout(userNameSavingTimeout);
     userNameSavingTimeout = setTimeout(() => {
         actions.setUserName();
+        if (userNameEditing) {
+            setTimeout(() => {
+                updateUsers();
+            }, 500);
+        }
         userNameEditing = false;
     }, 5000);
 };
@@ -70,18 +80,22 @@ let updateUsers = () => {
         }
     }
     let html = '';
-    users.forEach((user) => {
-        if (user.own) {
-            html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false" title="Change name">' + user.name + '</a>';
-        } else {
-            html += '<span>' + user.name + '</span>';
-        }
-    })
+    if (users.length > 1) {
+        users.forEach((user) => {
+            if (user.own) {
+                html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false" title="Change name">' + user.name + '</a>';
+            } else {
+                html += '<span>' + user.name + '</span>';
+            }
+        })
+    }
     if (usersContainerState !== html.ohMySimpleHash() && !userNameEditing) {
         usersContainerState = html.ohMySimpleHash();
         usersContainerBlock.innerHTML = html;
-        userOwnNameBlock = document.getElementById('own-name');
-        userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
+        if (html !== '') {
+            userOwnNameBlock = document.getElementById('own-name');
+            userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
+        }
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
