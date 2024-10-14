@@ -76,7 +76,7 @@ if ($session === null) {
 ?>
     </select>
     <button id="run-button" title="Cmd/Ctrl + Enter">Run code</button>
-    <button id="clean-result-button" style="display: none;">Clean result</button>
+    <button id="clean-result-button" disabled>Clean result</button>
     <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->runnerIsOnline() ? 'none' : 'block' ?>;">Runner</button>
     <a href="/" class="button" target="_blank">New file</a>
 </div>

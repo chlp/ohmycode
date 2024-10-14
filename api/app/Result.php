@@ -23,5 +23,6 @@ class Result
         }
         $query = "DELETE FROM `results` WHERE `session` = ?";
         Db::get()->exec($query, [$session]);
+        Session::updateTime($session);
     }
 }

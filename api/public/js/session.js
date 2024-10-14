@@ -196,11 +196,11 @@ let resultBlockUpdate = () => {
     if (session.isWaitingForResult || session.result.length > 0) {
         resultContainerBlock.style.display = 'block';
         codeContainerBlock.style.height = 'calc(68vh - 90px)';
-        cleanResultButton.style.display = 'block';
+        cleanResultButton.removeAttribute('disabled');
     } else {
         resultContainerBlock.style.display = 'none';
         codeContainerBlock.style.height = 'calc(98vh - 90px)';
-        cleanResultButton.style.display = 'none';
+        cleanResultButton.setAttribute('disabled', 'true');
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
@@ -228,6 +228,7 @@ let pageUpdater = () => {
         action: 'getUpdate',
         isKeepAlive: true,
     }, (response) => {
+        response = response.trim();
         pageUpdaterIsInProgress = false;
         ping = +new Date - start;
         if (isDebug) {

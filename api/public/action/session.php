@@ -51,7 +51,7 @@ switch ($action) {
                 if (connection_aborted()) {
                     return;
                 }
-                echo ' '; // hack with flush() to work with connection_status() and connection_aborted()
+                echo ' '; // flush-hack: to work with connection_status() and connection_aborted()
                 flush();
                 usleep(200000); // 0.2 sec
             }
