@@ -64,7 +64,7 @@ if ($session === null) {
 </div>
 
 <div class="blocks-container" style="float: left; clear: left;">
-    <select id="lang-select" style="width: 150px;">
+    <select id="lang-select" style="width: 150px; height: 30px;">
         <?php
         foreach (Session::LANGS as $key => $data) {
             echo "<option value=\"$key\"";
