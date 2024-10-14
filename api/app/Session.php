@@ -79,7 +79,7 @@ class Session
         if (!Utils::isUuid($id)) {
             return null;
         }
-        $name = date('Y-m-d');
+        $name = 'File ' . date('Y-m-d');
         $runnerCheckedAt = self::getNewestPublicRunnerCheckedAt();
         return new self($id, $name, '', self::DEFAULT_LANG, true, '', $runnerCheckedAt, null, null, '', [], false, '');
     }
