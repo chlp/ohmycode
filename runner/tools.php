@@ -27,6 +27,7 @@ class Conf
             }
             $conf['id'] = self::genUuid();
             file_put_contents(self::filePath, json_encode($conf, JSON_PRETTY_PRINT));
+            chmod(self::filePath, 0700);
         }
         $conf = json_decode(file_get_contents(self::filePath), true);
         if (!is_array($conf)) {
@@ -36,6 +37,7 @@ class Conf
         if (!isset($conf['id']) || strlen($conf['id']) !== 32) {
             $conf['id'] = self::genUuid();
             file_put_contents(self::filePath, json_encode($conf, JSON_PRETTY_PRINT));
+            chmod(self::filePath, 0700);
             return null;
         }
         if (!isset($conf['name']) || !isset($conf['languages'])) {

@@ -31,7 +31,7 @@ while (true) {
         if (in_array($request['lang'], $conf->languages)) {
             $filePath = __DIR__ . "/$lang/requests/$hash";
             file_put_contents($filePath, $request['code']);
-            chmod($filePath, 0777);
+            chmod($filePath, 0700);
             $api->request('markReceived', [
                 'lang' => $lang,
                 'hash' => $hash,
