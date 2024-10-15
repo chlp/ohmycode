@@ -2,11 +2,6 @@
 
 cd /app
 
-adduser --disabled-password restricted_user
-
-mkdir -p tmp
-chmod -R 700 tmp
-
 export PGPASSWORD=password
 
 while [ True ]; do
@@ -20,7 +15,9 @@ while [ True ]; do
             touch tmp/$ID
             chmod 700 tmp/$ID
             psql -U user -d mydatabase -c "CREATE DATABASE tmp_$ID;" 1>/dev/null 2>&1
-            su -c "timeout 5 psql -U user -d tmp_$ID -q -c \"\pset format wrapped\" -f $REQUEST" restricted_user 1>>tmp/$ID 2>&1
+            psql -U user -d tmp_$ID -c "CREATE USER tmp_user_$ID WITH PASSWORD 'password';" 1>/dev/null 2>&1
+            psql -U user -d tmp_$ID -c "GRANT ALL PRIVILEGES ON DATABASE tmp_$ID TO tmp_user_$ID;" 1>/dev/null 2>&1
+            timeout 5 psql -U tmp_user_$ID -d tmp_$ID -q -c "\pset format wrapped" -f $REQUEST 1>>tmp/$ID 2>&1
             if [ $? -eq 124 ]; then
               echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> tmp/$ID
             fi

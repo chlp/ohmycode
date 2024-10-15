@@ -14,7 +14,6 @@ while true; do
     sleep 2
 done
 
-mkdir -p tmp
 while [ True ]; do
     if [ -n "$(ls tmp)" ]; then
       rm tmp/*
@@ -23,15 +22,16 @@ while [ True ]; do
         for REQUEST in requests/*; do
             echo $REQUEST
             ID=$(basename $REQUEST)
+            touch tmp/$ID
+            chmod 700 tmp/$ID
             mysql -u root -e "CREATE DATABASE tmp_$ID;"
-            timeout 5 mysql -u root tmp_$ID --table < $REQUEST 1>tmp/$ID 2>&1
+            timeout 5 mysql -u root tmp_$ID --table < $REQUEST 1>>tmp/$ID 2>&1
             if [ $? -eq 124 ]; then
               echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> tmp/$ID
             fi
             mysql -u root -e "DROP DATABASE tmp_$ID;"
             rm $REQUEST
             mv tmp/$ID results/$ID
-            chmod 777 results/$ID
         done
     fi
     sleep 0.01
