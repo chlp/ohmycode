@@ -68,7 +68,7 @@ if ($session === null) {
         <?php
         foreach (Session::LANGS as $key => $data) {
             echo "<option value=\"$key\"";
-            if ($session->lang === $key) {
+            if ($session->lang ?? '' === $key) {
                 echo ' selected';
             }
             echo ">{$data['name']}</option>\n";
@@ -105,6 +105,7 @@ if ($session === null) {
     }
 ?>
     let initialName = '<?= Utils::randomName() ?>';
+    let initialLang = '<?= array_key_first(Session::LANGS) ?>';
     let initialUserId = '<?= Utils::genUuid() ?>';
     let isNewSession = <?= $isNewSession ? 'true' : 'false' ?>;
     let session = {

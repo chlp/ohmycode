@@ -31,11 +31,14 @@ let actions = {
         postRequest('/action/session.php?action=setLang', {
             session: session.id,
             user: userId,
-            userName: userOwnNameBlock.textContent,
+            userName: userName,
             action: 'setLang',
             lang: langSelect.value,
         }, (response) => {
             console.log('setLang: result', response);
+            if (response === '') {
+                localStorage['initialLang'] = langSelect.value;
+            }
         }, () => {
         });
     },
@@ -43,7 +46,7 @@ let actions = {
         postRequest('/action/session.php?action=setRunner', {
             session: session.id,
             user: userId,
-            userName: userOwnNameBlock.textContent,
+            userName: userName,
             action: 'setRunner',
             runner: runnerInput.value,
         }, (response) => {

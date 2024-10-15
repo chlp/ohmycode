@@ -21,8 +21,8 @@ class Request
         $query = "INSERT INTO `requests` SET `session` = ?, `runner` = ?, `code` = ?, `lang` = ?
                        ON DUPLICATE KEY UPDATE `runner` = ?, `code` = ?, `lang` = ?, `received` = 0";
         Db::get()->exec($query, [
-            $session->id, $session->runner, $session->code, $session->lang,
-            $session->runner, $session->code, $session->lang,
+            $session->id, $session->runner, $session->code, $session->lang ?? Session::DEFAULT_LANG,
+            $session->runner, $session->code, $session->lang ?? Session::DEFAULT_LANG,
         ]);
         Session::updateTime($session->id);
         Result::remove($session->id);

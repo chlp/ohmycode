@@ -6,7 +6,7 @@ use DateTime;
 
 class Session
 {
-    private const DEFAULT_LANG = 'php82';
+    public const DEFAULT_LANG = 'php82';
     private const CODE_MAX_LENGTH = 32768;
     private const IS_ACTIVE_FROM_LAST_UPDATE_SEC = 5;
     private const IS_WRITER_STILL_WRITING_SEC = 2;
@@ -38,7 +38,7 @@ class Session
         public string $id,
         public string $name,
         public string $code,
-        public string $lang,
+        public ?string $lang,
         public bool $runnerIsPublic,
         public string $runner,
         public ?DateTime $runnerCheckedAt,
@@ -81,7 +81,7 @@ class Session
         }
         $name = 'File ' . date('Y-m-d');
         $runnerCheckedAt = self::getNewestPublicRunnerCheckedAt();
-        return new self($id, $name, '', self::DEFAULT_LANG, true, '', $runnerCheckedAt, null, null, '', [], false, '');
+        return new self($id, $name, '', null, true, '', $runnerCheckedAt, null, null, '', [], false, '');
     }
 
     public static function get(string $id, ?string $updatedAfter = null): ?self
@@ -168,7 +168,7 @@ class Session
     public function insert(): self
     {
         $query = "INSERT INTO `sessions` SET `name` = ?, `code` = ?, `lang` = ?, `runner_is_public` = ?, `runner` = ?, `writer` = ?, `id` = ?;";
-        $this->db->exec($query, [$this->name, $this->code, $this->lang, $this->runnerIsPublic, $this->runner, $this->writer, $this->id]);
+        $this->db->exec($query, [$this->name, $this->code, $this->lang ?? self::DEFAULT_LANG, $this->runnerIsPublic, $this->runner, $this->writer, $this->id]);
         return self::get($this->id);
     }
 

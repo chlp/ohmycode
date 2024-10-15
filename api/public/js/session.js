@@ -1,12 +1,27 @@
+let sessionStatusBlock = document.getElementById('session-status');
+let currentWriterInfo = document.getElementById('current-writer-info');
+let currentWriterName = document.getElementById('current-writer-name');
+let langSelect = document.getElementById('lang-select');
+let runButton = document.getElementById('run-button');
+let cleanResultButton = document.getElementById('clean-result-button');
+let runnerContainerBlock = document.getElementById('runner-container');
+let runnerEditButton = document.getElementById('runner-edit-button');
+let runnerInput = document.getElementById('runner-input');
+let runnerSaveButton = document.getElementById('runner-save-button');
+let codeContainerBlock = document.getElementById('code-container');
+let resultContainerBlock = document.getElementById('result-container');
+
 let sessionPreviousState = {...session};
 sessionPreviousState.writer = '-'; // hack to init users
 let sessionIsOnline = true;
 let ping = undefined;
+
 let userId = localStorage['userId'];
 if (userId === undefined) {
     userId = initialUserId;
     localStorage['userId'] = userId;
 }
+
 let userName = session.users[userId] ? session.users[userId].name : undefined;
 if (userName === undefined) {
     userName = localStorage['initialUserName'];
@@ -15,6 +30,15 @@ if (userName === undefined) {
         localStorage['initialUserName'] = userName;
     }
 }
+
+if (typeof session.lang !== 'string') {
+    session.lang = localStorage['initialLang'];
+    if (typeof session.lang !== 'string') {
+        session.lang = initialLang;
+        localStorage['initialLang'] = session.lang;
+    }
+}
+langSelect.value = session.lang;
 
 let checkForMultipleTabs = (isInitial) => {
     // todo: remove old sessions data
@@ -108,19 +132,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
     codeBlock.setOption('theme', getCodeTheme());
     resultBlock.setOption('theme', getResultTheme());
 });
-
-let sessionStatusBlock = document.getElementById('session-status');
-let currentWriterInfo = document.getElementById('current-writer-info');
-let currentWriterName = document.getElementById('current-writer-name');
-let langSelect = document.getElementById('lang-select');
-let runButton = document.getElementById('run-button');
-let cleanResultButton = document.getElementById('clean-result-button');
-let runnerContainerBlock = document.getElementById('runner-container');
-let runnerEditButton = document.getElementById('runner-edit-button');
-let runnerInput = document.getElementById('runner-input');
-let runnerSaveButton = document.getElementById('runner-save-button');
-let codeContainerBlock = document.getElementById('code-container');
-let resultContainerBlock = document.getElementById('result-container');
 
 langSelect.onchange = () => {
     codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
