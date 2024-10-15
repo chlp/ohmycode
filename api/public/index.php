@@ -52,7 +52,8 @@ if ($session === null) {
 ?>
 
 <div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
-    <a href="#" id="session-name" contenteditable="true" spellcheck="false" title="Rename file"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
+    <a href="#" id="session-name" contenteditable="true" spellcheck="false"
+       title="Rename file"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">
@@ -73,17 +74,20 @@ if ($session === null) {
             }
             echo ">{$data['name']}</option>\n";
         }
-?>
+        ?>
     </select>
     <button id="run-button" title="Cmd/Ctrl + Enter" disabled>Run code</button>
     <button id="clean-result-button" disabled>Clean result</button>
-    <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: <?= $session->runnerIsOnline() ? 'none' : 'block' ?>;">Runner</button>
+    <button onclick="runnerEditButtonOnclick()" id="runner-edit-button"
+            style="display: <?= $session->runnerIsOnline() ? 'none' : 'block' ?>;">Runner
+    </button>
     <a href="/" class="button" target="_blank">New file</a>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
     <span id="current-writer-info" style="padding: 0.4rem 0.8rem; display: none;">
-        Code is writing now by <span id="current-writer-name"><?= $session->users[$session->writer]['name'] ?? '' ?></span>
+        Code is writing now by <span
+                id="current-writer-name"><?= $session->users[$session->writer]['name'] ?? '' ?></span>
     </span>
 </div>
 
@@ -103,9 +107,9 @@ if ($session === null) {
     if ($needChangeUrl) {
         echo "history.pushState({}, null, '/$id');\n";
     }
-?>
+    ?>
     let initialName = '<?= Utils::randomName() ?>';
-    let initialLang = '<?= array_key_first(Session::LANGS) ?>';
+    let initialLang = '<?= Session::DEFAULT_LANG ?>';
     let initialUserId = '<?= Utils::genUuid() ?>';
     let isNewSession = <?= $isNewSession ? 'true' : 'false' ?>;
     let session = {
@@ -134,10 +138,10 @@ if ($session === null) {
     session = <?= $session->getJson() ?>;
     session.updatedAt = null;
     let langKeyToHighlighter = {<?php
-    foreach (Session::LANGS as $key => $data) {
-        echo "\"$key\": \"{$data['highlighter']}\",";
-    }
-?>};
+        foreach (Session::LANGS as $key => $data) {
+            echo "\"$key\": \"{$data['highlighter']}\",";
+        }
+        ?>};
 </script>
 <script src="js/utils.js?<?= md5_file(__DIR__ . '/js/utils.js') ?>"></script>
 <script src="js/actions.js?<?= md5_file(__DIR__ . '/js/actions.js') ?>"></script>
