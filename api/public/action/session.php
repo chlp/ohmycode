@@ -16,6 +16,7 @@ if (!Utils::isUuid($userId)) {
 }
 
 $userName = (string)($input['userName'] ?? '');
+$lang = (string)($input['lang'] ?? '');
 
 $action = (string)($input['action'] ?? '');
 switch ($action) {
@@ -73,31 +74,31 @@ switch ($action) {
         echo $session->getJson();
         break;
     case 'setSessionName':
-        $session = getSession($sessionId, $userId, $userName);
+        $session = getSession($sessionId, $userId, $userName, $lang);
         if (!$session->setSessionName((string)($input['sessionName'] ?? ''))) {
             error('Wrong session name');
         }
         break;
     case 'setUserName':
-        $session = getSession($sessionId, $userId, $userName);
+        $session = getSession($sessionId, $userId, $userName, $lang);
         if (!$session->setUserName($userId, $userName)) {
             error('Wrong user name');
         }
         break;
     case 'setLang':
-        $session = getSession($sessionId, $userId, $userName);
-        if (!$session->setLang((string)($input['lang'] ?? ''))) {
+        $session = getSession($sessionId, $userId, $userName, $lang);
+        if (!$session->setLang($lang)) {
             error('Wrong lang');
         }
         break;
     case 'setRunner':
-        $session = getSession($sessionId, $userId, $userName);
+        $session = getSession($sessionId, $userId, $userName, $lang);
         if (!$session->setRunner((string)($input['runner'] ?? ''))) {
             error('Wrong runner');
         }
         break;
     case 'setCode':
-        $session = getSession($sessionId, $userId, $userName);
+        $session = getSession($sessionId, $userId, $userName, $lang);
         if ($session->writer !== '' && $session->writer !== $userId) {
             error('Temporary forbidden 1', 403);
         }
@@ -109,12 +110,15 @@ switch ($action) {
         error('wrong action', 404);
 }
 
-function getSession(string $sessionId, string $userId, string $userName): Session
+function getSession(string $sessionId, string $userId, string $userName, string $lang): Session
 {
     $session = Session::get($sessionId);
     if ($session === null) {
         $session = Session::createNew($sessionId);
         $session->writer = $userId;
+        if ($lang !== '') {
+            $session->lang = $lang;
+        }
         $session->insert();
         $session->setUserName($userId, $userName);
     }

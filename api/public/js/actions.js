@@ -5,6 +5,7 @@ let actions = {
             session: session.id,
             user: userId,
             userName: userName,
+            lang: langSelect.value,
             action: 'setSessionName',
             sessionName: newSessionName,
         }, (response) => {
@@ -19,6 +20,7 @@ let actions = {
             user: userId,
             userName: newUserName,
             action: 'setUserName',
+            lang: langSelect.value,
         }, (response) => {
             console.log('setUserName: result', newUserName, response);
             if (response === '') {
@@ -49,6 +51,7 @@ let actions = {
             userName: userName,
             action: 'setRunner',
             runner: runnerInput.value,
+            lang: langSelect.value,
         }, (response) => {
             console.log('setRunner: result', response);
         }, () => {
@@ -68,6 +71,7 @@ let actions = {
             userName: userName,
             action: 'setCode',
             code: newCode,
+            lang: langSelect.value,
         }, (response, statusCode) => {
             if (statusCode !== 200) {
                 console.log('setCode: result', response, statusCode);
