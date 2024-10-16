@@ -78,7 +78,7 @@ if ($session === null) {
             }
             echo ">{$data['name']}</option>\n";
         }
-        ?>
+?>
     </select>
     <button id="run-button" title="Cmd/Ctrl + Enter" disabled>Run code</button>
     <button id="clean-result-button" disabled>Clean result</button>
@@ -146,7 +146,7 @@ if ($session === null) {
         foreach (Session::LANGS as $key => $data) {
             echo "\"$key\": \"{$data['highlighter']}\",";
         }
-        ?>};
+?>};
 </script>
 <script src="js/utils.js?<?= md5_file(__DIR__ . '/js/utils.js') ?>"></script>
 <script src="js/actions.js?<?= md5_file(__DIR__ . '/js/actions.js') ?>"></script>
