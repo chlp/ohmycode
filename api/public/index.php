@@ -82,6 +82,7 @@ if ($session === null) {
     <button onclick="runnerEditButtonOnclick()" id="runner-edit-button"
             style="display: <?= $session->runnerIsOnline() ? 'none' : 'block' ?>;">Runner
     </button>
+    <button onclick="copyToClipboard(window.location.href)">Copy URL</button>
     <a href="/" class="button" target="_blank">New file</a>
 </div>
 
