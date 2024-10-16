@@ -20,6 +20,10 @@ class Session
             'name' => 'Java',
             'highlighter' => 'text/x-java',
         ],
+        'json' => [
+            'name' => 'JSON',
+            'highlighter' => 'application/json',
+        ],
         'markdown' => [
             'name' => 'Markdown',
             'highlighter' => 'text/x-markdown',

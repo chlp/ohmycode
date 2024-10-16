@@ -4,6 +4,7 @@
   "languages": [
     "go",
     "java",
+    "json",
     "markdown",
     "mysql8",
     "php82",

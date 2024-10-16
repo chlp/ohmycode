@@ -10,6 +10,7 @@ services:
     volumes:
       - ./go:/app/go
       - ./java:/app/java
+      - ./json:/app/json
       - ./markdown:/app/markdown
       - ./mysql8:/app/mysql8
       - ./php82:/app/php82
@@ -43,6 +44,20 @@ services:
       - ./java/results:/app/results
     tmpfs:
       - /app/java:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+  runner-json:
+    container_name: ohmycode-runner-json
+    networks:
+      - isolated-network-json
+    build:
+      context: ./json
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ./json/requests:/app/requests
+      - ./json/results:/app/results
+    tmpfs:
       - /app/tmp:mode=1777,uid=1000,gid=1000
   runner-markdown:
     container_name: ohmycode-runner-markdown
@@ -120,6 +135,9 @@ networks:
     driver: bridge
     internal: true
   isolated-network-java:
+    driver: bridge
+    internal: true
+  isolated-network-json:
     driver: bridge
     internal: true
   isolated-network-markdown:
