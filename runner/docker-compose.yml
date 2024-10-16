@@ -8,68 +8,12 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ./php82:/app/php82
-      - ./mysql8:/app/mysql8
-      - ./postgres13:/app/postgres13
       - ./go:/app/go
       - ./java:/app/java
-  runner-postgres13:
-    container_name: ohmycode-runner-postgres13
-    networks:
-      - isolated-network-postgres13
-    build:
-      context: ./postgres13
-      dockerfile: Dockerfile
-    cap_add:
-      - SYS_NICE
-    stop_grace_period: 1s
-    restart: always
-    volumes:
-      - ./postgres13/requests:/app/requests
-      - ./postgres13/results:/app/results
-      - ./postgres13/runner.sh:/docker-entrypoint-initdb.d/runner.sh
-    tmpfs:
-      - /var/lib/postgresql/data:mode=1777,uid=1000,gid=1000
-      - /app/tmp:mode=1777,uid=1000,gid=1000
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
-  runner-php82:
-    container_name: ohmycode-runner-php82
-    networks:
-      - isolated-network-php82
-    build:
-      context: ./php82
-      dockerfile: Dockerfile
-    stop_grace_period: 1s
-    restart: always
-    volumes:
-      - ./php82/requests:/app/requests
-      - ./php82/results:/app/results
-    tmpfs:
-      - /app/tmp:mode=1777,uid=1000,gid=1000
-  runner-mysql8:
-    container_name: ohmycode-runner-mysql8
-    networks:
-      - isolated-network-mysql8
-    build:
-      context: ./mysql8
-      dockerfile: Dockerfile
-    cap_add:
-      - SYS_NICE
-    stop_grace_period: 1s
-    restart: always
-    volumes:
-      - ./mysql8/requests:/app/requests
-      - ./mysql8/results:/app/results
-      - ./mysql8/runner.sh:/docker-entrypoint-initdb.d/runner.sh
-    tmpfs:
-      - /var/lib/mysql:mode=1777,uid=1000,gid=1000
-      - /app/tmp:mode=1777,uid=1000,gid=1000
-    command: --default-authentication-plugin=mysql_native_password --log_error_verbosity=1 --skip-log-bin
-    environment:
-      MYSQL_ROOT_PASSWORD: mysql8root
+      - ./markdown:/app/markdown
+      - ./mysql8:/app/mysql8
+      - ./php82:/app/php82
+      - ./postgres13:/app/postgres13
   runner-go:
     container_name: ohmycode-runner-go
     networks:
@@ -100,20 +44,93 @@ services:
     tmpfs:
       - /app/java:mode=1777,uid=1000,gid=1000
       - /app/tmp:mode=1777,uid=1000,gid=1000
-
+  runner-markdown:
+    container_name: ohmycode-runner-markdown
+    networks:
+      - isolated-network-markdown
+    build:
+      context: ./markdown
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ./markdown/requests:/app/requests
+      - ./markdown/results:/app/results
+    tmpfs:
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+  runner-mysql8:
+    container_name: ohmycode-runner-mysql8
+    networks:
+      - isolated-network-mysql8
+    build:
+      context: ./mysql8
+      dockerfile: Dockerfile
+    cap_add:
+      - SYS_NICE
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ./mysql8/requests:/app/requests
+      - ./mysql8/results:/app/results
+      - ./mysql8/runner.sh:/docker-entrypoint-initdb.d/runner.sh
+    tmpfs:
+      - /var/lib/mysql:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+    command: --default-authentication-plugin=mysql_native_password --log_error_verbosity=1 --skip-log-bin
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql8root
+  runner-php82:
+    container_name: ohmycode-runner-php82
+    networks:
+      - isolated-network-php82
+    build:
+      context: ./php82
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ./php82/requests:/app/requests
+      - ./php82/results:/app/results
+    tmpfs:
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+  runner-postgres13:
+    container_name: ohmycode-runner-postgres13
+    networks:
+      - isolated-network-postgres13
+    build:
+      context: ./postgres13
+      dockerfile: Dockerfile
+    cap_add:
+      - SYS_NICE
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ./postgres13/requests:/app/requests
+      - ./postgres13/results:/app/results
+      - ./postgres13/runner.sh:/docker-entrypoint-initdb.d/runner.sh
+    tmpfs:
+      - /var/lib/postgresql/data:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
 networks:
-  isolated-network-postgres13:
+  isolated-network-go:
     driver: bridge
     internal: true
-  isolated-network-php82:
+  isolated-network-java:
+    driver: bridge
+    internal: true
+  isolated-network-markdown:
     driver: bridge
     internal: true
   isolated-network-mysql8:
     driver: bridge
     internal: true
-  isolated-network-go:
+  isolated-network-php82:
     driver: bridge
     internal: true
-  isolated-network-java:
+  isolated-network-postgres13:
     driver: bridge
     internal: true

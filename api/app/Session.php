@@ -6,31 +6,35 @@ use DateTime;
 
 class Session
 {
-    public const DEFAULT_LANG = 'php82';
+    public const DEFAULT_LANG = 'markdown';
     private const CODE_MAX_LENGTH = 32768;
     private const IS_ACTIVE_FROM_LAST_UPDATE_SEC = 5;
     private const IS_WRITER_STILL_WRITING_SEC = 2;
     private Db $db;
     public const LANGS = [
-        'php82' => [
-            'name' => 'PHP 8.2',
-            'highlighter' => 'php',
-        ],
-        'mysql8' => [
-            'name' => 'MySQL 8',
-            'highlighter' => 'sql',
-        ],
-        'postgres13' => [
-            'name' => 'PostgreSQL 13',
-            'highlighter' => 'sql',
+        'go' => [
+            'name' => 'GoLang',
+            'highlighter' => 'go',
         ],
         'java' => [
             'name' => 'Java',
             'highlighter' => 'text/x-java',
         ],
-        'go' => [
-            'name' => 'GoLang',
-            'highlighter' => 'go',
+        'markdown' => [
+            'name' => 'Markdown',
+            'highlighter' => 'text/x-markdown',
+        ],
+        'mysql8' => [
+            'name' => 'MySQL 8',
+            'highlighter' => 'sql',
+        ],
+        'php82' => [
+            'name' => 'PHP 8.2',
+            'highlighter' => 'php',
+        ],
+        'postgres13' => [
+            'name' => 'PostgreSQL 13',
+            'highlighter' => 'sql',
         ],
     ];
 

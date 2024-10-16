@@ -23,6 +23,7 @@ use app\Utils;
     <script src="codemirror/mode/go.js"></script>
     <script src="codemirror/mode/htmlmixed.js"></script>
     <script src="codemirror/mode/javascript.js"></script>
+    <script src="codemirror/mode/markdown.js"></script>
     <script src="codemirror/mode/php.js"></script>
     <script src="codemirror/mode/sql.js"></script>
     <script src="codemirror/mode/xml.js"></script>
