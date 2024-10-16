@@ -59,6 +59,9 @@ if ($session === null) {
 
 <div class="blocks-container" style="float: right; clear: right;">
     <span id="users-container"></span>
+    <a href="https://github.com/chlp/ohmycode" target="_blank">
+        <img src="github-mark.svg" style="height: 28px; vertical-align: middle; margin-left: 1em;">
+    </a>
 </div>
 
 <div class="code textarea" id="code-container" style="clear: both;">
@@ -109,7 +112,7 @@ if ($session === null) {
     if ($needChangeUrl) {
         echo "history.pushState({}, null, '/$id');\n";
     }
-    ?>
+?>
     let initialName = '<?= Utils::randomName() ?>';
     let initialLang = '<?= Session::DEFAULT_LANG ?>';
     let initialUserId = '<?= Utils::genUuid() ?>';
