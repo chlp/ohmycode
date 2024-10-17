@@ -1,16 +1,15 @@
-# OhMyCode. Live coding app
+# OhMyCode
 
-A real-time collaborative code editing and execution service.
+* Keep notes
+* Write and execute code
+* Share with ease
+* Collaborate in real-time
+* Lightning-fast
+* Use public server or deploy in your private network
 
-https://ohmycode.work/
+Try it -> https://ohmycode.work/
 
 ![OhMyCode preview](OhMyCode-preview.png)
-
-# How it works
-
-1. After landing on the homepage, a new session with a unique ID is automatically created. You can immediately share the URL with others.
-2. All code changes are saved instantly and visible to all session participants in real-time.
-3. All participants have equal permissions, but only one person can edit the code at a time. When someone starts editing, others are temporarily blocked from making changes until the current editor stops.
 
 # Build and run
 
