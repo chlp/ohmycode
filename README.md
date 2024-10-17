@@ -4,7 +4,7 @@ A real-time collaborative code editing and execution service.
 
 https://ohmycode.work/
 
-![OhMyCode preview](preview.png)
+![OhMyCode preview](OhMyCode-preview.png)
 
 # How it works
 
