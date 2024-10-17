@@ -10,7 +10,12 @@ use app\Utils;
     <title>OhMyCode</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="favicon-48x48.png" sizes="48x48" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon-apple-touch.png" />
+
     <link rel="stylesheet" href="style.css?<?= md5_file(__DIR__ . '/style.css') ?>">
 
     <link rel="stylesheet" href="codemirror/codemirror.css">
