@@ -13,10 +13,10 @@ class Result
             $request->code, $result, $request->lang,
         ]);
         Session::updateTime($request->session);
-        Request::remove($request->runner, $request->lang, $request->hash);
+        Request::removeByRunner($request->runner, $request->lang, $request->hash);
     }
 
-    public static function remove(string $session): void
+    public static function removeBySession(string $session): void
     {
         if (!Utils::isUuid($session)) {
             return;

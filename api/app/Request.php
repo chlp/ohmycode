@@ -25,7 +25,7 @@ class Request
             $session->runner, $session->code, $session->lang ?? Session::DEFAULT_LANG,
         ]);
         Session::updateTime($session->id);
-        Result::remove($session->id);
+        Result::removeBySession($session->id);
     }
 
     /**
@@ -76,7 +76,16 @@ class Request
         Db::get()->exec($query, [$runner, $lang, $hash]);
     }
 
-    public static function remove(string $runner, string $lang, string $hash): void
+    public static function removeBySession(string $session): void
+    {
+        if (!Utils::isUuid($session)) {
+            return;
+        }
+        $query = "DELETE FROM `requests` WHERE `session` = ?";
+        Db::get()->exec($query, [$session]);
+    }
+
+    public static function removeByRunner(string $runner, string $lang, string $hash): void
     {
         if (!Utils::isUuid($runner)) {
             return;

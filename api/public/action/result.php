@@ -18,7 +18,8 @@ switch ($action) {
         Result::set($requests[0], $result);
         break;
     case 'clean':
-        Result::remove((string)($input['session'] ?? ''));
+        Result::removeBySession((string)($input['session'] ?? ''));
+        Request::removeBySession((string)($input['session'] ?? ''));
         break;
     default:
         error('wrong action', 404);
