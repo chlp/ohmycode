@@ -11,8 +11,9 @@ use app\Utils;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/png" href="favicon-48x48.png" sizes="48x48" />
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="favicon-apple-touch.png" />
 
