@@ -2,28 +2,47 @@ package store
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
-	"ohmycode_api/config"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type DBConfig struct {
-	ConnectionString string `json:"connectionString"`
-	DBName           string `json:"dbname"`
+	ConnectionString string   `json:"connectionString"`
+	DBName           string   `json:"dbname"`
+	Timeout          Duration `json:"timeout"`
+}
+
+type Duration struct {
+	time.Duration
+}
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+	duration, err := time.ParseDuration(s)
+	if err != nil {
+		return err
+	}
+	d.Duration = duration
+	return nil
 }
 
 type Db struct {
-	client *mongo.Client
-	db     *mongo.Database
+	client  *mongo.Client
+	db      *mongo.Database
+	timeout time.Duration
 }
 
-func New() *Db {
-	conf := config.LoadApiConf().DB
-	clientOptions := options.Client().ApplyURI(conf.ConnectionString)
+func NewDb(config DBConfig) *Db {
+	clientOptions := options.Client().ApplyURI(config.ConnectionString)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatalf("MongoDB connection failed: %v", err)
@@ -35,15 +54,20 @@ func New() *Db {
 	}
 
 	return &Db{
-		client: client,
-		db:     client.Database(conf.DBName),
+		client:  client,
+		db:      client.Database(config.DBName),
+		timeout: config.Timeout.Duration,
 	}
 }
 
 func (db *Db) Select(collection string, filter interface{}) ([]map[string]interface{}, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
 	defer cancel()
 
+	if filter == nil {
+		// any
+		filter = bson.D{}
+	}
 	coll := db.db.Collection(collection)
 	cursor, err := coll.Find(ctx, filter)
 	if err != nil {
@@ -65,7 +89,7 @@ func (db *Db) Select(collection string, filter interface{}) ([]map[string]interf
 }
 
 func (db *Db) Exec(collection string, operation string, document interface{}) (*mongo.InsertOneResult, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
 	defer cancel()
 
 	coll := db.db.Collection(collection)

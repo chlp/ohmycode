@@ -7,15 +7,15 @@ import (
 	"os"
 )
 
-const confPath = "../api-config.json"
+const confPath = "api-conf.json"
 
-type Config struct {
-	DB store.DBConfig `json:"store"`
+type ApiConfig struct {
+	DB store.DBConfig `json:"db"`
 }
 
-var conf Config
+var conf ApiConfig
 
-func LoadApiConf() Config {
+func LoadApiConf() ApiConfig {
 	data, err := os.ReadFile(confPath)
 	if err != nil {
 		log.Fatal("config: cannot read file")
