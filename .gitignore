@@ -1,4 +1,5 @@
 .DS_Store
 .idea
-api-go/.idea
 .php-cs-fixer.cache
+api-go/.idea
+api-go/api-conf.json

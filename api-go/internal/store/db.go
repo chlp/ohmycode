@@ -1,30 +1,29 @@
-package db
+package store
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"ohmycode_api/config"
 	"time"
 
-	"api/conf"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Db struct {
-	Client *mongo.Client
-	DB     *mongo.Database
+type DBConfig struct {
+	ConnectionString string `json:"connectionString"`
+	DBName           string `json:"dbname"`
 }
 
-var dbInstance *Db
+type Db struct {
+	client *mongo.Client
+	db     *mongo.Database
+}
 
-func GetDb() *Db {
-	if dbInstance != nil {
-		return dbInstance
-	}
-
-	appConf := conf.LoadApiConf().DB
-	clientOptions := options.Client().ApplyURI("mongodb://" + appConf.ServerName)
+func New() *Db {
+	conf := config.LoadApiConf().DB
+	clientOptions := options.Client().ApplyURI(conf.ConnectionString)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatalf("MongoDB connection failed: %v", err)
@@ -35,18 +34,17 @@ func GetDb() *Db {
 		log.Fatalf("MongoDB ping failed: %v", err)
 	}
 
-	dbInstance = &Db{
-		Client: client,
-		DB:     client.Database(appConf.DBName),
+	return &Db{
+		client: client,
+		db:     client.Database(conf.DBName),
 	}
-	return dbInstance
 }
 
 func (db *Db) Select(collection string, filter interface{}) ([]map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	coll := db.DB.Collection(collection)
+	coll := db.db.Collection(collection)
 	cursor, err := coll.Find(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -70,14 +68,13 @@ func (db *Db) Exec(collection string, operation string, document interface{}) (*
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	coll := db.DB.Collection(collection)
+	coll := db.db.Collection(collection)
 	var res *mongo.InsertOneResult
 	var err error
 
 	switch operation {
 	case "insert":
 		res, err = coll.InsertOne(ctx, document)
-	// Add more operations as needed
 	default:
 		err = fmt.Errorf("unsupported operation: %s", operation)
 	}

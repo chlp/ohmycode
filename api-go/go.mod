@@ -1,4 +1,4 @@
-module api
+module ohmycode_api
 
 go 1.20
 
