@@ -43,16 +43,12 @@ func NewDb(config DBConfig) *Db {
 	}
 }
 
-func (db *Db) Select(collection string, filter interface{}) ([]map[string]interface{}, error) {
+func (db *Db) Select(collection string, filter map[string]interface{}) ([]map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
 	defer cancel()
 
-	if filter == nil {
-		// any
-		filter = bson.D{}
-	}
 	coll := db.db.Collection(collection)
-	cursor, err := coll.Find(ctx, filter)
+	cursor, err := coll.Find(ctx, bson.M(filter))
 	if err != nil {
 		return nil, err
 	}
