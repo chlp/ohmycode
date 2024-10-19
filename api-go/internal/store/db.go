@@ -2,9 +2,9 @@ package store
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
+	"ohmycode_api/pkg/util"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,26 +13,9 @@ import (
 )
 
 type DBConfig struct {
-	ConnectionString string   `json:"connectionString"`
-	DBName           string   `json:"dbname"`
-	Timeout          Duration `json:"timeout"`
-}
-
-type Duration struct {
-	time.Duration
-}
-
-func (d *Duration) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
-	}
-	duration, err := time.ParseDuration(s)
-	if err != nil {
-		return err
-	}
-	d.Duration = duration
-	return nil
+	ConnectionString string        `json:"connectionString"`
+	DBName           string        `json:"dbname"`
+	Timeout          util.Duration `json:"timeout"`
 }
 
 type Db struct {

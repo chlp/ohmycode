@@ -13,6 +13,6 @@ func main() {
 	apiConfig := config.LoadApiConf()
 	db := store.NewDb(apiConfig.DB)
 	v, err := db.Select("files", nil)
-	println(v[0], err)
+	println(len(v), v[0], err)
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
