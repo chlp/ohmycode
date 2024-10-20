@@ -15,7 +15,7 @@ func GenUuid() string {
 	if err != nil {
 		log.Fatal("uuid: cannot generate uuid", err)
 	}
-	return fmt.Sprintf("%08x-%04x-%04x-%04x-%12x", b[0:4], b[4:6], (b[6]&0x0f)|0x40, (b[8]&0x3f)|0x80, b[10:])
+	return fmt.Sprintf("%08x%04x%04x%04x%12x", b[0:4], b[4:6], (b[6]&0x0f)|0x40, (b[8]&0x3f)|0x80, b[10:])
 }
 
 func IsUuid(id string) bool {

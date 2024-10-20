@@ -1,20 +1,19 @@
 package util
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"time"
 )
 
-var startTime time.Time
+const RequestStartTimeCtxKey string = "RequestStartTime"
 
-func Timer() float64 {
-	if startTime.IsZero() {
-		startTime = time.Now()
-		return 0
+func Log(ctx context.Context, msg string) {
+	elapsedTimeStr := ""
+	if startTime, ok := ctx.Value(RequestStartTimeCtxKey).(time.Time); ok {
+		elapsedTime := time.Since(startTime)
+		elapsedTimeStr = fmt.Sprintf(" (%0.3f)", elapsedTime.Seconds())
 	}
-	return time.Since(startTime).Seconds()
-}
-
-func Log(str string) {
-	log.Printf("%s (%0.3f): %s\n", time.Now().Format("2006-01-02 15:04:05.000"), Timer(), str)
+	log.Printf("%s%s: %s\n", time.Now().Format("2006-01-02 15:04:05.000"), elapsedTimeStr, msg)
 }

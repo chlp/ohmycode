@@ -1,21 +1,22 @@
 package model
 
 import (
+	"errors"
 	"ohmycode_api/pkg/util"
 	"time"
 )
 
 type File struct {
-	ID              string    `json:"_id,omitempty"`
-	Name            string    `json:"name"`
-	Lang            string    `json:"lang"`
-	Code            string    `json:"code"`
-	Writer          string    `json:"writer"`
-	Runner          string    `json:"runner"`
-	UpdatedAt       time.Time `json:"updated_at"`
-	CodeUpdatedAt   time.Time `json:"code_updated_at"`
-	RunnerCheckedAt time.Time `json:"runner_checked_at"`
-	Users           []string  `json:"users"` // todo: user
+	ID              string    `json:"_id,omitempty" bson:"_id,omitempty"`
+	Name            string    `json:"name" bson:"name"`
+	Lang            string    `json:"lang" bson:"lang"`
+	Code            string    `json:"code" bson:"code"`
+	Writer          string    `json:"writer" bson:"writer"`
+	Runner          string    `json:"runner" bson:"runner"`
+	UpdatedAt       time.Time `json:"updated_at" bson:"updated_at"`
+	CodeUpdatedAt   time.Time `json:"code_updated_at" bson:"code_updated_at"`
+	RunnerCheckedAt time.Time `json:"runner_checked_at" bson:"runner_checked_at"`
+	Users           []string  `json:"users" bson:"users"` // todo: ? user
 }
 
 const (
@@ -64,7 +65,7 @@ var LANGS = Langs{
 }
 
 func (s *File) SetName(name string) bool {
-	if !util.IsValidString(name) {
+	if !util.IsValidName(name) {
 		return false
 	}
 	s.Name = name
@@ -81,14 +82,15 @@ func (s *File) SetLang(lang string) bool {
 	return true
 }
 
-func (s *File) SetCode(code, userId string) bool {
+func (s *File) SetCode(code, userId string) error {
 	if len(code) > codeMaxLength {
-		return false
+		return errors.New("code is too long")
 	}
 	// validate code
 	s.Code = code
 	// todo: to update
-	return true
+	// setWriter or err
+	return nil
 }
 
 func (s *File) UpdateTime() {
@@ -96,7 +98,7 @@ func (s *File) UpdateTime() {
 }
 
 func (s *File) SetUserName(userId, name string) bool {
-	if !util.IsValidString(name) || !util.IsUuid(userId) {
+	if !util.IsValidName(name) || !util.IsUuid(userId) {
 		return false
 	}
 	s.Name = name
