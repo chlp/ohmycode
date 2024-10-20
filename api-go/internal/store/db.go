@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"ohmycode_api/pkg/util"
+	"reflect"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,9 +14,9 @@ import (
 )
 
 type DBConfig struct {
-	ConnectionString string        `json:"connectionString"`
-	DBName           string        `json:"dbname"`
-	Timeout          util.Duration `json:"timeout"`
+	ConnectionString string          `json:"connectionString"`
+	DBName           string          `json:"dbname"`
+	Timeout          util.OhDuration `json:"timeout"`
 }
 
 type Db struct {
@@ -24,7 +25,7 @@ type Db struct {
 	timeout time.Duration
 }
 
-func NewDb(config DBConfig) *Db {
+func NewDb(config DBConfig) Db {
 	clientOptions := options.Client().ApplyURI(config.ConnectionString)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -36,35 +37,36 @@ func NewDb(config DBConfig) *Db {
 		log.Fatalf("MongoDB ping failed: %v", err)
 	}
 
-	return &Db{
+	return Db{
 		client:  client,
 		db:      client.Database(config.DBName),
 		timeout: config.Timeout.Duration,
 	}
 }
 
-func (db *Db) Select(collection string, filter map[string]interface{}) ([]map[string]interface{}, error) {
+func (db *Db) Select(collection string, filter map[string]interface{}, model interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
 	defer cancel()
 
 	coll := db.db.Collection(collection)
 	cursor, err := coll.Find(ctx, bson.M(filter))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer cursor.Close(ctx)
 
-	var results []map[string]interface{}
+	slice := model
 	for cursor.Next(ctx) {
-		var result map[string]interface{}
-		err := cursor.Decode(&result)
+		elem := reflect.New(reflect.TypeOf(model).Elem().Elem()).Interface()
+		err := cursor.Decode(elem)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		results = append(results, result)
+		reflect.ValueOf(slice).Elem().Set(reflect.Append(reflect.ValueOf(slice).Elem(), reflect.ValueOf(elem).Elem()))
+
 	}
 
-	return results, nil
+	return nil
 }
 
 func (db *Db) Exec(collection string, operation string, document interface{}) (*mongo.InsertOneResult, error) {

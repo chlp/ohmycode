@@ -1,12 +1,11 @@
 package model
 
 import (
-	"ohmycode_api/internal/service"
 	"ohmycode_api/pkg/util"
 	"time"
 )
 
-type Session struct {
+type File struct {
 	ID              string    `json:"_id,omitempty"`
 	Name            string    `json:"name"`
 	Lang            string    `json:"lang"`
@@ -16,6 +15,7 @@ type Session struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 	CodeUpdatedAt   time.Time `json:"code_updated_at"`
 	RunnerCheckedAt time.Time `json:"runner_checked_at"`
+	Users           []string  `json:"users"` // todo: user
 }
 
 const (
@@ -63,7 +63,7 @@ var LANGS = Langs{
 	},
 }
 
-func (s *Session) SetName(name string) bool {
+func (s *File) SetName(name string) bool {
 	if !util.IsValidString(name) {
 		return false
 	}
@@ -72,7 +72,7 @@ func (s *Session) SetName(name string) bool {
 	return true
 }
 
-func (s *Session) SetLang(lang string) bool {
+func (s *File) SetLang(lang string) bool {
 	if _, ok := LANGS[lang]; !ok {
 		return false
 	}
@@ -81,7 +81,7 @@ func (s *Session) SetLang(lang string) bool {
 	return true
 }
 
-func (s *Session) SetCode(code, userId string) bool {
+func (s *File) SetCode(code, userId string) bool {
 	if len(code) > codeMaxLength {
 		return false
 	}
@@ -91,11 +91,11 @@ func (s *Session) SetCode(code, userId string) bool {
 	return true
 }
 
-func (s *Session) UpdateTime() {
+func (s *File) UpdateTime() {
 	s.UpdatedAt = time.Now()
 }
 
-func (s *Session) SetUserName(userId, name string) bool {
+func (s *File) SetUserName(userId, name string) bool {
 	if !util.IsValidString(name) || !util.IsUuid(userId) {
 		return false
 	}
@@ -104,7 +104,7 @@ func (s *Session) SetUserName(userId, name string) bool {
 	return false
 }
 
-func (s *Session) SetRunner(runner string) bool {
+func (s *File) SetRunner(runner string) bool {
 	if !util.IsUuid(runner) {
 		return false
 	}
@@ -113,7 +113,7 @@ func (s *Session) SetRunner(runner string) bool {
 	return false
 }
 
-func (s *Session) UpdateRunnerCheckedAt(runner string, isPublic bool) {
+func (s *File) UpdateRunnerCheckedAt(runner string, isPublic bool) {
 	if !util.IsUuid(runner) {
 		return
 	}
@@ -121,7 +121,7 @@ func (s *Session) UpdateRunnerCheckedAt(runner string, isPublic bool) {
 	// todo: to update
 }
 
-func (s *Session) CleanupWriter() {
+func (s *File) CleanupWriter() {
 	if s.Writer == "" {
 		return
 	}
@@ -131,21 +131,9 @@ func (s *Session) CleanupWriter() {
 	}
 }
 
-func (s *Session) RunnerIsOnline() bool {
+func (s *File) RunnerIsOnline() bool {
 	if s.RunnerCheckedAt.IsZero() {
 		return false
 	}
 	return time.Since(s.RunnerCheckedAt) < durationIsActiveFromLastUpdate
-}
-
-func (s *Session) GetNewestPublicRunnerCheckedAt(service *service.Service) *time.Time {
-	var t *time.Time
-	for _, runner := range service.Runners {
-		if runner.IsPublic {
-			if t == nil || t.Before(runner.CheckedAt) {
-				t = &runner.CheckedAt
-			}
-		}
-	}
-	return t
 }

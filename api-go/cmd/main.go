@@ -9,10 +9,15 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/example", api.ExampleHandler)
 	apiConfig := config.LoadApiConf()
 	db := store.NewDb(apiConfig.DB)
-	v, err := db.Select("files", map[string]interface{}{"name": "abc"})
-	println(len(v), v[0], err)
+	s := api.NewService(db)
+
+	//v, err := db.Select("files", map[string]interface{}{"name": "abc"})
+	//println(len(v), v[0], err)
+
+	http.HandleFunc("/example", api.ExampleHandler)
+	http.HandleFunc("/file/get_update", s.HandleFileGetUpdateRequest)
+	//http.HandleFunc("/session", api.HandleSessionRequest)
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
