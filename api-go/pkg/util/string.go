@@ -7,7 +7,7 @@ import (
 )
 
 func IsValidName(str string) bool {
-	re := regexp.MustCompile(`^[0-9a-zA-Z_!?:=+\\-,.\sА-Яа-яЁё]{1,64}$`)
+	re := regexp.MustCompile(`^[0-9a-zA-Z_!?:=+\-,.\sА-Яа-яЁё]{1,64}$`)
 	return re.MatchString(str)
 }
 
