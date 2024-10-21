@@ -203,7 +203,6 @@ let resultBlockUpdate = () => {
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
-    resultBlockUpdate();
     setTimeout(() => {
         codeContainerBlock.style.transition = 'height 0.5s ease';
     }, 100);
