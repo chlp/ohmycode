@@ -81,8 +81,8 @@ let updateUsers = () => {
             }
         })
     }
-    if (usersContainerState !== html.ohMySimpleHash() && !userNameEditing) {
-        usersContainerState = html.ohMySimpleHash();
+    if (usersContainerState !== ohMySimpleHash(html) && !userNameEditing) {
+        usersContainerState = ohMySimpleHash(html);
         usersContainerBlock.innerHTML = html;
         if (html !== '') {
             userOwnNameBlock = document.getElementById('own-name');

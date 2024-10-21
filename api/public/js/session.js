@@ -210,7 +210,7 @@ let resultBlockUpdate = () => {
             resultBlock.setValue('In progress...');
         }
     } else if (session.result.length > 0) {
-        if (sessionPreviousState.result.ohMySimpleHash() !== session.result.ohMySimpleHash()) {
+        if (ohMySimpleHash(sessionPreviousState.result) !== ohMySimpleHash(session.result)) {
             resultBlock.setValue(session.result);
         }
     } else if (session.runnerIsOnline) {
@@ -308,7 +308,7 @@ let pageUpdater = () => {
         // update code
         if (
             session.writer !== userId && // do not update if current user is writer
-            sessionPreviousState.code.ohMySimpleHash() !== session.code.ohMySimpleHash() // do not update if code is the same already
+            ohMySimpleHash(sessionPreviousState.code) !== ohMySimpleHash(session.code) // do not update if code is the same already
         ) {
             let {left, top} = codeBlock.getScrollInfo();
             let {line, ch} = codeBlock.getCursor();
@@ -348,7 +348,7 @@ pageUpdater();
 
 let codeSenderTimer = 0;
 let codeSender = () => {
-    if (session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
+    if (ohMySimpleHash(session.code) !== ohMySimpleHash(codeBlock.getValue())) {
         actions.setCode(() => {
             clearTimeout(codeSenderTimer);
             codeSenderTimer = setTimeout(() => {
@@ -376,7 +376,7 @@ let runCode = () => {
         runButton.setAttribute('disabled', 'true');
         actions.runCode(pageUpdater);
     };
-    if (session.code.ohMySimpleHash() !== codeBlock.getValue().ohMySimpleHash()) {
+    if (ohMySimpleHash(session.code) !== ohMySimpleHash(codeBlock.getValue())) {
         actions.setCode(() => {
             runCodeCall();
         });

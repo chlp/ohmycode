@@ -55,10 +55,10 @@ const languages = {
     }
 };
 
-String.prototype.ohMySimpleHash = () => {
+let ohMySimpleHash = (str) => {
     let hash = 0;
-    for (let i = 0; i < this.length; i++) {
-        const char = this.charCodeAt(i);
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
         hash = (hash << 5) - hash + char;
         hash |= 0;
     }
