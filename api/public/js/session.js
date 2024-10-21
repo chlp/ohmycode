@@ -9,6 +9,7 @@ let runnerInput = document.getElementById('runner-input');
 let runnerSaveButton = document.getElementById('runner-save-button');
 let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
+let controlsContainerBlock = document.getElementById('controls-container');
 let langSelect = document.getElementById('lang-select');
 
 for (const key in languages) {
@@ -16,9 +17,6 @@ for (const key in languages) {
         const option = document.createElement('option');
         option.value = key;
         option.textContent = languages[key].name;
-        if (key === initialLang) {
-            option.selected = true;
-        }
         langSelect.appendChild(option);
     }
 }
@@ -38,7 +36,7 @@ let userName = session.users[userId] ? session.users[userId].name : undefined;
 if (userName === undefined) {
     userName = localStorage['initialUserName'];
     if (userName === undefined) {
-        userName = initialName;
+        userName = randomName();
         localStorage['initialUserName'] = userName;
     }
 }
@@ -46,52 +44,11 @@ if (userName === undefined) {
 if (typeof session.lang !== 'string') {
     session.lang = localStorage['initialLang'];
     if (typeof session.lang !== 'string') {
-        session.lang = initialLang;
+        session.lang = 'markdown';
         localStorage['initialLang'] = session.lang;
     }
 }
 langSelect.value = session.lang;
-
-let checkForMultipleTabs = (isInitial) => {
-    // todo: remove old sessions data
-    let sessionStatusIdKey = 'session-status-id-' + session.id;
-    let sessionStatusUpdatedAtKey = 'session-status-updatedAt-' + session.id;
-    if (isInitial) {
-        localStorage[sessionStatusIdKey] = initialUserId;
-        localStorage[sessionStatusUpdatedAtKey] = +new Date;
-    } else {
-        if (localStorage[sessionStatusIdKey] !== initialUserId &&
-            +new Date - localStorage[sessionStatusUpdatedAtKey] < 1500) {
-            // stopping all intervals and timers and ask to close window
-            let newTimerId = setTimeout(() => {
-            });
-            for (let i = 0; i < newTimerId; i++) {
-                clearTimeout(i);
-            }
-            let newIntervalId = setInterval(() => {
-            });
-            for (let i = 0; i < newIntervalId; i++) {
-                clearInterval(i);
-            }
-            document.title = '! OhMyCode';
-            setInterval(() => {
-                document.title = '! OhMyCode';
-                setTimeout(() => {
-                    document.title = '? OhMyCode';
-                }, 1000);
-            }, 2000);
-            document.body.innerHTML = '<h1 style="text-align: center; margin-top: 2em;">OhMyCode cannot work with one session in multiple tabs.<br>Please leave just one tab for this session.</h1>';
-        } else {
-            localStorage[sessionStatusIdKey] = initialUserId;
-            localStorage[sessionStatusUpdatedAtKey] = +new Date;
-        }
-    }
-};
-checkForMultipleTabs(true);
-setInterval(() => {
-    checkForMultipleTabs(false);
-}, 2000);
-
 
 let getCodeTheme = () => {
     // https://codemirror.net/5/demo/theme.html
@@ -322,6 +279,8 @@ let pageUpdater = () => {
             langSelect.value = session.lang;
             codeBlock.setOption('mode', languages[session.lang].highlighter);
         }
+
+        controlsContainerBlock.style.display = 'block';
     }, () => {
         clearTimeout(pageUpdaterTimer);
         pageUpdaterTimer = setTimeout(() => {

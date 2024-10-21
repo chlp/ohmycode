@@ -30,27 +30,24 @@
 
     <script src="js/utils.js?v=1"></script>
     <script>
-        const id = window.location.pathname.slice(1);
-        if (!isUuid(id)) {
+        const sessionId = window.location.pathname.slice(1);
+        if (!isUuid(sessionId)) {
             history.pushState({}, null, '/' + genUuid());
         }
-        let initialName = randomName();
-        let initialLang = 'markdown';
         let initialUserId = genUuid();
         let session = {
-            "id": id,
+            "id": sessionId,
             "name": "",
             "code": "",
-            "lang": initialLang,
+            "lang": 'markdown',
             "runner": "",
             "runnerIsOnline": false,
             "updatedAt": null,
             "writer": "",
             "users": [
                 {
-                    "id": "",
+                    "id": initialUserId,
                     "name": "",
-                    "own": true
                 }
             ],
             "isWaitingForResult": false,
@@ -76,7 +73,7 @@
     <textarea id="code"></textarea>
 </div>
 
-<div class="blocks-container" style="float: left; clear: left;">
+<div class="blocks-container" id="controls-container" style="float: left; clear: left; display: none;">
     <select id="lang-select" style="width: 150px; height: 30px;"></select>
     <button id="run-button" title="Cmd/Ctrl + Enter" disabled>Run code</button>
     <button id="clean-result-button" disabled>Clean result</button>

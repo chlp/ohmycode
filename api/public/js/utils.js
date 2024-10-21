@@ -80,18 +80,15 @@ let postRequest = (url, data, callback, final) => {
 
 let copyToClipboard = (text) => {
     if (navigator.clipboard && window.isSecureContext) {
-        // Используем Clipboard API, если доступен
         return navigator.clipboard.writeText(text).then(() => {
             console.log("Text copied to clipboard");
         }).catch(err => {
             console.error("Failed to copy: ", err);
         });
     } else {
-        // Fallback для старых браузеров
         let textArea = document.createElement("textarea");
         textArea.value = text;
 
-        // Избегаем отображения элемента в окне
         textArea.style.position = "fixed";
         textArea.style.left = "-999999px";
         document.body.appendChild(textArea);
@@ -104,7 +101,6 @@ let copyToClipboard = (text) => {
         } catch (err) {
             console.error("Failed to copy: ", err);
         } finally {
-            // Удаляем текстовое поле после копирования
             document.body.removeChild(textArea);
         }
     }
@@ -116,3 +112,43 @@ document.addEventListener('keydown', function (event) {
         console.log('Already saved :)');
     }
 });
+
+
+let processId = genUuid();
+let checkForMultipleTabs = () => {
+    let statusIdKey = 'file-status-id-' + sessionId;
+    let statusUpdatedAtKey = 'file-status-updatedAt-' + sessionId;
+    if (
+        localStorage[statusIdKey] === undefined ||
+        localStorage[statusIdKey] === processId ||
+        +new Date - localStorage[statusUpdatedAtKey] > 2000
+    ) {
+        localStorage[statusIdKey] = processId;
+        localStorage[statusUpdatedAtKey] = +new Date;
+        return;
+    }
+
+    // stopping all intervals and timers and ask to close window
+    let newTimerId = setTimeout(() => {
+    }, 1);
+    for (let i = 0; i <= newTimerId; i++) {
+        clearTimeout(i);
+    }
+    let newIntervalId = setInterval(() => {
+    }, 1);
+    for (let i = 0; i <= newIntervalId; i++) {
+        clearInterval(i);
+    }
+
+    document.title = '! OhMyCode';
+    setInterval(() => {
+        document.title = '! OhMyCode';
+        setTimeout(() => {
+            document.title = '? OhMyCode';
+        }, 1000);
+    }, 2000);
+    document.body.innerHTML = '<h1 style="text-align: center; margin-top: 2em;">OhMyCode cannot work with one shared session in multiple tabs.<br>Please use only one tab for one session in one browser.</h1>';
+};
+setInterval(() => {
+    checkForMultipleTabs();
+}, 2000);
