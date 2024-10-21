@@ -12,15 +12,6 @@ let resultContainerBlock = document.getElementById('result-container');
 let controlsContainerBlock = document.getElementById('controls-container');
 let langSelect = document.getElementById('lang-select');
 
-for (const key in languages) {
-    if (languages.hasOwnProperty(key)) {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = languages[key].name;
-        langSelect.appendChild(option);
-    }
-}
-
 let sessionPreviousState = {...session};
 sessionPreviousState.writer = '-'; // hack to init users
 let sessionIsOnline = true;
@@ -41,14 +32,22 @@ if (userName === undefined) {
     }
 }
 
-if (typeof session.lang !== 'string') {
-    session.lang = localStorage['initialLang'];
-    if (typeof session.lang !== 'string') {
-        session.lang = 'markdown';
-        localStorage['initialLang'] = session.lang;
+let currentLang = 'markdown';
+if (localStorage['initialLang'] === undefined) {
+    localStorage['initialLang'] = currentLang;
+} else {
+    currentLang = localStorage['initialLang'];
+}
+session.lang = currentLang;
+for (const key in languages) {
+    if (languages.hasOwnProperty(key)) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = languages[key].name;
+        langSelect.appendChild(option);
     }
 }
-langSelect.value = session.lang;
+langSelect.value = currentLang;
 
 let getCodeTheme = () => {
     // https://codemirror.net/5/demo/theme.html
@@ -64,7 +63,7 @@ let getResultTheme = () => {
 };
 let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     lineNumbers: true,
-    mode: languages[session.lang].highlighter, // javascript, go, php, sql
+    mode: languages[currentLang].highlighter, // javascript, go, php, sql
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
@@ -103,8 +102,9 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
 });
 
 langSelect.onchange = () => {
-    codeBlock.setOption('mode', languages[langSelect.value].highlighter);
-    actions.setLang();
+    currentLang = langSelect.value;
+    codeBlock.setOption('mode', languages[currentLang].highlighter);
+    actions.setLang(currentLang);
 };
 
 let writerBlocksUpdate = () => {
@@ -214,7 +214,7 @@ let pageUpdater = () => {
         session: sessionId,
         user: userId,
         userName: userName,
-        lang: langSelect.value,
+        lang: currentLang,
         lastUpdate: session.updatedAt ? session.updatedAt.date : null,
         action: 'getUpdate',
         isKeepAlive: true,
@@ -277,9 +277,9 @@ let pageUpdater = () => {
 
         // update lang
         if (sessionPreviousState.lang !== session.lang) {
-            langSelect.value = session.lang;
-            console.log(languages, session);
-            codeBlock.setOption('mode', languages[session.lang].highlighter);
+            currentLang = session.lang;
+            langSelect.value = currentLang;
+            codeBlock.setOption('mode', languages[currentLang].highlighter);
         }
 
         controlsContainerBlock.style.display = 'block';

@@ -5,7 +5,7 @@ let actions = {
             session: sessionId,
             user: userId,
             userName: userName,
-            lang: langSelect.value,
+            lang: currentLang,
             action: 'setSessionName',
             sessionName: newSessionName,
         }, (response) => {
@@ -20,7 +20,7 @@ let actions = {
             user: userId,
             userName: newUserName,
             action: 'setUserName',
-            lang: langSelect.value,
+            lang: currentLang,
         }, (response) => {
             console.log('setUserName: result', newUserName, response);
             if (response === '') {
@@ -29,17 +29,18 @@ let actions = {
         }, () => {
         });
     },
-    setLang: () => {
+    setLang: (lang) => {
         postRequest('/action/session.php?action=setLang', {
             session: sessionId,
             user: userId,
             userName: userName,
             action: 'setLang',
-            lang: langSelect.value,
+            lang: lang,
         }, (response) => {
             console.log('setLang: result', response);
             if (response === '') {
-                localStorage['initialLang'] = langSelect.value;
+                lang = currentLang;
+                localStorage['initialLang'] = lang;
             }
         }, () => {
         });
@@ -51,7 +52,7 @@ let actions = {
             userName: userName,
             action: 'setRunner',
             runner: runnerInput.value,
-            lang: langSelect.value,
+            lang: currentLang,
         }, (response) => {
             console.log('setRunner: result', response);
         }, () => {
@@ -71,7 +72,7 @@ let actions = {
             userName: userName,
             action: 'setCode',
             code: newCode,
-            lang: langSelect.value,
+            lang: currentLang,
         }, (response, statusCode) => {
             if (statusCode !== 200) {
                 console.log('setCode: result', response, statusCode);
