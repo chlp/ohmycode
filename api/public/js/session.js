@@ -12,24 +12,34 @@ let resultContainerBlock = document.getElementById('result-container');
 let controlsContainerBlock = document.getElementById('controls-container');
 let langSelect = document.getElementById('lang-select');
 
-let sessionPreviousState = {...session};
-sessionPreviousState.writer = '-'; // hack to init users
+let session = {
+    "id": sessionId,
+    "name": "",
+    "code": "",
+    "lang": 'markdown',
+    "runner": "",
+    "runnerIsOnline": false,
+    "updatedAt": null,
+    "writer": "",
+    "users": [],
+    "isWaitingForResult": false,
+    "result": ""
+};
+
+let sessionPreviousState = {};
 let sessionIsOnline = true;
 let ping = undefined;
 
 let userId = localStorage['userId'];
 if (userId === undefined) {
-    userId = initialUserId;
+    userId = genUuid();
     localStorage['userId'] = userId;
 }
 
-let userName = session.users[userId] ? session.users[userId].name : undefined;
+let userName = localStorage['initialUserName'];
 if (userName === undefined) {
-    userName = localStorage['initialUserName'];
-    if (userName === undefined) {
-        userName = randomName();
-        localStorage['initialUserName'] = userName;
-    }
+    userName = randomName();
+    localStorage['initialUserName'] = userName;
 }
 
 let currentLang = 'markdown';
@@ -38,7 +48,6 @@ if (localStorage['initialLang'] === undefined) {
 } else {
     currentLang = localStorage['initialLang'];
 }
-session.lang = currentLang;
 for (const key in languages) {
     if (languages.hasOwnProperty(key)) {
         const option = document.createElement('option');

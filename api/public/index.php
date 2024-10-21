@@ -35,25 +35,6 @@
             sessionId = genUuid();
             history.pushState({}, null, '/' + sessionId);
         }
-        let initialUserId = genUuid();
-        let session = {
-            "id": sessionId,
-            "name": "",
-            "code": "",
-            "lang": 'markdown',
-            "runner": "",
-            "runnerIsOnline": false,
-            "updatedAt": null,
-            "writer": "",
-            "users": [
-                {
-                    "id": initialUserId,
-                    "name": "",
-                }
-            ],
-            "isWaitingForResult": false,
-            "result": ""
-        };
     </script>
 </head>
 <body>
