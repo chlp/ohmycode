@@ -53,31 +53,23 @@ let updateUsers = () => {
         return;
     }
     let users = [];
-    if (isNewSession) {
-        users = [{
+    let isOwnUserFound = false;
+    Object.keys(session.users).forEach((key) => {
+        let user = session.users[key];
+        user.own = false;
+        if (user.id === userId) {
+            user.own = true;
+            userName = user.name;
+            isOwnUserFound = true;
+        }
+        users.push(user);
+    });
+    if (!isOwnUserFound) {
+        users.push({
             id: userId,
             name: userName,
             own: true,
-        }];
-    } else {
-        let isOwnUserFound = false;
-        Object.keys(session.users).forEach((key) => {
-            let user = session.users[key];
-            user.own = false;
-            if (user.id === userId) {
-                user.own = true;
-                userName = user.name;
-                isOwnUserFound = true;
-            }
-            users.push(user);
         });
-        if (!isOwnUserFound) {
-            users.push({
-                id: userId,
-                name: userName,
-                own: true,
-            });
-        }
     }
     let html = '';
     if (users.length > 1) {

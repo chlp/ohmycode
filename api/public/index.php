@@ -1,9 +1,3 @@
-<?php
-
-use app\Session;
-use app\Utils;
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +11,7 @@ use app\Utils;
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="favicon-apple-touch.png" />
 
-    <link rel="stylesheet" href="style.css?<?= md5_file(__DIR__ . '/style.css') ?>">
+    <link rel="stylesheet" href="style.css?v=1">
 
     <link rel="stylesheet" href="codemirror/codemirror.css">
     <link rel="stylesheet" href="codemirror/themes/base16-light.css">
@@ -33,34 +27,42 @@ use app\Utils;
     <script src="codemirror/mode/php.js"></script>
     <script src="codemirror/mode/sql.js"></script>
     <script src="codemirror/mode/xml.js"></script>
+
+    <script src="js/utils.js?v=1"></script>
+    <script>
+        const id = window.location.pathname.slice(1);
+        if (!isUuid(id)) {
+            history.pushState({}, null, '/' + genUuid());
+        }
+        let initialName = randomName();
+        let initialLang = 'markdown';
+        let initialUserId = genUuid();
+        let session = {
+            "id": id,
+            "name": "",
+            "code": "",
+            "lang": initialLang,
+            "runner": "",
+            "runnerIsOnline": false,
+            "updatedAt": null,
+            "writer": "",
+            "users": [
+                {
+                    "id": "",
+                    "name": "",
+                    "own": true
+                }
+            ],
+            "isWaitingForResult": false,
+            "result": ""
+        };
+    </script>
 </head>
 <body>
 
-<?php
-require __DIR__ . '/../app/bootstrap.php';
-
-$id = trim($_SERVER['REQUEST_URI'], '/');
-if (str_contains($id, '?')) {
-    $id = substr($id, 0, strpos($id, '?'));
-}
-
-$needChangeUrl = false;
-if (!Utils::isUuid($id)) {
-    $id = Utils::genUuid();
-    $needChangeUrl = true;
-}
-
-$isNewSession = false;
-$session = Session::get($id);
-if ($session === null) {
-    $isNewSession = true;
-    $session = Session::createNew($id); // todo: create new with user and writer
-}
-?>
-
 <div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
     <a href="#" id="session-name" contenteditable="true" spellcheck="false"
-       title="Rename file"><?= $session->name ?? '' ?></a><span id="session-status" class="online"></span>
+       title="Rename file"></a><span id="session-status" class="online"></span>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">
@@ -71,26 +73,14 @@ if ($session === null) {
 </div>
 
 <div class="code textarea" id="code-container" style="clear: both;">
-    <textarea id="code"><?= $session->code ?></textarea>
+    <textarea id="code"></textarea>
 </div>
 
 <div class="blocks-container" style="float: left; clear: left;">
-    <select id="lang-select" style="width: 150px; height: 30px;">
-        <?php
-        foreach (Session::LANGS as $key => $data) {
-            echo "<option value=\"$key\"";
-            if ($session->lang ?? '' === $key) {
-                echo ' selected';
-            }
-            echo ">{$data['name']}</option>\n";
-        }
-?>
-    </select>
+    <select id="lang-select" style="width: 150px; height: 30px;"></select>
     <button id="run-button" title="Cmd/Ctrl + Enter" disabled>Run code</button>
     <button id="clean-result-button" disabled>Clean result</button>
-    <button onclick="runnerEditButtonOnclick()" id="runner-edit-button"
-            style="display: <?= $session->runnerIsOnline() ? 'none' : 'block' ?>;">Runner
-    </button>
+    <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
     <button onclick="copyToClipboard(window.location.href)">Copy URL</button>
     <a href="/" class="button" target="_blank">New file</a>
 </div>
@@ -98,7 +88,7 @@ if ($session === null) {
 <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
     <span id="current-writer-info" style="padding: 0.4rem 0.8rem; display: none;">
         Code is writing now by <span
-                id="current-writer-name"><?= $session->users[$session->writer]['name'] ?? '' ?></span>
+                id="current-writer-name"></span>
     </span>
 </div>
 
@@ -110,55 +100,12 @@ if ($session === null) {
 </div>
 
 <div class="result textarea" id="result-container">
-    <textarea id="result"><?= $session->result ?? '' ?></textarea>
+    <textarea id="result"></textarea>
 </div>
-
-<script>
-    <?php
-    if ($needChangeUrl) {
-        echo "history.pushState({}, null, '/$id');\n";
-    }
-?>
-    let initialName = '<?= Utils::randomName() ?>';
-    let initialLang = '<?= Session::DEFAULT_LANG ?>';
-    let initialUserId = '<?= Utils::genUuid() ?>';
-    let isNewSession = <?= $isNewSession ? 'true' : 'false' ?>;
-    let session = {
-        "id": "",
-        "name": "",
-        "code": "",
-        "lang": "",
-        "runner": "",
-        "runnerIsOnline": false,
-        "updatedAt": {
-            "date": "",
-            "timezone_type": 3,
-            "timezone": "UTC"
-        },
-        "writer": "",
-        "users": [
-            {
-                "id": "",
-                "name": "",
-                "own": true
-            }
-        ],
-        "isWaitingForResult": false,
-        "result": ""
-    };
-    session = <?= $session->getJson() ?>;
-    session.updatedAt = null;
-    let langKeyToHighlighter = {<?php
-        foreach (Session::LANGS as $key => $data) {
-            echo "\"$key\": \"{$data['highlighter']}\",";
-        }
-?>};
-</script>
-<script src="js/utils.js?<?= md5_file(__DIR__ . '/js/utils.js') ?>"></script>
-<script src="js/actions.js?<?= md5_file(__DIR__ . '/js/actions.js') ?>"></script>
-<script src="js/session.js?<?= md5_file(__DIR__ . '/js/session.js') ?>"></script>
-<script src="js/session_name.js?<?= md5_file(__DIR__ . '/js/session_name.js') ?>"></script>
-<script src="js/users.js?<?= md5_file(__DIR__ . '/js/users.js') ?>"></script>
+<script src="js/actions.js?v=1"></script>
+<script src="js/session.js?v=1"></script>
+<script src="js/session_name.js?v=1"></script>
+<script src="js/users.js?v=1"></script>
 
 </body>
 </html>

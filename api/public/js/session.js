@@ -1,7 +1,6 @@
 let sessionStatusBlock = document.getElementById('session-status');
 let currentWriterInfo = document.getElementById('current-writer-info');
 let currentWriterName = document.getElementById('current-writer-name');
-let langSelect = document.getElementById('lang-select');
 let runButton = document.getElementById('run-button');
 let cleanResultButton = document.getElementById('clean-result-button');
 let runnerContainerBlock = document.getElementById('runner-container');
@@ -10,6 +9,19 @@ let runnerInput = document.getElementById('runner-input');
 let runnerSaveButton = document.getElementById('runner-save-button');
 let codeContainerBlock = document.getElementById('code-container');
 let resultContainerBlock = document.getElementById('result-container');
+let langSelect = document.getElementById('lang-select');
+
+for (const key in languages) {
+    if (languages.hasOwnProperty(key)) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = languages[key].name;
+        if (key === initialLang) {
+            option.selected = true;
+        }
+        langSelect.appendChild(option);
+    }
+}
 
 let sessionPreviousState = {...session};
 sessionPreviousState.writer = '-'; // hack to init users
@@ -95,7 +107,7 @@ let getResultTheme = () => {
 };
 let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     lineNumbers: true,
-    mode: langKeyToHighlighter[session.lang], // javascript, go, php, sql
+    mode: languages[session.lang].highlighter, // javascript, go, php, sql
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
@@ -134,7 +146,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
 });
 
 langSelect.onchange = () => {
-    codeBlock.setOption('mode', langKeyToHighlighter[langSelect.value]);
+    codeBlock.setOption('mode', languages[langSelect.value].highlighter);
     actions.setLang();
 };
 
@@ -189,7 +201,7 @@ runnerInput.onkeydown = (event) => {
 };
 
 let resultBlockUpdate = () => {
-    let isRunBtnShouldBeDisabled = isNewSession;
+    let isRunBtnShouldBeDisabled = true;
     if (session.isWaitingForResult) {
         isRunBtnShouldBeDisabled = true;
         if (resultBlock.getValue().startsWith('In progress')) {
@@ -273,7 +285,6 @@ let pageUpdater = () => {
             return;
         }
 
-        isNewSession = false;
         sessionPreviousState = {...session};
         session = data;
 
@@ -309,7 +320,7 @@ let pageUpdater = () => {
         // update lang
         if (sessionPreviousState.lang !== session.lang) {
             langSelect.value = session.lang;
-            codeBlock.setOption('mode', langKeyToHighlighter[session.lang]);
+            codeBlock.setOption('mode', languages[session.lang].highlighter);
         }
     }, () => {
         clearTimeout(pageUpdaterTimer);

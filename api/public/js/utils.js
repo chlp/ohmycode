@@ -1,4 +1,61 @@
-String.prototype.ohMySimpleHash = function () {
+let genUuid = () => {
+    return crypto.randomUUID().replace(/-/g, '');
+};
+
+let isUuid = (id) => {
+    return (new RegExp(`^[a-z0-9]{32}$`)).test(id);
+};
+
+let randomName = () => {
+    const adjectives = [
+        'Happy', 'Cheerful', 'Playful', 'Friendly', 'Bubbly', 'Jolly',
+        'Witty', 'Quirky', 'Silly', 'Goofy', 'Sunny', 'Joyful',
+        'Clever', 'Bouncy', 'Zippy', 'Peppy', 'Snazzy', 'Perky'
+    ];
+    const animals = [
+        'Penguin', 'Panda', 'Koala', 'Bunny', 'Squirrel', 'Dolphin',
+        'Turtle', 'Owl', 'Duckling', 'Kitten', 'Puppy', 'Sloth',
+        'Raccoon', 'Goldfish', 'Hedgehog', 'Llama', 'Frog', 'Otter'
+    ];
+
+    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const animal = animals[Math.floor(Math.random() * animals.length)];
+
+    return `${adjective} ${animal}`;
+}
+
+const languages = {
+    go: {
+        name: 'GoLang',
+        highlighter: 'go',
+    },
+    java: {
+        name: 'Java',
+        highlighter: 'text/x-java',
+    },
+    json: {
+        name: 'JSON',
+        highlighter: 'application/json',
+    },
+    markdown: {
+        name: 'Markdown',
+        highlighter: 'text/x-markdown',
+    },
+    mysql8: {
+        name: 'MySQL 8',
+        highlighter: 'sql',
+    },
+    php82: {
+        name: 'PHP 8.2',
+        highlighter: 'php',
+    },
+    postgres13: {
+        name: 'PostgreSQL 13',
+        highlighter: 'sql',
+    }
+};
+
+String.prototype.ohMySimpleHash = () => {
     let hash = 0;
     for (let i = 0; i < this.length; i++) {
         const char = this.charCodeAt(i);
@@ -17,8 +74,8 @@ let postRequest = (url, data, callback, final) => {
         }
     }).then((response) => {
         const statusCode = response.status;
-        return response.text().then((text) => ({ text, statusCode }));
-    }).then(({ text, statusCode }) => callback(text, statusCode)).finally(() => final());
+        return response.text().then((text) => ({text, statusCode}));
+    }).then(({text, statusCode}) => callback(text, statusCode)).finally(() => final());
 };
 
 let copyToClipboard = (text) => {
@@ -53,7 +110,7 @@ let copyToClipboard = (text) => {
     }
 };
 
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', function (event) {
     if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
         console.log('Already saved :)');
