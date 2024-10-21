@@ -96,7 +96,7 @@
     <button id="runner-save-button">save</button>
     <input type="text" id="runner-input" style="width: 20em;" maxlength="32" minlength="32"
            pattern="[0-9a-zA-Z]{32}" value="">
-    <label for="runner"><- runner id</label>
+    <label for="runner-input"><- runner id</label>
 </div>
 
 <div class="result textarea" id="result-container">
