@@ -2,7 +2,7 @@ let actions = {
     setSessionName: () => {
         let newSessionName = sessionNameBlock.textContent;
         postRequest('/action/session.php?action=setSessionName', {
-            session: session.id,
+            session: sessionId,
             user: userId,
             userName: userName,
             lang: langSelect.value,
@@ -16,7 +16,7 @@ let actions = {
     setUserName: () => {
         let newUserName = userOwnNameBlock.textContent;
         postRequest('/action/session.php?action=setUserName', {
-            session: session.id,
+            session: sessionId,
             user: userId,
             userName: newUserName,
             action: 'setUserName',
@@ -31,7 +31,7 @@ let actions = {
     },
     setLang: () => {
         postRequest('/action/session.php?action=setLang', {
-            session: session.id,
+            session: sessionId,
             user: userId,
             userName: userName,
             action: 'setLang',
@@ -46,7 +46,7 @@ let actions = {
     },
     setRunner: () => {
         postRequest('/action/session.php?action=setRunner', {
-            session: session.id,
+            session: sessionId,
             user: userId,
             userName: userName,
             action: 'setRunner',
@@ -66,7 +66,7 @@ let actions = {
         let newCode = codeBlock.getValue();
         session.code = newCode;
         postRequest('/action/session.php?action=setCode', {
-            session: session.id,
+            session: sessionId,
             user: userId,
             userName: userName,
             action: 'setCode',
@@ -87,7 +87,7 @@ let actions = {
     },
     cleanCode: (callback) => {
         postRequest('/action/result.php?action=clean', {
-            session: session.id,
+            session: sessionId,
             action: 'clean',
         }, (response, statusCode) => {
             if (statusCode !== 200) {
@@ -99,7 +99,7 @@ let actions = {
     },
     runCode: (callback) => {
         postRequest('/action/request.php?action=set', {
-            session: session.id,
+            session: sessionId,
             action: 'set',
         }, (response, statusCode) => {
             if (statusCode !== 200) {

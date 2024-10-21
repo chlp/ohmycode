@@ -211,9 +211,10 @@ let pageUpdater = () => {
     }
     pageUpdaterIsInProgress = true;
     postRequest('/action/session.php?action=getUpdate', {
-        session: session.id,
+        session: sessionId,
         user: userId,
         userName: userName,
+        lang: langSelect.value,
         lastUpdate: session.updatedAt ? session.updatedAt.date : null,
         action: 'getUpdate',
         isKeepAlive: true,
@@ -277,6 +278,7 @@ let pageUpdater = () => {
         // update lang
         if (sessionPreviousState.lang !== session.lang) {
             langSelect.value = session.lang;
+            console.log(languages, session);
             codeBlock.setOption('mode', languages[session.lang].highlighter);
         }
 

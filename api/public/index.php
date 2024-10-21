@@ -30,9 +30,10 @@
 
     <script src="js/utils.js?v=1"></script>
     <script>
-        const sessionId = window.location.pathname.slice(1);
+        let sessionId = window.location.pathname.slice(1);
         if (!isUuid(sessionId)) {
-            history.pushState({}, null, '/' + genUuid());
+            sessionId = genUuid();
+            history.pushState({}, null, '/' + sessionId);
         }
         let initialUserId = genUuid();
         let session = {

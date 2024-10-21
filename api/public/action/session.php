@@ -29,7 +29,11 @@ switch ($action) {
         $lastUpdate = (isset($input['lastUpdate']) && is_string($input['lastUpdate'])) ? $input['lastUpdate'] : null;
         $lastInCycleUpdateTime = 0;
         while (true) {
-            $session = Session::get($sessionId, $lastUpdate);
+            if ($lastUpdate !== null) {
+                $session = Session::get($sessionId, $lastUpdate);
+            } else {
+                $session = getSession($sessionId, $userId, $userName, $lang);
+            }
             if ($session !== null) {
                 break;
             } else {
@@ -118,6 +122,8 @@ function getSession(string $sessionId, string $userId, string $userName, string 
         $session->writer = $userId;
         if ($lang !== '') {
             $session->lang = $lang;
+        } else {
+            $session->lang = Session::DEFAULT_LANG;
         }
         $session->insert();
         $session->setUserName($userId, $userName);
