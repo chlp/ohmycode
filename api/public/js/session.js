@@ -158,7 +158,7 @@ runnerInput.onkeydown = (event) => {
 };
 
 let resultBlockUpdate = () => {
-    let isRunBtnShouldBeDisabled = true;
+    let isRunBtnShouldBeDisabled = false;
     if (session.isWaitingForResult) {
         isRunBtnShouldBeDisabled = true;
         if (resultBlock.getValue().startsWith('In progress')) {
