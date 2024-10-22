@@ -1,12 +1,12 @@
 let actions = {
     setSessionName: () => {
         let newSessionName = sessionNameBlock.textContent;
-        postRequest('/action/session.php?action=setSessionName', {
+        postRequest('/action/session.php?action=set_session_name', {
             session: sessionId,
             user: userId,
             userName: userName,
             lang: currentLang,
-            action: 'setSessionName',
+            action: 'set_session_name',
             sessionName: newSessionName,
         }, (response) => {
             console.log('setSessionName: result', newSessionName, response);
@@ -15,11 +15,11 @@ let actions = {
     },
     setUserName: () => {
         let newUserName = userOwnNameBlock.textContent;
-        postRequest('/action/session.php?action=setUserName', {
+        postRequest('/action/session.php?action=set_user_name', {
             session: sessionId,
             user: userId,
             userName: newUserName,
-            action: 'setUserName',
+            action: 'set_user_name',
             lang: currentLang,
         }, (response) => {
             console.log('setUserName: result', newUserName, response);
@@ -30,11 +30,11 @@ let actions = {
         });
     },
     setLang: (lang) => {
-        postRequest('/action/session.php?action=setLang', {
+        postRequest('/action/session.php?action=set_lang', {
             session: sessionId,
             user: userId,
             userName: userName,
-            action: 'setLang',
+            action: 'set_lang',
             lang: lang,
         }, (response) => {
             console.log('setLang: result', response);
@@ -46,11 +46,11 @@ let actions = {
         });
     },
     setRunner: () => {
-        postRequest('/action/session.php?action=setRunner', {
+        postRequest('/action/session.php?action=set_runner', {
             session: sessionId,
             user: userId,
             userName: userName,
-            action: 'setRunner',
+            action: 'set_runner',
             runner: runnerInput.value,
             lang: currentLang,
         }, (response) => {
@@ -66,11 +66,11 @@ let actions = {
         session.writer = userId;
         let newCode = codeBlock.getValue();
         session.code = newCode;
-        postRequest('/action/session.php?action=setCode', {
+        postRequest('/action/session.php?action=set_code', {
             session: sessionId,
             user: userId,
             userName: userName,
-            action: 'setCode',
+            action: 'set_code',
             code: newCode,
             lang: currentLang,
         }, (response, statusCode) => {

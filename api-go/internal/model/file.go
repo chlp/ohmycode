@@ -16,7 +16,13 @@ type File struct {
 	UpdatedAt       time.Time `json:"updated_at" bson:"updated_at"`
 	CodeUpdatedAt   time.Time `json:"code_updated_at" bson:"code_updated_at"`
 	RunnerCheckedAt time.Time `json:"runner_checked_at" bson:"runner_checked_at"`
-	Users           []string  `json:"users" bson:"users"` // todo: ? user
+	Users           []User    `json:"users" bson:"users"` // todo: ? user
+}
+
+type User struct {
+	ID        string    `json:"id" bson:"id"`
+	Name      string    `json:"name" bson:"name"`
+	TouchedAt time.Time `json:"touched_at" bson:"touched_at"`
 }
 
 const (
@@ -64,78 +70,103 @@ var LANGS = Langs{
 	},
 }
 
-func (s *File) SetName(name string) bool {
+func (f *File) TouchByUser(userId, userName string) {
+	if !util.IsUuid(userId) {
+		return
+	}
+	isAlreadyExist := false
+	for i, user := range f.Users {
+		if user.ID == userId {
+			isAlreadyExist = true
+			f.Users[i].TouchedAt = time.Now()
+			break
+		}
+	}
+	if !isAlreadyExist {
+		if !util.IsValidName(userName) {
+			userName = util.RandomName()
+		}
+		f.Users = append(f.Users, User{
+			ID:        userId,
+			Name:      userName,
+			TouchedAt: time.Now(),
+		})
+		f.UpdatedAt = time.Now()
+	}
+}
+
+func (f *File) SetName(name string) bool {
 	if !util.IsValidName(name) {
 		return false
 	}
-	s.Name = name
+	f.Name = name
 	// todo: to update
 	return true
 }
 
-func (s *File) SetLang(lang string) bool {
+func (f *File) SetLang(lang string) bool {
 	if _, ok := LANGS[lang]; !ok {
 		return false
 	}
-	s.Lang = lang
+	f.Lang = lang
 	// todo: to update
 	return true
 }
 
-func (s *File) SetCode(code, userId string) error {
+func (f *File) SetCode(code, userId string) error {
 	if len(code) > codeMaxLength {
 		return errors.New("code is too long")
 	}
 	// validate code
-	s.Code = code
+	f.Code = code
 	// todo: to update
 	// setWriter or err
 	return nil
 }
 
-func (s *File) UpdateTime() {
-	s.UpdatedAt = time.Now()
+func (f *File) UpdateTime() {
+	f.UpdatedAt = time.Now()
 }
 
-func (s *File) SetUserName(userId, name string) bool {
+func (f *File) SetUserName(userId, name string) bool {
 	if !util.IsValidName(name) || !util.IsUuid(userId) {
 		return false
 	}
-	s.Name = name
+	f.Name = name
 	// todo: to update
 	return false
 }
 
-func (s *File) SetRunner(runner string) bool {
+func (f *File) SetRunner(runner string) bool {
 	if !util.IsUuid(runner) {
 		return false
 	}
-	s.Runner = runner
+	f.Runner = runner
 	// todo: to update
 	return false
 }
 
-func (s *File) UpdateRunnerCheckedAt(runner string, isPublic bool) {
+func (f *File) UpdateRunnerCheckedAt(runner string, isPublic bool) {
 	if !util.IsUuid(runner) {
 		return
 	}
-	s.RunnerCheckedAt = time.Now()
+	f.RunnerCheckedAt = time.Now()
 	// todo: to update
 }
 
-func (s *File) CleanupWriter() {
-	if s.Writer == "" {
+func (f *File) CleanupWriter() {
+	if f.Writer == "" {
 		return
 	}
-	if time.Since(s.RunnerCheckedAt) > durationIsWriterStillWriting {
-		s.Writer = ""
+	if time.Since(f.RunnerCheckedAt) > durationIsWriterStillWriting {
+		f.Writer = ""
 		// todo: to update
 	}
 }
 
-func (s *File) RunnerIsOnline() bool {
-	if s.RunnerCheckedAt.IsZero() {
+func (f *File) RunnerIsOnline() bool {
+	if f.RunnerCheckedAt.IsZero() {
 		return false
 	}
-	return time.Since(s.RunnerCheckedAt) < durationIsActiveFromLastUpdate
+	return time.Since(f.RunnerCheckedAt) < durationIsActiveFromLastUpdate
 }

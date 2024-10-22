@@ -17,7 +17,7 @@ usleep(500000); // 0.5 sec
 echo "requests receiver initiating. id: $conf->runnerId\n";
 
 while (true) {
-    $requests = $api->request('get', ['isKeepAlive' => true], true);
+    $requests = $api->request('get', ['is_keep_alive' => true], true);
 
     if (!$requests->isOk()) {
         echo json_encode([date('Y-m-d H:i:s'), 'get requests', $requests->code, $requests->data]);
@@ -32,7 +32,7 @@ while (true) {
             $filePath = __DIR__ . "/$lang/requests/$hash";
             file_put_contents($filePath, $request['code']);
             chmod($filePath, 0700);
-            $api->request('markReceived', [
+            $api->request('mark_received', [
                 'lang' => $lang,
                 'hash' => $hash,
             ]);

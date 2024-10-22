@@ -18,17 +18,17 @@ switch ($action) {
         }
         Request::set($session);
         break;
-    case 'markReceived':
-        Request::markReceived((string)($input['runner'] ?? ''), (bool)($input['isPublic'] ?? false), (string)($input['lang'] ?? ''), (string)($input['hash'] ?? ''));
+    case 'mark_received':
+        Request::markReceived((string)($input['runner'] ?? ''), (bool)($input['is_public'] ?? false), (string)($input['lang'] ?? ''), (string)($input['hash'] ?? ''));
         break;
     case 'get':
-        $isKeepAlive = (bool)$input['isKeepAlive'];
+        $isKeepAlive = (bool)$input['is_keep_alive'];
         $keepAliveRequestTimeSec = 10;
         if ($isKeepAlive) {
             ini_set('max_execution_time', $keepAliveRequestTimeSec + 3);
         }
         $runner = (string)($input['runner'] ?? '');
-        $isPublic = (bool)($input['isPublic'] ?? false);
+        $isPublic = (bool)($input['is_public'] ?? false);
         if (!Utils::isUuid($runner)) {
             error('not valid runner', 404);
         }

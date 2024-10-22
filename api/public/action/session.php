@@ -20,8 +20,8 @@ $lang = (string)($input['lang'] ?? '');
 
 $action = (string)($input['action'] ?? '');
 switch ($action) {
-    case 'getUpdate':
-        $isKeepAlive = (bool)($input['isKeepAlive'] ?? false);
+    case 'get_update':
+        $isKeepAlive = (bool)($input['is_keep_alive'] ?? false);
         $keepAliveRequestTimeSec = 30;
         if ($isKeepAlive) {
             ini_set('max_execution_time', $keepAliveRequestTimeSec + 3);
@@ -77,31 +77,31 @@ switch ($action) {
         Session::cleanupWriter($sessionId);
         echo $session->getJson();
         break;
-    case 'setSessionName':
+    case 'set_session_name':
         $session = getSession($sessionId, $userId, $userName, $lang);
         if (!$session->setSessionName((string)($input['sessionName'] ?? ''))) {
             error('Wrong session name');
         }
         break;
-    case 'setUserName':
+    case 'set_user_name':
         $session = getSession($sessionId, $userId, $userName, $lang);
         if (!$session->setUserName($userId, $userName)) {
             error('Wrong user name');
         }
         break;
-    case 'setLang':
+    case 'set_lang':
         $session = getSession($sessionId, $userId, $userName, $lang);
         if (!$session->setLang($lang)) {
             error('Wrong lang');
         }
         break;
-    case 'setRunner':
+    case 'set_runner':
         $session = getSession($sessionId, $userId, $userName, $lang);
         if (!$session->setRunner((string)($input['runner'] ?? ''))) {
             error('Wrong runner');
         }
         break;
-    case 'setCode':
+    case 'set_code':
         $session = getSession($sessionId, $userId, $userName, $lang);
         if ($session->writer !== '' && $session->writer !== $userId) {
             error('Temporary forbidden 1', 403);

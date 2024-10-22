@@ -69,12 +69,12 @@ func handleAction(w http.ResponseWriter, r *http.Request) *input {
 		return nil
 	}
 
-	if !util.IsUuid(i.Session) {
+	if !util.IsUuid(i.SessionId) {
 		responseErr(r.Context(), w, "Invalid: session", http.StatusBadRequest)
 		return nil
 	}
 
-	if !util.IsUuid(i.User) {
+	if !util.IsUuid(i.UserId) {
 		responseErr(r.Context(), w, "Invalid: user", http.StatusBadRequest)
 		return nil
 	}

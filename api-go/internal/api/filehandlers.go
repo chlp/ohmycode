@@ -8,11 +8,11 @@ import (
 )
 
 type input struct {
-	Session     string      `json:"session"`
+	SessionId   string      `json:"session_id"`
 	SessionName string      `json:"session_name"`
-	User        string      `json:"user"`
+	UserId      string      `json:"user_id"`
 	UserName    string      `json:"user_name"`
-	Code        string      `json:"code"`
+	Content     string      `json:"content"`
 	Lang        string      `json:"lang"`
 	IsKeepAlive bool        `json:"is_keep_alive"`
 	LastUpdate  util.OhTime `json:"last_update"`
@@ -27,7 +27,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	file, err := s.store.GetFile(i.Session)
+	file, err := s.store.GetFile(i.SessionId)
 	if err != nil {
 		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 		return
@@ -38,20 +38,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	userFound := false
-	for _, user := range file.Users {
-		if user == i.User {
-			userFound = true
-			break
-		}
-	}
-	if !userFound {
-		println(1)
-		// file.InsertUser(i.User)
-	} else {
-		println(2)
-		// file.UpdateUserOnline(i.User)
-	}
+	file.TouchByUser(i.UserId, i.UserName)
 
 	if i.IsKeepAlive {
 		startTime := time.Now()
@@ -63,7 +50,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 				break
 			}
 
-			// file.UpdateUserOnline(i.User)
+			// file.UpdateUserOnline(i.UserId)
 			// file.CleanupUsers() - send into file worker
 			// file.CleanupWriter() - send into file worker
 
@@ -95,7 +82,7 @@ func (s *Service) HandleFileSetCodeRequest(w http.ResponseWriter, r *http.Reques
 	if i == nil {
 		return
 	}
-	file, err := s.store.GetFile(i.Session)
+	file, err := s.store.GetFile(i.SessionId)
 	if err != nil {
 		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 		return
@@ -106,22 +93,9 @@ func (s *Service) HandleFileSetCodeRequest(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userFound := false
-	for _, user := range file.Users {
-		if user == i.User {
-			userFound = true
-			break
-		}
-	}
-	if !userFound {
-		println(1)
-		// file.InsertUser(i.User)
-	} else {
-		println(2)
-		// file.UpdateUserOnline(i.User)
-	}
+	file.TouchByUser(i.UserId, i.UserName)
 
-	if err = file.SetCode(i.Code, i.User); err != nil {
+	if err = file.SetCode(i.Content, i.UserId); err != nil {
 		responseOk(w, nil)
 	} else {
 		responseErr(r.Context(), w, err.Error(), http.StatusBadRequest)
@@ -129,10 +103,10 @@ func (s *Service) HandleFileSetCodeRequest(w http.ResponseWriter, r *http.Reques
 }
 
 //// getSession получает сессию или создает новую
-//func getSession(sessionID, userID, userName, lang string) *Session {
-//	session := &Session{ID: sessionID, Writer: userID, Lang: lang}
+//func getSession(sessionID, userID, userName, lang string) *SessionId {
+//	session := &SessionId{ID: sessionID, Writer: userID, Lang: lang}
 //	if userName != "" {
-//		session.Users = append(session.Users, User{ID: userID, UserName: userName})
+//		session.Users = append(session.Users, UserId{ID: userID, UserName: userName})
 //	}
 //	// Здесь можно добавить логику сохранения сессии
 //	return session

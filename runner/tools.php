@@ -111,7 +111,7 @@ readonly class Api
     {
         $data = [
             'action' => $action,
-            'isPublic' => $this->isPublic,
+            'is_public' => $this->isPublic,
             'runner' => $this->runnerId,
         ];
         if ($moreData !== null) {
@@ -125,7 +125,7 @@ readonly class Api
     {
         $data = [
             'action' => $action,
-            'isPublic' => $this->isPublic,
+            'is_public' => $this->isPublic,
             'runner' => $this->runnerId,
         ];
         if ($moreData !== null) {

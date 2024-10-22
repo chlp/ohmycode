@@ -216,13 +216,13 @@ let pageUpdater = () => {
         return;
     }
     pageUpdaterIsInProgress = true;
-    postRequest('/action/session.php?action=getUpdate', {
+    postRequest('/action/session.php?action=get_update', {
         session: sessionId,
         user: userId,
         userName: userName,
         lang: currentLang,
         lastUpdate: session.updatedAt ? session.updatedAt.date : null,
-        action: 'getUpdate',
+        action: 'get_update',
         isKeepAlive: true,
     }, (response) => {
         response = response.trim();
