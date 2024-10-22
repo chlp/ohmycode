@@ -20,19 +20,6 @@ func NewService(store store.Store) Service {
 	}
 }
 
-//
-//func (s *Service) GetNewestPublicRunnerCheckedAt() *time.Time {
-//	var t *time.Time
-//	for _, runner := range s.runners {
-//		if runner.IsPublic {
-//			if t == nil || t.Before(runner.CheckedAt) {
-//				t = &runner.CheckedAt
-//			}
-//		}
-//	}
-//	return t
-//}
-
 func responseErr(ctx context.Context, w http.ResponseWriter, str string, code int) {
 	util.Log(ctx, "action.responseErr: "+strconv.Itoa(code)+" ("+http.StatusText(code)+"): "+str)
 	w.WriteHeader(code)
@@ -69,7 +56,7 @@ func handleAction(w http.ResponseWriter, r *http.Request) *input {
 		return nil
 	}
 
-	if !util.IsUuid(i.SessionId) {
+	if !util.IsUuid(i.FileId) {
 		responseErr(r.Context(), w, "Invalid: session", http.StatusBadRequest)
 		return nil
 	}

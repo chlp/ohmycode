@@ -7,16 +7,16 @@ import (
 )
 
 type File struct {
-	ID              string    `json:"_id,omitempty" bson:"_id,omitempty"`
-	Name            string    `json:"name" bson:"name"`
-	Lang            string    `json:"lang" bson:"lang"`
-	Code            string    `json:"code" bson:"code"`
-	Writer          string    `json:"writer" bson:"writer"`
-	Runner          string    `json:"runner" bson:"runner"`
-	UpdatedAt       time.Time `json:"updated_at" bson:"updated_at"`
-	CodeUpdatedAt   time.Time `json:"code_updated_at" bson:"code_updated_at"`
-	RunnerCheckedAt time.Time `json:"runner_checked_at" bson:"runner_checked_at"`
-	Users           []User    `json:"users" bson:"users"` // todo: ? user
+	ID               string    `json:"id" bson:"_id,omitempty"`
+	Name             string    `json:"name" bson:"name"`
+	Lang             string    `json:"lang" bson:"lang"`
+	Content          string    `json:"content" bson:"content"`
+	Writer           string    `json:"writer_id" bson:"writer_id"`
+	Runner           string    `json:"runner_id" bson:"runner_id"`
+	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`
+	ContentUpdatedAt time.Time `json:"content_updated_at" bson:"content_updated_at"`
+	RunnerCheckedAt  time.Time `json:"runner_checked_at" bson:"runner_checked_at"`
+	Users            []User    `json:"users" bson:"users"`
 }
 
 type User struct {
@@ -118,7 +118,7 @@ func (f *File) SetCode(code, userId string) error {
 		return errors.New("code is too long")
 	}
 	// validate code
-	f.Code = code
+	f.Content = code
 	// todo: to update
 	// setWriter or err
 	return nil

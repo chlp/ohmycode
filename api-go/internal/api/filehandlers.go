@@ -8,8 +8,8 @@ import (
 )
 
 type input struct {
-	SessionId   string      `json:"session_id"`
-	SessionName string      `json:"session_name"`
+	FileId      string      `json:"file_id"`
+	FileName    string      `json:"file_name"`
 	UserId      string      `json:"user_id"`
 	UserName    string      `json:"user_name"`
 	Content     string      `json:"content"`
@@ -27,14 +27,23 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	file, err := s.store.GetFile(i.SessionId)
+	file, err := s.store.GetFile(i.FileId)
 	if err != nil {
 		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	if file == nil {
-		// todo: return null stated file
-		responseErr(r.Context(), w, "Wrong file", http.StatusNotFound)
+		if i.LastUpdate.Time.IsZero() {
+			file, err = s.store.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
+			if err != nil {
+				responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
+			} else {
+				responseOk(w, file)
+			}
+			return
+		}
+		responseErr(r.Context(), w, "Wrong file id", http.StatusNotFound)
 		return
 	}
 
@@ -69,11 +78,6 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 	// file.CleanupUsers() - send into file worker
 	// file.CleanupWriter() - send into file worker
 
-	//response, err := json.Marshal(file)
-	//if err != nil {
-	//	responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
-	//	return
-	//}
 	responseOk(w, file)
 }
 
@@ -82,7 +86,7 @@ func (s *Service) HandleFileSetCodeRequest(w http.ResponseWriter, r *http.Reques
 	if i == nil {
 		return
 	}
-	file, err := s.store.GetFile(i.SessionId)
+	file, err := s.store.GetFile(i.FileId)
 	if err != nil {
 		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 		return
@@ -101,13 +105,3 @@ func (s *Service) HandleFileSetCodeRequest(w http.ResponseWriter, r *http.Reques
 		responseErr(r.Context(), w, err.Error(), http.StatusBadRequest)
 	}
 }
-
-//// getSession получает сессию или создает новую
-//func getSession(sessionID, userID, userName, lang string) *SessionId {
-//	session := &SessionId{ID: sessionID, Writer: userID, Lang: lang}
-//	if userName != "" {
-//		session.Users = append(session.Users, UserId{ID: userID, UserName: userName})
-//	}
-//	// Здесь можно добавить логику сохранения сессии
-//	return session
-//}
