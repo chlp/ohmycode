@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"ohmycode_api/pkg/util"
 	"time"
 )
 
@@ -11,7 +12,7 @@ func (s *Service) HandleRunAddTaskRequest(w http.ResponseWriter, r *http.Request
 	if file == nil {
 		return
 	}
-	if !file.RunnerIsOnline() {
+	if s.runnerStore.IsOnline(file.UsePublicRunner, file.RunnerId) {
 		responseErr(r.Context(), w, "Runner is not online", http.StatusBadRequest)
 	}
 
@@ -26,10 +27,17 @@ func (s *Service) HandleRunGetTasksRequest(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if !util.IsUuid(i.RunnerId) {
+		responseErr(r.Context(), w, "Invalid: runner id is not uuid", http.StatusBadRequest)
+		return
+	}
+
 	tasks := make([]string, 0)
 	startTime := time.Now()
 	for {
-		// receive all tasks from files and fill tasks. Mark not to give these tasks again for 3 seconds
+		s.runnerStore.SetRunner(i.RunnerId, i.IsPublic)
+
+		// todo: receive all tasks from files and fill tasks. Mark not to give these tasks again for 3 seconds
 
 		if len(tasks) > 0 || !i.IsKeepAlive || time.Since(startTime) > keepAliveRequestMaxDuration {
 			break

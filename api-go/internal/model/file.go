@@ -16,7 +16,6 @@ type File struct {
 	Writer           string    `json:"writer_id" bson:"writer_id"`
 	UsePublicRunner  bool      `json:"use_public_runner" bson:"use_public_runner"`
 	RunnerId         string    `json:"runner_id" bson:"runner_id"`
-	RunnerCheckedAt  time.Time `json:"runner_checked_at" bson:"runner_checked_at"`
 	Users            []User    `json:"users" bson:"users"`
 	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`
 	mutex            *sync.Mutex
@@ -127,17 +126,6 @@ func (f *File) SetRunnerId(runnerId string) bool {
 	return false
 }
 
-func (f *File) UpdateRunnerCheckedAt(runner string, isPublic bool) {
-	if !util.IsUuid(runner) {
-		return
-	}
-	if runner != f.RunnerId {
-		return
-	}
-	f.RunnerCheckedAt = time.Now()
-	// todo: if runner isPublic changed -> update it
-}
-
 func (f *File) CleanupUsers() {
 	f.lock()
 	defer f.unlock()
@@ -162,13 +150,6 @@ func (f *File) CleanupWriter() {
 		f.Writer = ""
 		f.UpdatedAt = time.Now()
 	}
-}
-
-func (f *File) RunnerIsOnline() bool {
-	if f.RunnerCheckedAt.IsZero() {
-		return false
-	}
-	return time.Since(f.RunnerCheckedAt) < durationIsActiveFromLastUpdate
 }
 
 func (f *File) lock() {

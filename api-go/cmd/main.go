@@ -9,7 +9,8 @@ import (
 
 func main() {
 	apiConfig := config.LoadApiConf()
-	apiStore := store.NewStore(apiConfig.DB)
-	worker.NewWorker(apiStore).Run()
-	api.NewService(apiStore).Run()
+	fileStore := store.NewFileStore(apiConfig.DB)
+	runnerStore := store.NewRunnerStore()
+	worker.NewWorker(fileStore).Run()
+	api.NewService(fileStore, runnerStore).Run()
 }

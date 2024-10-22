@@ -12,12 +12,14 @@ import (
 )
 
 type Service struct {
-	store *store.Store
+	fileStore   *store.FileStore
+	runnerStore *store.RunnerStore
 }
 
-func NewService(store *store.Store) *Service {
+func NewService(fileStore *store.FileStore, runnerStore *store.RunnerStore) *Service {
 	return &Service{
-		store: store,
+		fileStore:   fileStore,
+		runnerStore: runnerStore,
 	}
 }
 

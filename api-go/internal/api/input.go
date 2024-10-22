@@ -18,6 +18,7 @@ type input struct {
 	Hash        string      `json:"hash"`
 	Lang        string      `json:"lang"`
 	RunnerId    string      `json:"runner_id"`
+	IsPublic    bool        `json:"is_public"`
 	IsKeepAlive bool        `json:"is_keep_alive"`
 	LastUpdate  util.OhTime `json:"last_update"`
 }
@@ -73,7 +74,7 @@ func (s *Service) getFileOrCreateHandler(w http.ResponseWriter, r *http.Request)
 		return nil, nil
 	}
 
-	file, err := s.store.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
+	file, err := s.fileStore.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 	if err != nil {
 		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 		return nil, nil

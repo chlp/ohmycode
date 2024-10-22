@@ -7,25 +7,23 @@ import (
 	"time"
 )
 
-type Store struct {
+type FileStore struct {
 	mutex      *sync.RWMutex
 	files      map[string]*model.File
 	filesMutex map[string]*sync.Mutex
-	runners    map[string]*model.Runner
 	db         *Db
 }
 
-func NewStore(dbConfig DBConfig) *Store {
-	return &Store{
+func NewFileStore(dbConfig DBConfig) *FileStore {
+	return &FileStore{
 		mutex:      &sync.RWMutex{},
 		files:      make(map[string]*model.File),
 		filesMutex: make(map[string]*sync.Mutex),
-		runners:    make(map[string]*model.Runner),
 		db:         newDb(dbConfig),
 	}
 }
 
-func (s *Store) GetFileOrCreate(fileId, fileName, lang, content, userId, userName string) (*model.File, error) {
+func (s *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, userName string) (*model.File, error) {
 	file, err := s.GetFile(fileId)
 	if err != nil {
 		return nil, err
@@ -36,13 +34,6 @@ func (s *Store) GetFileOrCreate(fileId, fileName, lang, content, userId, userNam
 
 	defer s.lockFileMutex(fileId).Unlock()
 
-	runnerId := ""
-	runnerCheckedAt := time.Time{}
-	runner := s.GetPublicRunner()
-	if runner != nil {
-		runnerId = runner.ID
-		runnerCheckedAt = runner.CheckedAt
-	}
 	file = &model.File{
 		ID:               fileId,
 		Name:             fileName,
@@ -50,10 +41,9 @@ func (s *Store) GetFileOrCreate(fileId, fileName, lang, content, userId, userNam
 		Content:          content,
 		Writer:           "",
 		UsePublicRunner:  true,
-		RunnerId:         runnerId,
+		RunnerId:         "",
 		UpdatedAt:        time.Now(),
 		ContentUpdatedAt: time.Now(),
-		RunnerCheckedAt:  runnerCheckedAt,
 		Users:            nil,
 	}
 	file.TouchByUser(userId, userName)
@@ -65,11 +55,11 @@ func (s *Store) GetFileOrCreate(fileId, fileName, lang, content, userId, userNam
 	return file, nil
 }
 
-func (s *Store) GetAllFiles() map[string]*model.File {
+func (s *FileStore) GetAllFiles() map[string]*model.File {
 	return s.files
 }
 
-func (s *Store) GetFile(fileId string) (*model.File, error) {
+func (s *FileStore) GetFile(fileId string) (*model.File, error) {
 	defer s.lockFileMutex(fileId).Unlock()
 
 	if file, ok := s.files[fileId]; ok {
@@ -100,21 +90,7 @@ func (s *Store) GetFile(fileId string) (*model.File, error) {
 	return &files[0], nil
 }
 
-func (s *Store) GetPublicRunner() *model.Runner {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
-	var result *model.Runner
-	for _, runner := range s.runners {
-		if runner.IsPublic {
-			if result == nil || result.CheckedAt.Before(runner.CheckedAt) {
-				result = runner
-			}
-		}
-	}
-	return result
-}
-
-func (s *Store) lockFileMutex(fileId string) *sync.Mutex {
+func (s *FileStore) lockFileMutex(fileId string) *sync.Mutex {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	if fileMutex, ok := s.filesMutex[fileId]; ok {

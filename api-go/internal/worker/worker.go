@@ -7,10 +7,10 @@ import (
 )
 
 type Worker struct {
-	store *store.Store
+	store *store.FileStore
 }
 
-func NewWorker(store *store.Store) *Worker {
+func NewWorker(store *store.FileStore) *Worker {
 	return &Worker{
 		store: store,
 	}
