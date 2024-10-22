@@ -25,6 +25,8 @@ func (w *Worker) Run() {
 		for _, file := range files {
 			file.CleanupUsers()
 			file.CleanupWriter()
+
+			// send insert and update into db
 		}
 		time.Sleep(timeToSleepBetweenRuns)
 	}()

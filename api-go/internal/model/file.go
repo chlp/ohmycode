@@ -12,12 +12,12 @@ type File struct {
 	Name             string    `json:"name" bson:"name"`
 	Lang             string    `json:"lang" bson:"lang"`
 	Content          string    `json:"content" bson:"content"`
-	Writer           string    `json:"writer_id" bson:"writer_id"`
-	Runner           string    `json:"runner_id" bson:"runner_id"`
-	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`
 	ContentUpdatedAt time.Time `json:"content_updated_at" bson:"content_updated_at"`
+	Writer           string    `json:"writer_id" bson:"writer_id"`
+	RunnerId         string    `json:"runner_id" bson:"runner_id"`
 	RunnerCheckedAt  time.Time `json:"runner_checked_at" bson:"runner_checked_at"`
 	Users            []User    `json:"users" bson:"users"`
+	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`
 	mutex            *sync.Mutex
 }
 
@@ -67,7 +67,7 @@ func (f *File) SetName(name string) bool {
 		return false
 	}
 	f.Name = name
-	// todo: to update
+	f.UpdatedAt = time.Now()
 	return true
 }
 
@@ -76,40 +76,53 @@ func (f *File) SetLang(lang string) bool {
 		return false
 	}
 	f.Lang = lang
-	// todo: to update
+	f.UpdatedAt = time.Now()
 	return true
 }
 
-func (f *File) SetCode(code, userId string) error {
-	if len(code) > contentMaxLength {
-		return errors.New("code is too long")
+func (f *File) SetContent(content, userId string) error {
+	if len(content) > contentMaxLength {
+		return errors.New("content is too long")
 	}
-	// validate code
-	f.Content = code
-	// todo: to update
-	// setWriter or err
+	if f.Writer != "" && f.Writer != userId {
+		return errors.New("file is locked by another user")
+	}
+
+	f.lock()
+	defer f.unlock()
+
+	f.Content = content
+	f.Writer = userId
+	f.ContentUpdatedAt = time.Now()
+	f.UpdatedAt = time.Now()
 	return nil
 }
 
-func (f *File) UpdateTime() {
-	f.UpdatedAt = time.Now()
-}
-
-func (f *File) SetUserName(userId, name string) bool {
-	if !util.IsValidName(name) || !util.IsUuid(userId) {
+func (f *File) SetUserName(userId, userName string) bool {
+	if !util.IsValidName(userName) || !util.IsUuid(userId) {
 		return false
 	}
-	f.Name = name
-	// todo: to update
+
+	f.lock()
+	defer f.unlock()
+
+	for i, user := range f.Users {
+		if user.ID == userId {
+			f.Users[i].Name = userName
+			f.UpdatedAt = time.Now()
+			return true
+		}
+	}
+
 	return false
 }
 
-func (f *File) SetRunner(runner string) bool {
-	if !util.IsUuid(runner) {
+func (f *File) SetRunnerId(runnerId string) bool {
+	if !util.IsUuid(runnerId) {
 		return false
 	}
-	f.Runner = runner
-	// todo: to update
+	f.RunnerId = runnerId
+	f.UpdatedAt = time.Now()
 	return false
 }
 
@@ -117,18 +130,26 @@ func (f *File) UpdateRunnerCheckedAt(runner string, isPublic bool) {
 	if !util.IsUuid(runner) {
 		return
 	}
+	if runner != f.RunnerId {
+		return
+	}
 	f.RunnerCheckedAt = time.Now()
-	// todo: to update
+	// todo: if runner isPublic changed -> update it
 }
 
 func (f *File) CleanupUsers() {
 	f.lock()
 	defer f.unlock()
 
+	changed := false
 	for i, user := range f.Users {
 		if time.Since(user.TouchedAt) > durationIsActiveFromLastUpdate {
 			f.Users = append(f.Users[:i], f.Users[i+1:]...)
+			changed = true
 		}
+	}
+	if changed {
+		f.UpdatedAt = time.Now()
 	}
 }
 
@@ -138,6 +159,7 @@ func (f *File) CleanupWriter() {
 	}
 	if time.Since(f.ContentUpdatedAt) > durationIsWriterStillWriting {
 		f.Writer = ""
+		f.UpdatedAt = time.Now()
 	}
 }
 

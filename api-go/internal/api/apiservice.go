@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"ohmycode_api/internal/store"
 	"ohmycode_api/pkg/util"
 	"strconv"
+	"time"
 )
 
 type Service struct {
@@ -18,6 +20,25 @@ func NewService(store *store.Store) *Service {
 	return &Service{
 		store: store,
 	}
+}
+
+func (s *Service) Run() {
+	util.Log(nil, "API Service started")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/file/get", s.HandleFileGetUpdateRequest)
+	mux.HandleFunc("/file/set_content", s.HandleFileSetContentRequest)
+	mux.HandleFunc("/file/set_name", s.HandleFileSetNameRequest)
+	mux.HandleFunc("/file/set_user_name", s.HandleFileSetContentRequest)
+	mux.HandleFunc("/file/set_lang", s.HandleFileSetLangRequest)
+	mux.HandleFunc("/file/set_runner", s.HandleFileSetRunnerRequest)
+	log.Fatal(http.ListenAndServe(":8081", requestTimerMiddleware(mux)))
+}
+
+func requestTimerMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), util.RequestStartTimeCtxKey, time.Now())
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func responseErr(ctx context.Context, w http.ResponseWriter, str string, code int) {
@@ -57,12 +78,12 @@ func handleAction(w http.ResponseWriter, r *http.Request) *input {
 	}
 
 	if !util.IsUuid(i.FileId) {
-		responseErr(r.Context(), w, "Invalid: session", http.StatusBadRequest)
+		responseErr(r.Context(), w, "Invalid: file id is not uuid", http.StatusBadRequest)
 		return nil
 	}
 
 	if !util.IsUuid(i.UserId) {
-		responseErr(r.Context(), w, "Invalid: user", http.StatusBadRequest)
+		responseErr(r.Context(), w, "Invalid: user id is not uuid", http.StatusBadRequest)
 		return nil
 	}
 

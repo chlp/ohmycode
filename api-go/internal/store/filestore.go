@@ -25,7 +25,7 @@ func NewStore(dbConfig DBConfig) *Store {
 	}
 }
 
-func (s *Store) NewFile(fileId, fileName, lang, content, userId, userName string) (*model.File, error) {
+func (s *Store) GetFileOrCreate(fileId, fileName, lang, content, userId, userName string) (*model.File, error) {
 	file, err := s.GetFile(fileId)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (s *Store) NewFile(fileId, fileName, lang, content, userId, userName string
 		Lang:             lang,
 		Content:          content,
 		Writer:           "",
-		Runner:           runnerId,
+		RunnerId:         runnerId,
 		UpdatedAt:        time.Time{},
 		ContentUpdatedAt: time.Time{},
 		RunnerCheckedAt:  time.Time{},
