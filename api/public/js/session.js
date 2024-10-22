@@ -1,17 +1,8 @@
-let sessionStatusBlock = document.getElementById('session-status');
-let currentWriterInfo = document.getElementById('current-writer-info');
-let currentWriterName = document.getElementById('current-writer-name');
-let runButton = document.getElementById('run-button');
-let cleanResultButton = document.getElementById('clean-result-button');
-let runnerContainerBlock = document.getElementById('runner-container');
-let runnerEditButton = document.getElementById('runner-edit-button');
-let runnerInput = document.getElementById('runner-input');
-let runnerSaveButton = document.getElementById('runner-save-button');
-let codeContainerBlock = document.getElementById('code-container');
-let resultContainerBlock = document.getElementById('result-container');
-let controlsContainerBlock = document.getElementById('controls-container');
-let langSelect = document.getElementById('lang-select');
-
+let sessionId = window.location.pathname.slice(1);
+if (!isUuid(sessionId)) {
+    sessionId = genUuid();
+    history.pushState({}, null, '/' + sessionId);
+}
 let session = {
     "id": sessionId,
     "name": "",
@@ -26,9 +17,23 @@ let session = {
     "result": ""
 };
 
+let sessionStatusBlock = document.getElementById('session-status');
+let currentWriterInfo = document.getElementById('current-writer-info');
+let currentWriterName = document.getElementById('current-writer-name');
+let runButton = document.getElementById('run-button');
+let cleanResultButton = document.getElementById('clean-result-button');
+let runnerContainerBlock = document.getElementById('runner-container');
+let runnerEditButton = document.getElementById('runner-edit-button');
+let runnerInput = document.getElementById('runner-input');
+let runnerSaveButton = document.getElementById('runner-save-button');
+let codeContainerBlock = document.getElementById('code-container');
+let resultContainerBlock = document.getElementById('result-container');
+let controlsContainerBlock = document.getElementById('controls-container');
+let langSelect = document.getElementById('lang-select');
+
+
 let sessionPreviousState = {};
 let sessionIsOnline = true;
-let ping = undefined;
 
 let userId = localStorage['userId'];
 if (userId === undefined) {
@@ -132,9 +137,6 @@ let writerBlocksUpdate = () => {
     }
     currentWriterName.innerHTML = newWriterName;
 };
-document.addEventListener('DOMContentLoaded', () => {
-    writerBlocksUpdate();
-});
 
 let runnerBlocksUpdate = () => {
     if (session.runnerIsOnline) {
@@ -142,9 +144,6 @@ let runnerBlocksUpdate = () => {
     }
     runnerEditButton.style.display = session.runnerIsOnline ? 'none' : 'block';
 };
-document.addEventListener('DOMContentLoaded', () => {
-    runnerBlocksUpdate();
-});
 
 let runnerEditButtonOnclick = () => {
     if (runnerContainerBlock.style.display === 'block') {
@@ -208,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
-let isDebug = false;
 let lastUpdateTimestamp = +new Date;
 let pageUpdaterTimer = 0;
 let pageUpdaterIsInProgress = false;
@@ -229,10 +227,6 @@ let pageUpdater = () => {
     }, (response) => {
         response = response.trim();
         pageUpdaterIsInProgress = false;
-        ping = +new Date - start;
-        if (isDebug) {
-            console.log((new Date).toLocaleString() + ' | ping: ' + ping);
-        }
         lastUpdateTimestamp = +new Date;
         if (response.length === 0) {
             resultBlockUpdate(); // adding more dots to "In progress..."

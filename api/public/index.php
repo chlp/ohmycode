@@ -17,25 +17,17 @@
     <link rel="stylesheet" href="codemirror/themes/base16-light.css">
     <link rel="stylesheet" href="codemirror/themes/base16-dark.css">
     <link rel="stylesheet" href="codemirror/themes/tomorrow-night-bright.css">
-    <script src="codemirror/codemirror.js"></script>
-    <script src="codemirror/mode/clike.js"></script>
-    <script src="codemirror/mode/css.js"></script>
-    <script src="codemirror/mode/go.js"></script>
-    <script src="codemirror/mode/htmlmixed.js"></script>
-    <script src="codemirror/mode/javascript.js"></script>
-    <script src="codemirror/mode/markdown.js"></script>
-    <script src="codemirror/mode/php.js"></script>
-    <script src="codemirror/mode/sql.js"></script>
-    <script src="codemirror/mode/xml.js"></script>
 
-    <script src="js/utils.js?v=1"></script>
-    <script>
-        let sessionId = window.location.pathname.slice(1);
-        if (!isUuid(sessionId)) {
-            sessionId = genUuid();
-            history.pushState({}, null, '/' + sessionId);
-        }
-    </script>
+    <script src="codemirror/codemirror.js" defer></script>
+    <script src="codemirror/mode/clike.js" defer></script>
+    <script src="codemirror/mode/css.js" defer></script>
+    <script src="codemirror/mode/go.js" defer></script>
+    <script src="codemirror/mode/htmlmixed.js" defer></script>
+    <script src="codemirror/mode/javascript.js" defer></script>
+    <script src="codemirror/mode/markdown.js" defer></script>
+    <script src="codemirror/mode/php.js" defer></script>
+    <script src="codemirror/mode/sql.js" defer></script>
+    <script src="codemirror/mode/xml.js" defer></script>
 </head>
 <body>
 
@@ -81,10 +73,12 @@
 <div class="result textarea" id="result-container">
     <textarea id="result"></textarea>
 </div>
-<script src="js/actions.js?v=1"></script>
-<script src="js/session.js?v=1"></script>
-<script src="js/session_name.js?v=1"></script>
-<script src="js/users.js?v=1"></script>
+
+<script src="js/utils.js?v=1" defer></script>
+<script src="js/actions.js?v=1" defer></script>
+<script src="js/session.js?v=1" defer></script>
+<script src="js/session_name.js?v=1" defer></script>
+<script src="js/users.js?v=1" defer></script>
 
 </body>
 </html>
