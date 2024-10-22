@@ -7,35 +7,59 @@ import (
 )
 
 func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Request) {
-	i, file := s.getFileOrCreateHandler(w, r) // todo: check if it will create empty file
-	if file == nil {
+	i := getInputForFile(w, r)
+	if i == nil {
 		return
 	}
 
-	if i.IsKeepAlive {
-		startTime := time.Now()
-		for {
-			if file.UpdatedAt.After(i.LastUpdate.Time) {
-				break
-			}
-			if time.Since(startTime) > keepAliveRequestMaxDuration {
-				break
-			}
+	file, err := s.fileStore.GetFile(i.FileId)
+	if err != nil {
+		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	startTime := time.Now()
+	for {
+		if file != nil {
 			file.TouchByUser(i.UserId, "")
+		}
 
-			select {
-			case <-r.Context().Done():
-				fmt.Println("Client connection closed")
-				responseOk(w, "Client connection closed")
-				return
-			default:
-				time.Sleep(time.Millisecond * 100)
+		if !i.IsKeepAlive {
+			break
+		}
+
+		if file == nil {
+			if file == nil {
+				time.Sleep(time.Second * 1)
 			}
+			file, err = s.fileStore.GetFile(i.FileId)
+			if err != nil {
+				responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
 
+		if file.UpdatedAt.After(i.LastUpdate.Time) {
+			break
+		}
+
+		if time.Since(startTime) > keepAliveRequestMaxDuration {
+			break
+		}
+
+		select {
+		case <-r.Context().Done():
+			fmt.Println("Client connection closed")
+			responseOk(w, "Client connection closed")
+			return
+		default:
+			time.Sleep(time.Millisecond * 100)
 		}
 	}
 
+	if !file.UpdatedAt.After(i.LastUpdate.Time) {
+		file = nil
+	}
 	responseOk(w, file)
 }
 
