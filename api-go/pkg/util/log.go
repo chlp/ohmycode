@@ -10,6 +10,9 @@ import (
 const RequestStartTimeCtxKey string = "RequestStartTime"
 
 func Log(ctx context.Context, msg string) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	elapsedTimeStr := ""
 	if startTime, ok := ctx.Value(RequestStartTimeCtxKey).(time.Time); ok {
 		elapsedTime := time.Since(startTime)

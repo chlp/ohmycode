@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"ohmycode_api/pkg/util"
+	"sync"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type File struct {
 	ContentUpdatedAt time.Time `json:"content_updated_at" bson:"content_updated_at"`
 	RunnerCheckedAt  time.Time `json:"runner_checked_at" bson:"runner_checked_at"`
 	Users            []User    `json:"users" bson:"users"`
+	mutex            *sync.Mutex
 }
 
 type User struct {
@@ -26,54 +28,19 @@ type User struct {
 }
 
 const (
-	DefaultLang                    = "markdown"
-	codeMaxLength                  = 32768
+	contentMaxLength               = 32768
 	durationIsActiveFromLastUpdate = 5 * time.Second
 	durationIsWriterStillWriting   = 2 * time.Second
 )
-
-type Lang struct {
-	Name        string // Название языка
-	Highlighter string // Соответствующий хайлайтер
-}
-
-type Langs map[string]Lang
-
-var LANGS = Langs{
-	"go": {
-		Name:        "GoLang",
-		Highlighter: "go",
-	},
-	"java": {
-		Name:        "Java",
-		Highlighter: "text/x-java",
-	},
-	"json": {
-		Name:        "JSON",
-		Highlighter: "application/json",
-	},
-	"markdown": {
-		Name:        "Markdown",
-		Highlighter: "text/x-markdown",
-	},
-	"mysql8": {
-		Name:        "MySQL 8",
-		Highlighter: "sql",
-	},
-	"php82": {
-		Name:        "PHP 8.2",
-		Highlighter: "php",
-	},
-	"postgres13": {
-		Name:        "PostgreSQL 13",
-		Highlighter: "sql",
-	},
-}
 
 func (f *File) TouchByUser(userId, userName string) {
 	if !util.IsUuid(userId) {
 		return
 	}
+
+	f.lock()
+	defer f.unlock()
+
 	isAlreadyExist := false
 	for i, user := range f.Users {
 		if user.ID == userId {
@@ -105,7 +72,7 @@ func (f *File) SetName(name string) bool {
 }
 
 func (f *File) SetLang(lang string) bool {
-	if _, ok := LANGS[lang]; !ok {
+	if _, ok := Langs[lang]; !ok {
 		return false
 	}
 	f.Lang = lang
@@ -114,7 +81,7 @@ func (f *File) SetLang(lang string) bool {
 }
 
 func (f *File) SetCode(code, userId string) error {
-	if len(code) > codeMaxLength {
+	if len(code) > contentMaxLength {
 		return errors.New("code is too long")
 	}
 	// validate code
@@ -154,13 +121,23 @@ func (f *File) UpdateRunnerCheckedAt(runner string, isPublic bool) {
 	// todo: to update
 }
 
+func (f *File) CleanupUsers() {
+	f.lock()
+	defer f.unlock()
+
+	for i, user := range f.Users {
+		if time.Since(user.TouchedAt) > durationIsActiveFromLastUpdate {
+			f.Users = append(f.Users[:i], f.Users[i+1:]...)
+		}
+	}
+}
+
 func (f *File) CleanupWriter() {
 	if f.Writer == "" {
 		return
 	}
-	if time.Since(f.RunnerCheckedAt) > durationIsWriterStillWriting {
+	if time.Since(f.ContentUpdatedAt) > durationIsWriterStillWriting {
 		f.Writer = ""
-		// todo: to update
 	}
 }
 
@@ -169,4 +146,15 @@ func (f *File) RunnerIsOnline() bool {
 		return false
 	}
 	return time.Since(f.RunnerCheckedAt) < durationIsActiveFromLastUpdate
+}
+
+func (f *File) lock() {
+	if f.mutex == nil {
+		f.mutex = &sync.Mutex{}
+	}
+	f.mutex.Lock()
+}
+
+func (f *File) unlock() {
+	f.mutex.Lock()
 }

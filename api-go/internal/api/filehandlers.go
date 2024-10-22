@@ -47,8 +47,6 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	file.TouchByUser(i.UserId, i.UserName)
-
 	if i.IsKeepAlive {
 		startTime := time.Now()
 		for {
@@ -59,9 +57,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 				break
 			}
 
-			// file.UpdateUserOnline(i.UserId)
-			// file.CleanupUsers() - send into file worker
-			// file.CleanupWriter() - send into file worker
+			file.TouchByUser(i.UserId, "")
 
 			select {
 			case <-ctx.Done():
@@ -75,9 +71,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	// file.CleanupUsers() - send into file worker
-	// file.CleanupWriter() - send into file worker
-
+	file.TouchByUser(i.UserId, i.UserName)
 	responseOk(w, file)
 }
 

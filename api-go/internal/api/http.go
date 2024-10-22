@@ -4,14 +4,12 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"ohmycode_api/internal/store"
 	"ohmycode_api/pkg/util"
 	"time"
 )
 
-func Run(store store.Store) {
-	s := NewService(store)
-
+func (s *Service) Run() {
+	util.Log(nil, "API Service started")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/file/get", s.HandleFileGetUpdateRequest)
 	mux.HandleFunc("/file/set_code", s.HandleFileSetCodeRequest)

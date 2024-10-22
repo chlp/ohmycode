@@ -11,11 +11,11 @@ import (
 )
 
 type Service struct {
-	store store.Store
+	store *store.Store
 }
 
-func NewService(store store.Store) Service {
-	return Service{
+func NewService(store *store.Store) *Service {
+	return &Service{
 		store: store,
 	}
 }

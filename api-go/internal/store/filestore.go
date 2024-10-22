@@ -15,8 +15,8 @@ type Store struct {
 	db         *Db
 }
 
-func NewStore(dbConfig DBConfig) Store {
-	return Store{
+func NewStore(dbConfig DBConfig) *Store {
+	return &Store{
 		mutex:      &sync.RWMutex{},
 		files:      make(map[string]*model.File),
 		filesMutex: make(map[string]*sync.Mutex),
@@ -60,6 +60,10 @@ func (s *Store) NewFile(fileId, fileName, lang, content, userId, userName string
 	s.mutex.Unlock()
 
 	return file, nil
+}
+
+func (s *Store) GetAllFiles() map[string]*model.File {
+	return s.files
 }
 
 func (s *Store) GetFile(fileId string) (*model.File, error) {
