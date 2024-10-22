@@ -37,9 +37,11 @@ func (s *Store) GetFileOrCreate(fileId, fileName, lang, content, userId, userNam
 	defer s.lockFileMutex(fileId).Unlock()
 
 	runnerId := ""
+	runnerCheckedAt := time.Time{}
 	runner := s.GetPublicRunner()
 	if runner != nil {
 		runnerId = runner.ID
+		runnerCheckedAt = runner.CheckedAt
 	}
 	file = &model.File{
 		ID:               fileId,
@@ -47,10 +49,11 @@ func (s *Store) GetFileOrCreate(fileId, fileName, lang, content, userId, userNam
 		Lang:             lang,
 		Content:          content,
 		Writer:           "",
+		UsePublicRunner:  true,
 		RunnerId:         runnerId,
-		UpdatedAt:        time.Time{},
-		ContentUpdatedAt: time.Time{},
-		RunnerCheckedAt:  time.Time{},
+		UpdatedAt:        time.Now(),
+		ContentUpdatedAt: time.Now(),
+		RunnerCheckedAt:  runnerCheckedAt,
 		Users:            nil,
 	}
 	file.TouchByUser(userId, userName)

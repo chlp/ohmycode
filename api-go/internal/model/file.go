@@ -14,6 +14,7 @@ type File struct {
 	Content          string    `json:"content" bson:"content"`
 	ContentUpdatedAt time.Time `json:"content_updated_at" bson:"content_updated_at"`
 	Writer           string    `json:"writer_id" bson:"writer_id"`
+	UsePublicRunner  bool      `json:"use_public_runner" bson:"use_public_runner"`
 	RunnerId         string    `json:"runner_id" bson:"runner_id"`
 	RunnerCheckedAt  time.Time `json:"runner_checked_at" bson:"runner_checked_at"`
 	Users            []User    `json:"users" bson:"users"`
