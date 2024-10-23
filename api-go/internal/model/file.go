@@ -195,5 +195,5 @@ func (f *File) lock() {
 }
 
 func (f *File) unlock() {
-	f.mutex.Lock()
+	f.mutex.Unlock()
 }

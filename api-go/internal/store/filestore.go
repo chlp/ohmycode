@@ -93,11 +93,14 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 func (fs *FileStore) lockFileMutex(fileId string) *sync.Mutex {
 	fs.mutex.Lock()
 	defer fs.mutex.Unlock()
-	if fileMutex, ok := fs.filesMutex[fileId]; ok {
-		return fileMutex
+
+	var fileMutex *sync.Mutex
+	var ok bool
+	if fileMutex, ok = fs.filesMutex[fileId]; !ok {
+		fileMutex = &sync.Mutex{}
+		fs.filesMutex[fileId] = fileMutex
 	}
-	fileMutex := &sync.Mutex{}
-	fs.filesMutex[fileId] = fileMutex
+
 	fileMutex.Lock()
 	return fileMutex
 }
