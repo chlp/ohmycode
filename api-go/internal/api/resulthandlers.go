@@ -25,6 +25,9 @@ func (s *Service) HandleResultSetRequest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	if i.Result == "" {
+		i.Result = "_"
+	}
 	if err := file.SetResult(i.Result); err != nil {
 		responseErr(r.Context(), w, err.Error(), http.StatusBadRequest)
 		return
