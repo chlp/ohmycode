@@ -15,7 +15,7 @@ type input struct {
 	UserId      string      `json:"user_id"`
 	UserName    string      `json:"user_name"`
 	Content     string      `json:"content"`
-	Hash        string      `json:"hash"`
+	Hash        uint32      `json:"hash"`
 	Lang        string      `json:"lang"`
 	RunnerId    string      `json:"runner_id"`
 	IsPublic    bool        `json:"is_public"`

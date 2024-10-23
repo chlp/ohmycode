@@ -11,6 +11,7 @@ func main() {
 	apiConfig := config.LoadApiConf()
 	fileStore := store.NewFileStore(apiConfig.DB)
 	runnerStore := store.NewRunnerStore()
+	taskStore := store.NewTaskStore()
 	worker.NewWorker(fileStore).Run()
-	api.NewService(fileStore, runnerStore).Run()
+	api.NewService(fileStore, runnerStore, taskStore).Run()
 }

@@ -14,12 +14,14 @@ import (
 type Service struct {
 	fileStore   *store.FileStore
 	runnerStore *store.RunnerStore
+	taskStore   *store.TaskStore
 }
 
-func NewService(fileStore *store.FileStore, runnerStore *store.RunnerStore) *Service {
+func NewService(fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
 	return &Service{
 		fileStore:   fileStore,
 		runnerStore: runnerStore,
+		taskStore:   taskStore,
 	}
 }
 
@@ -36,7 +38,7 @@ func (s *Service) Run() {
 
 	mux.HandleFunc("/run/add_task", s.HandleRunAddTaskRequest)
 	mux.HandleFunc("/run/get_tasks", s.HandleRunGetTasksRequest)
-	mux.HandleFunc("/run/set_task_received", s.HandleRunSetTaskReceivedRequest)
+	mux.HandleFunc("/run/ack_task", s.HandleRunAckTaskRequest)
 
 	log.Fatal(http.ListenAndServe(":8081", requestTimerMiddleware(mux)))
 }

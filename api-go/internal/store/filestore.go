@@ -23,8 +23,8 @@ func NewFileStore(dbConfig DBConfig) *FileStore {
 	}
 }
 
-func (s *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, userName string) (*model.File, error) {
-	file, err := s.GetFile(fileId)
+func (fs *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, userName string) (*model.File, error) {
+	file, err := fs.GetFile(fileId)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (s *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, use
 		return file, nil
 	}
 
-	defer s.lockFileMutex(fileId).Unlock()
+	defer fs.lockFileMutex(fileId).Unlock()
 
 	file = &model.File{
 		ID:               fileId,
@@ -48,25 +48,25 @@ func (s *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, use
 	}
 	file.TouchByUser(userId, userName)
 
-	s.mutex.Lock()
-	s.files[fileId] = file
-	s.mutex.Unlock()
+	fs.mutex.Lock()
+	fs.files[fileId] = file
+	fs.mutex.Unlock()
 
 	return file, nil
 }
 
-func (s *FileStore) GetAllFiles() map[string]*model.File {
-	return s.files
+func (fs *FileStore) GetAllFiles() map[string]*model.File {
+	return fs.files
 }
 
-func (s *FileStore) GetFile(fileId string) (*model.File, error) {
-	defer s.lockFileMutex(fileId).Unlock()
+func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
+	defer fs.lockFileMutex(fileId).Unlock()
 
-	if file, ok := s.files[fileId]; ok {
+	if file, ok := fs.files[fileId]; ok {
 		return file, nil
 	}
 
-	filesRaw, err := s.db.Select("files", map[string]interface{}{"_id": fileId}, &model.File{})
+	filesRaw, err := fs.db.Select("files", map[string]interface{}{"_id": fileId}, &model.File{})
 	if err != nil {
 		panic(err)
 	}
@@ -84,20 +84,20 @@ func (s *FileStore) GetFile(fileId string) (*model.File, error) {
 		return nil, errors.New("problem with fileId")
 	}
 
-	s.mutex.Lock()
-	s.files[fileId] = &files[0]
-	s.mutex.Unlock()
+	fs.mutex.Lock()
+	fs.files[fileId] = &files[0]
+	fs.mutex.Unlock()
 	return &files[0], nil
 }
 
-func (s *FileStore) lockFileMutex(fileId string) *sync.Mutex {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	if fileMutex, ok := s.filesMutex[fileId]; ok {
+func (fs *FileStore) lockFileMutex(fileId string) *sync.Mutex {
+	fs.mutex.Lock()
+	defer fs.mutex.Unlock()
+	if fileMutex, ok := fs.filesMutex[fileId]; ok {
 		return fileMutex
 	}
 	fileMutex := &sync.Mutex{}
-	s.filesMutex[fileId] = fileMutex
+	fs.filesMutex[fileId] = fileMutex
 	fileMutex.Lock()
 	return fileMutex
 }

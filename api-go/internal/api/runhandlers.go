@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"ohmycode_api/internal/model"
 	"ohmycode_api/pkg/util"
 	"time"
 )
@@ -16,7 +17,7 @@ func (s *Service) HandleRunAddTaskRequest(w http.ResponseWriter, r *http.Request
 		responseErr(r.Context(), w, "Runner is not online", http.StatusBadRequest)
 	}
 
-	// todo: create task
+	s.taskStore.SetTask(file)
 
 	responseOk(w, nil)
 }
@@ -32,12 +33,12 @@ func (s *Service) HandleRunGetTasksRequest(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	tasks := make([]string, 0)
+	tasks := make([]*model.Task, 0)
 	startTime := time.Now()
 	for {
 		s.runnerStore.SetRunner(i.RunnerId, i.IsPublic)
 
-		// todo: receive all tasks from files and fill tasks. Mark not to give these tasks again for 3 seconds
+		tasks = s.taskStore.GetTasksForRunner(i.RunnerId, i.IsPublic)
 
 		if len(tasks) > 0 || !i.IsKeepAlive || time.Since(startTime) > keepAliveRequestMaxDuration {
 			break
@@ -56,18 +57,18 @@ func (s *Service) HandleRunGetTasksRequest(w http.ResponseWriter, r *http.Reques
 	responseOk(w, tasks)
 }
 
-func (s *Service) HandleRunSetTaskReceivedRequest(w http.ResponseWriter, r *http.Request) {
+func (s *Service) HandleRunAckTaskRequest(w http.ResponseWriter, r *http.Request) {
 	i := getInput(w, r)
 	if i == nil {
 		return
 	}
 
-	// todo: find file with task, hash, lang, is_public||runner_id and mark as received
-	// todo: if not found, return special status to remove task from runner
+	task := s.taskStore.GetTask(i.RunnerId, i.Lang, i.Hash)
+	if task == nil {
+		responseErr(r.Context(), w, "Task not found", http.StatusNotFound)
+		return
+	}
+	task.AcknowledgedByRunnerAt = time.Now()
 
-	//if err := file.SetContent(i.Content, i.UserId); err != nil {
-	//	responseOk(w, nil)
-	//} else {
-	responseErr(r.Context(), w, "Not implemented", http.StatusNotImplemented)
-	//}
+	responseOk(w, nil)
 }

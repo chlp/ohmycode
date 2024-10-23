@@ -19,54 +19,54 @@ func NewRunnerStore() *RunnerStore {
 	}
 }
 
-func (s *RunnerStore) SetRunner(id string, isPublic bool) {
+func (rs *RunnerStore) SetRunner(id string, isPublic bool) {
 	if !util.IsUuid(id) {
 		return
 	}
 
-	s.mutex.RLock()
-	if runner, ok := s.runners[id]; ok {
+	rs.mutex.RLock()
+	if runner, ok := rs.runners[id]; ok {
 		runner.IsPublic = isPublic
 		runner.CheckedAt = time.Now()
-		s.mutex.RUnlock()
+		rs.mutex.RUnlock()
 		return
 	}
-	s.mutex.RUnlock()
+	rs.mutex.RUnlock()
 
-	s.mutex.Lock()
-	s.runners[id] = &model.Runner{
+	rs.mutex.Lock()
+	rs.runners[id] = &model.Runner{
 		ID:        id,
 		IsPublic:  isPublic,
 		CheckedAt: time.Now(),
 	}
-	s.mutex.Unlock()
+	rs.mutex.Unlock()
 }
 
 const durationIsActiveFromLastUpdate = 5 * time.Second
 
-func (s *RunnerStore) IsOnline(isPublic bool, runnerId string) bool {
+func (rs *RunnerStore) IsOnline(isPublic bool, runnerId string) bool {
 	if isPublic {
-		runner := s.GetPublicRunner()
+		runner := rs.GetPublicRunner()
 		if runner != nil {
 			return time.Since(runner.CheckedAt) < durationIsActiveFromLastUpdate
 		}
 	}
 
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+	rs.mutex.RLock()
+	defer rs.mutex.RUnlock()
 
-	if runner, ok := s.runners[runnerId]; ok {
+	if runner, ok := rs.runners[runnerId]; ok {
 		return time.Since(runner.CheckedAt) < durationIsActiveFromLastUpdate
 	}
 
 	return false
 }
 
-func (s *RunnerStore) GetPublicRunner() *model.Runner {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+func (rs *RunnerStore) GetPublicRunner() *model.Runner {
+	rs.mutex.RLock()
+	defer rs.mutex.RUnlock()
 	var result *model.Runner
-	for _, runner := range s.runners {
+	for _, runner := range rs.runners {
 		if runner.IsPublic {
 			if result == nil || result.CheckedAt.Before(runner.CheckedAt) {
 				result = runner
