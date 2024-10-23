@@ -45,6 +45,17 @@ func (ts *TaskStore) GetTask(runnerId, lang string, hash uint32) *model.Task {
 	return nil
 }
 
+func (ts *TaskStore) GetTaskForFile(fileId string) *model.Task {
+	ts.mutex.Lock()
+	defer ts.mutex.Unlock()
+	for _, task := range ts.tasks {
+		if task.FileId == fileId {
+			return task
+		}
+	}
+	return nil
+}
+
 func (ts *TaskStore) DeleteTask(taskId string) {
 	ts.mutex.Lock()
 	defer ts.mutex.Unlock()

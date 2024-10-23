@@ -110,28 +110,26 @@ readonly class Api
     public function request(string $action, ?array $moreData = null, bool $isKeepAlive = false): ApiResponse
     {
         $data = [
-            'action' => $action,
             'is_public' => $this->isPublic,
-            'runner' => $this->runnerId,
+            'runner_id' => $this->runnerId,
         ];
         if ($moreData !== null) {
             $data = array_merge($data, $moreData);
         }
-        [$code, $requests] = self::post($this->url . '/action/request.php', $data, $isKeepAlive);
+        [$code, $requests] = self::post($this->url . $action, $data, $isKeepAlive);
         return new ApiResponse($code, $requests);
     }
 
     public function result(string $action, ?array $moreData = null): ApiResponse
     {
         $data = [
-            'action' => $action,
             'is_public' => $this->isPublic,
-            'runner' => $this->runnerId,
+            'runner_id' => $this->runnerId,
         ];
         if ($moreData !== null) {
             $data = array_merge($data, $moreData);
         }
-        [$code, $requests] = self::post($this->url . '/action/result.php', $data);
+        [$code, $requests] = self::post($this->url . $action, $data);
         return new ApiResponse($code, $requests);
     }
 

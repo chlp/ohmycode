@@ -17,7 +17,7 @@ usleep(500000); // 0.5 sec
 echo "requests receiver initiating. id: $conf->runnerId\n";
 
 while (true) {
-    $requests = $api->request('get', ['is_keep_alive' => true], true);
+    $requests = $api->request('/run/get_tasks', ['is_keep_alive' => true], true);
 
     if (!$requests->isOk()) {
         echo json_encode([date('Y-m-d H:i:s'), 'get requests', $requests->code, $requests->data]);
@@ -29,17 +29,19 @@ while (true) {
         $lang = $request['lang'];
         $hash = $request['hash'];
         if (in_array($request['lang'], $conf->languages)) {
-            $filePath = __DIR__ . "/$lang/requests/$hash";
-            file_put_contents($filePath, $request['code']);
-            chmod($filePath, 0700);
-            $api->request('mark_received', [
+            $res = $api->request('/run/ack_task', [
                 'lang' => $lang,
-                'hash' => $hash,
+                'hash' => (int)$hash,
             ]);
+            if ($res->code !== 404) {
+                $filePath = __DIR__ . "/$lang/requests/$hash";
+                file_put_contents($filePath, $request['content']);
+                chmod($filePath, 0700);
+            }
         } else {
-            $api->result('set', [
+            $api->result('/result/set', [
                 'lang' => $lang,
-                'hash' => $hash,
+                'hash' => (int)$hash,
                 'result' => "No runner for $lang",
             ]);
         }

@@ -23,12 +23,12 @@ while (true) {
         foreach ($files as $file) {
             $isEmpty = false;
             $newResultData = substr(file_get_contents($resultsDir . '/' . $file), 0, 16384);
-            $setter = $api->result('set', [
+            $setter = $api->result('/result/set', [
                 'lang' => $lang,
-                'hash' => $file,
+                'hash' => (int)$file,
                 'result' => $newResultData,
             ]);
-            if (!$setter->isOk()) {
+            if ($setter->code !== 404 && !$setter->isOk()) {
                 echo json_encode([date('Y-m-d H:i:s'), 'set result', $setter->code, $setter->data]);
                 sleep(2);
                 continue;

@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (s *Service) HandleSetResultRequest(w http.ResponseWriter, r *http.Request) {
+func (s *Service) HandleResultSetRequest(w http.ResponseWriter, r *http.Request) {
 	i := getInput(w, r)
 	if i == nil {
 		return
@@ -12,7 +12,7 @@ func (s *Service) HandleSetResultRequest(w http.ResponseWriter, r *http.Request)
 
 	task := s.taskStore.GetTask(i.RunnerId, i.Lang, i.Hash)
 	if task == nil {
-		responseErr(r.Context(), w, "Task not found", http.StatusNotFound)
+		responseErr(r.Context(), w, "Task not found (result)", http.StatusNotFound)
 		return
 	}
 	file, err := s.fileStore.GetFile(task.FileId)
@@ -21,7 +21,7 @@ func (s *Service) HandleSetResultRequest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if file == nil {
-		responseErr(r.Context(), w, "File not found", http.StatusNotFound)
+		responseErr(r.Context(), w, "File not found (result)", http.StatusNotFound)
 		return
 	}
 
@@ -33,19 +33,13 @@ func (s *Service) HandleSetResultRequest(w http.ResponseWriter, r *http.Request)
 	responseOk(w, nil)
 }
 
-func (s *Service) HandleCleanResultRequest(w http.ResponseWriter, r *http.Request) {
-	i := getInput(w, r)
+func (s *Service) HandleResultCleanRequest(w http.ResponseWriter, r *http.Request) {
+	i := getInputForFile(w, r)
 	if i == nil {
 		return
 	}
 
-	task := s.taskStore.GetTask(i.RunnerId, i.Lang, i.Hash)
-	if task == nil {
-		responseOk(w, nil)
-		return
-	}
-	s.taskStore.DeleteTask(task.FileId)
-	file, err := s.fileStore.GetFile(task.FileId)
+	file, err := s.fileStore.GetFile(i.FileId)
 	if err != nil {
 		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 		return
@@ -60,6 +54,8 @@ func (s *Service) HandleCleanResultRequest(w http.ResponseWriter, r *http.Reques
 		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	s.taskStore.DeleteTask(file.ID)
 
 	responseOk(w, nil)
 }

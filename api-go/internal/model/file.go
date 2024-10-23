@@ -39,6 +39,26 @@ const (
 	durationForWaitingForResultMax = 20 * time.Second
 )
 
+func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
+	if fileName == "" {
+		fileName = "File " + time.Now().Format("2006-01-02")
+	}
+	file := &File{
+		ID:               fileId,
+		Name:             fileName,
+		Lang:             lang,
+		Content:          content,
+		Writer:           "",
+		UsePublicRunner:  true,
+		RunnerId:         "",
+		UpdatedAt:        time.Now(),
+		ContentUpdatedAt: time.Now(),
+		Users:            nil,
+	}
+	file.TouchByUser(userId, userName)
+	return file
+}
+
 func (f *File) TouchByUser(userId, userName string) {
 	if !util.IsUuid(userId) {
 		return

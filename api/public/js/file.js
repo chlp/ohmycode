@@ -167,7 +167,7 @@ runnerInput.onkeydown = (event) => {
 
 let resultBlockUpdate = () => {
     let isRunBtnShouldBeDisabled = false;
-    if (file.isWaitingForResult) {
+    if (file.is_waiting_for_result) {
         isRunBtnShouldBeDisabled = true;
         if (resultBlock.getValue().startsWith('In progress')) {
             resultBlock.setValue(resultBlock.getValue() + '.');
@@ -191,7 +191,7 @@ let resultBlockUpdate = () => {
         runButton.removeAttribute('disabled');
     }
 
-    if (file.isWaitingForResult || file.result.length > 0) {
+    if (file.is_waiting_for_result || file.result.length > 0) {
         resultContainerBlock.style.display = 'block';
         codeContainerBlock.style.height = 'calc(68vh - 90px)';
         cleanResultButton.removeAttribute('disabled');
@@ -201,6 +201,7 @@ let resultBlockUpdate = () => {
         cleanResultButton.setAttribute('disabled', 'true');
     }
 };
+resultBlockUpdate();
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         codeContainerBlock.style.transition = 'height 0.5s ease';
@@ -358,7 +359,7 @@ codeContainerBlock.onkeydown = (event) => {
 cleanResultButton.onclick = () => {
     file.result = '';
     resultBlock.setValue('');
-    actions.cleanCode(() => {
+    actions.cleanResult(() => {
         resultBlockUpdate();
     });
 };

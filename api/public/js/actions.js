@@ -1,12 +1,12 @@
 let actions = {
     setSessionName: () => {
         let newSessionName = sessionNameBlock.textContent;
-        postRequest('/action/session.php?action=set_session_name', {
+        postRequest('/file/set_name', {
             file_id: fileId,
             user_id: userId,
             user_name: userName,
             lang: currentLang,
-            sessionName: newSessionName,
+            session_name: newSessionName,
         }, (response) => {
             console.log('setSessionName: result', newSessionName, response);
         }, () => {
@@ -14,7 +14,7 @@ let actions = {
     },
     setUserName: () => {
         let newUserName = userOwnNameBlock.textContent;
-        postRequest('/action/session.php?action=set_user_name', {
+        postRequest('/file/set_user_name', {
             file_id: fileId,
             user_id: userId,
             user_name: newUserName,
@@ -28,7 +28,7 @@ let actions = {
         });
     },
     setLang: (lang) => {
-        postRequest('/action/session.php?action=set_lang', {
+        postRequest('/file/set_lang', {
             file_id: fileId,
             user_id: userId,
             user_name: userName,
@@ -43,11 +43,11 @@ let actions = {
         });
     },
     setRunner: () => {
-        postRequest('/action/session.php?action=set_runner', {
+        postRequest('/file/set_runner', {
             file_id: fileId,
             user_id: userId,
             user_name: userName,
-            runner: runnerInput.value,
+            runner_id: runnerInput.value,
             lang: currentLang,
         }, (response) => {
             console.log('setRunner: result', response);
@@ -81,9 +81,10 @@ let actions = {
             callback();
         });
     },
-    cleanCode: (callback) => {
-        postRequest('/action/result.php?action=clean', {
+    cleanResult: (callback) => {
+        postRequest('/result/clean', {
             file_id: fileId,
+            user_id: userId,
         }, (response, statusCode) => {
             if (statusCode !== 200) {
                 console.log('cleanCode: result', response, statusCode);
@@ -93,8 +94,9 @@ let actions = {
         });
     },
     runCode: (callback) => {
-        postRequest('/action/request.php?action=set', {
+        postRequest('/run/add_task', {
             file_id: fileId,
+            user_id: userId,
         }, (response, statusCode) => {
             if (statusCode !== 200) {
                 console.log('runCode: result', response, statusCode);

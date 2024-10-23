@@ -43,7 +43,8 @@ func getInput(w http.ResponseWriter, r *http.Request) *input {
 	var i input
 	err = json.Unmarshal(body, &i)
 	if err != nil {
-		responseErr(r.Context(), w, "Invalid JSON input", http.StatusBadRequest)
+		util.Log(r.Context(), "Invalid JSON input: "+err.Error()+string(body))
+		responseErr(r.Context(), w, "Invalid JSON input: "+err.Error(), http.StatusBadRequest)
 		return nil
 	}
 

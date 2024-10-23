@@ -4,7 +4,6 @@ import (
 	"errors"
 	"ohmycode_api/internal/model"
 	"sync"
-	"time"
 )
 
 type FileStore struct {
@@ -34,19 +33,7 @@ func (fs *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, us
 
 	defer fs.lockFileMutex(fileId).Unlock()
 
-	file = &model.File{
-		ID:               fileId,
-		Name:             fileName,
-		Lang:             lang,
-		Content:          content,
-		Writer:           "",
-		UsePublicRunner:  true,
-		RunnerId:         "",
-		UpdatedAt:        time.Now(),
-		ContentUpdatedAt: time.Now(),
-		Users:            nil,
-	}
-	file.TouchByUser(userId, userName)
+	file = model.NewFile(fileId, fileName, lang, content, userId, userName)
 
 	fs.mutex.Lock()
 	fs.files[fileId] = file

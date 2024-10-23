@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"ohmycode_api/internal/model"
 	"ohmycode_api/pkg/util"
@@ -13,8 +12,9 @@ func (s *Service) HandleRunAddTaskRequest(w http.ResponseWriter, r *http.Request
 	if file == nil {
 		return
 	}
-	if s.runnerStore.IsOnline(file.UsePublicRunner, file.RunnerId) {
+	if !s.runnerStore.IsOnline(file.UsePublicRunner, file.RunnerId) {
 		responseErr(r.Context(), w, "Runner is not online", http.StatusBadRequest)
+		return
 	}
 
 	file.SetWaitingForResult()
@@ -47,7 +47,6 @@ func (s *Service) HandleRunGetTasksRequest(w http.ResponseWriter, r *http.Reques
 
 		select {
 		case <-r.Context().Done():
-			fmt.Println("Client connection closed")
 			responseOk(w, "Client connection closed")
 			return
 		default:
@@ -66,7 +65,7 @@ func (s *Service) HandleRunAckTaskRequest(w http.ResponseWriter, r *http.Request
 
 	task := s.taskStore.GetTask(i.RunnerId, i.Lang, i.Hash)
 	if task == nil {
-		responseErr(r.Context(), w, "Task not found", http.StatusNotFound)
+		responseErr(r.Context(), w, "Task not found (run)", http.StatusNotFound)
 		return
 	}
 	task.AcknowledgedByRunnerAt = time.Now()
