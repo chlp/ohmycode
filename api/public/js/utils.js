@@ -56,6 +56,9 @@ const languages = {
 };
 
 let ohMySimpleHash = (str) => {
+    if (str === undefined) {
+        return 0;
+    }
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i);
@@ -66,7 +69,7 @@ let ohMySimpleHash = (str) => {
 };
 
 let postRequest = (url, data, callback, final) => {
-    fetch(url, {
+    fetch('http://localhost:8081' + url, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
@@ -116,8 +119,8 @@ document.addEventListener('keydown', function (event) {
 
 let processId = genUuid();
 let checkForMultipleTabs = () => {
-    let statusIdKey = 'file-status-id-' + sessionId;
-    let statusUpdatedAtKey = 'file-status-updatedAt-' + sessionId;
+    let statusIdKey = 'file-status-id-' + fileId;
+    let statusUpdatedAtKey = 'file-status-updatedAt-' + fileId;
     if (
         localStorage[statusIdKey] === undefined ||
         localStorage[statusIdKey] === processId ||

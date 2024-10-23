@@ -1,19 +1,19 @@
-let sessionId = window.location.pathname.slice(1);
-if (!isUuid(sessionId)) {
-    sessionId = genUuid();
-    history.pushState({}, null, '/' + sessionId);
+let fileId = window.location.pathname.slice(1);
+if (!isUuid(fileId)) {
+    fileId = genUuid();
+    history.pushState({}, null, '/' + fileId);
 }
-let session = {
-    "id": sessionId,
+let file = {
+    "id": fileId,
     "name": "",
-    "code": "",
+    "content": "",
     "lang": 'markdown',
     "runner": "",
-    "runnerIsOnline": false,
-    "updatedAt": null,
+    "is_runner_online": false,
+    "updated_at": null,
     "writer": "",
     "users": [],
-    "isWaitingForResult": false,
+    "is_waiting_for_result": false,
     "result": ""
 };
 
@@ -75,7 +75,7 @@ let getCodeTheme = () => {
 let getResultTheme = () => {
     return 'tomorrow-night-bright';
 };
-let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
+let contentBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     lineNumbers: true,
     mode: languages[currentLang].highlighter, // javascript, go, php, sql
     matchBrackets: true,
@@ -84,7 +84,7 @@ let codeBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
     theme: getCodeTheme(),
     autofocus: true,
 });
-codeBlock.on('keydown', function (codemirror, event) {
+contentBlock.on('keydown', function (codemirror, event) {
     if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
         return;
     }
@@ -99,9 +99,9 @@ codeBlock.on('keydown', function (codemirror, event) {
     if (nonTextKeys.includes(event.key)) {
         return;
     }
-    if (session.writer !== '' && session.writer !== userId) {
+    if (file.writer !== '' && file.writer !== userId) {
         // todo: show hint
-        console.log('someone else is changing code now. wait please:', session.writer, userId);
+        console.log('someone else is changing code now. wait please:', file.writer, userId);
     }
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
@@ -111,25 +111,25 @@ let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
 });
 // todo: here we could show hint that it is not editable result
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    codeBlock.setOption('theme', getCodeTheme());
+    contentBlock.setOption('theme', getCodeTheme());
     resultBlock.setOption('theme', getResultTheme());
 });
 
 langSelect.onchange = () => {
     currentLang = langSelect.value;
-    codeBlock.setOption('mode', languages[currentLang].highlighter);
+    contentBlock.setOption('mode', languages[currentLang].highlighter);
     actions.setLang(currentLang);
 };
 
 let writerBlocksUpdate = () => {
-    codeBlock.setOption('readOnly', session.writer !== '' && session.writer !== userId);
+    contentBlock.setOption('readOnly', file.writer !== '' && file.writer !== userId);
     let newWriterName = '?';
-    if (session.writer === '' || session.writer === userId) {
+    if (file.writer === '' || file.writer === userId) {
         newWriterName = '';
         currentWriterInfo.style.display = 'none';
     } else {
-        if (session.users[session.writer]) {
-            newWriterName = session.users[session.writer].name;
+        if (file.users[file.writer]) {
+            newWriterName = file.users[file.writer].name;
         } else {
             newWriterName = '???';
         }
@@ -139,10 +139,10 @@ let writerBlocksUpdate = () => {
 };
 
 let runnerBlocksUpdate = () => {
-    if (session.runnerIsOnline) {
+    if (file.is_runner_online) {
         runnerContainerBlock.style.display = 'none';
     }
-    runnerEditButton.style.display = session.runnerIsOnline ? 'none' : 'block';
+    runnerEditButton.style.display = file.is_runner_online ? 'none' : 'block';
 };
 
 let runnerEditButtonOnclick = () => {
@@ -167,18 +167,18 @@ runnerInput.onkeydown = (event) => {
 
 let resultBlockUpdate = () => {
     let isRunBtnShouldBeDisabled = false;
-    if (session.isWaitingForResult) {
+    if (file.isWaitingForResult) {
         isRunBtnShouldBeDisabled = true;
         if (resultBlock.getValue().startsWith('In progress')) {
             resultBlock.setValue(resultBlock.getValue() + '.');
         } else {
             resultBlock.setValue('In progress...');
         }
-    } else if (session.result.length > 0) {
-        if (ohMySimpleHash(sessionPreviousState.result) !== ohMySimpleHash(session.result)) {
-            resultBlock.setValue(session.result);
+    } else if (file.result.length > 0) {
+        if (ohMySimpleHash(sessionPreviousState.result) !== ohMySimpleHash(file.result)) {
+            resultBlock.setValue(file.result);
         }
-    } else if (session.runnerIsOnline) {
+    } else if (file.is_runner_online) {
         resultBlock.setValue('runner will write result here...');
     } else {
         isRunBtnShouldBeDisabled = true;
@@ -191,7 +191,7 @@ let resultBlockUpdate = () => {
         runButton.removeAttribute('disabled');
     }
 
-    if (session.isWaitingForResult || session.result.length > 0) {
+    if (file.isWaitingForResult || file.result.length > 0) {
         resultContainerBlock.style.display = 'block';
         codeContainerBlock.style.height = 'calc(68vh - 90px)';
         cleanResultButton.removeAttribute('disabled');
@@ -216,14 +216,13 @@ let pageUpdater = () => {
         return;
     }
     pageUpdaterIsInProgress = true;
-    postRequest('/action/session.php?action=get_update', {
-        session: sessionId,
-        user: userId,
-        userName: userName,
+    postRequest('/file/get', {
+        file_id: fileId,
+        user_id: userId,
+        user_name: userName,
         lang: currentLang,
-        lastUpdate: session.updatedAt ? session.updatedAt.date : null,
-        action: 'get_update',
-        isKeepAlive: true,
+        last_update: file.updated_at,
+        is_keep_alive: true,
     }, (response) => {
         response = response.trim();
         pageUpdaterIsInProgress = false;
@@ -245,8 +244,8 @@ let pageUpdater = () => {
             return;
         }
 
-        sessionPreviousState = {...session};
-        session = data;
+        sessionPreviousState = {...file};
+        file = data;
 
         // update users
         updateUsers();
@@ -261,27 +260,27 @@ let pageUpdater = () => {
         resultBlockUpdate();
 
         // update session name
-        if (sessionPreviousState.name !== session.name && !sessionNameEditing) {
-            sessionNameBlock.innerHTML = session.name;
+        if (sessionPreviousState.name !== file.name && !sessionNameEditing) {
+            sessionNameBlock.innerHTML = file.name;
         }
 
         // update code
         if (
-            session.writer !== userId && // do not update if current user is writer
-            ohMySimpleHash(sessionPreviousState.code) !== ohMySimpleHash(session.code) // do not update if code is the same already
+            file.writer !== userId && // do not update if current user is writer
+            ohMySimpleHash(sessionPreviousState.code) !== ohMySimpleHash(file.content) // do not update if code is the same already
         ) {
-            let {left, top} = codeBlock.getScrollInfo();
-            let {line, ch} = codeBlock.getCursor();
-            codeBlock.setValue(session.code);
-            codeBlock.scrollTo(left, top);
-            codeBlock.setCursor({line: line, ch: ch});
+            let {left, top} = contentBlock.getScrollInfo();
+            let {line, ch} = contentBlock.getCursor();
+            contentBlock.setValue(file.content);
+            contentBlock.scrollTo(left, top);
+            contentBlock.setCursor({line: line, ch: ch});
         }
 
         // update lang
-        if (sessionPreviousState.lang !== session.lang) {
-            currentLang = session.lang;
+        if (sessionPreviousState.lang !== file.lang) {
+            currentLang = file.lang;
             langSelect.value = currentLang;
-            codeBlock.setOption('mode', languages[currentLang].highlighter);
+            contentBlock.setOption('mode', languages[currentLang].highlighter);
         }
 
         controlsContainerBlock.style.display = 'block';
@@ -311,7 +310,7 @@ pageUpdater();
 
 let codeSenderTimer = 0;
 let codeSender = () => {
-    if (ohMySimpleHash(session.code) !== ohMySimpleHash(codeBlock.getValue())) {
+    if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
         actions.setCode(() => {
             clearTimeout(codeSenderTimer);
             codeSenderTimer = setTimeout(() => {
@@ -328,18 +327,18 @@ let codeSender = () => {
 codeSender();
 
 let runCode = () => {
-    if (!session.runnerIsOnline) {
+    if (!file.is_runner_online) {
         resultBlock.setValue('No runner is available to run your code :(');
         return;
     }
     clearTimeout(pageUpdaterTimer);
     let runCodeCall = () => {
-        session.result = 'In progress..';
+        file.result = 'In progress..';
         resultBlock.setValue('In progress..');
         runButton.setAttribute('disabled', 'true');
         actions.runCode(pageUpdater);
     };
-    if (ohMySimpleHash(session.code) !== ohMySimpleHash(codeBlock.getValue())) {
+    if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
         actions.setCode(() => {
             runCodeCall();
         });
@@ -357,7 +356,7 @@ codeContainerBlock.onkeydown = (event) => {
 };
 
 cleanResultButton.onclick = () => {
-    session.result = '';
+    file.result = '';
     resultBlock.setValue('');
     actions.cleanCode(() => {
         resultBlockUpdate();

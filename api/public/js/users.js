@@ -21,7 +21,7 @@ let userOwnNameEditingFunc = (event) => {
         setTimeout(() => {
             userOwnNameBlock.setAttribute('contenteditable', 'true');
         }, 500);
-        codeBlock.focus();
+        contentBlock.focus();
         return false;
     }
     let allowedChars = /^[0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]*$/;
@@ -49,13 +49,13 @@ let userOwnNameEditingFunc = (event) => {
 let usersContainerBlock = document.getElementById('users-container');
 let usersContainerState = '';
 let updateUsers = () => {
-    if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === session.writer + JSON.stringify(session.users)) {
+    if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === file.writer + JSON.stringify(file.users)) {
         return;
     }
     let users = [];
     let isOwnUserFound = false;
-    Object.keys(session.users).forEach((key) => {
-        let user = session.users[key];
+    Object.keys(file.users).forEach((key) => {
+        let user = file.users[key];
         user.own = false;
         if (user.id === userId) {
             user.own = true;

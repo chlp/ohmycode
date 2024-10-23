@@ -58,6 +58,9 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 	if file != nil && !file.UpdatedAt.After(i.LastUpdate.Time) {
 		file = nil
 	}
+	if file.UsePublicRunner {
+		file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
+	} // todo: implement not for public
 	responseOk(w, file)
 }
 
@@ -68,9 +71,9 @@ func (s *Service) HandleFileSetContentRequest(w http.ResponseWriter, r *http.Req
 	}
 
 	if err := file.SetContent(i.Content, i.UserId); err != nil {
-		responseOk(w, nil)
-	} else {
 		responseErr(r.Context(), w, err.Error(), http.StatusBadRequest)
+	} else {
+		responseOk(w, nil)
 	}
 }
 

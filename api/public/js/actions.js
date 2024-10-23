@@ -2,11 +2,10 @@ let actions = {
     setSessionName: () => {
         let newSessionName = sessionNameBlock.textContent;
         postRequest('/action/session.php?action=set_session_name', {
-            session: sessionId,
-            user: userId,
-            userName: userName,
+            file_id: fileId,
+            user_id: userId,
+            user_name: userName,
             lang: currentLang,
-            action: 'set_session_name',
             sessionName: newSessionName,
         }, (response) => {
             console.log('setSessionName: result', newSessionName, response);
@@ -16,13 +15,12 @@ let actions = {
     setUserName: () => {
         let newUserName = userOwnNameBlock.textContent;
         postRequest('/action/session.php?action=set_user_name', {
-            session: sessionId,
-            user: userId,
-            userName: newUserName,
-            action: 'set_user_name',
+            file_id: fileId,
+            user_id: userId,
+            user_name: newUserName,
             lang: currentLang,
         }, (response) => {
-            console.log('setUserName: result', newUserName, response);
+            console.log('setuser_name: result', newUserName, response);
             if (response === '') {
                 localStorage['initialUserName'] = newUserName;
             }
@@ -31,10 +29,9 @@ let actions = {
     },
     setLang: (lang) => {
         postRequest('/action/session.php?action=set_lang', {
-            session: sessionId,
-            user: userId,
-            userName: userName,
-            action: 'set_lang',
+            file_id: fileId,
+            user_id: userId,
+            user_name: userName,
             lang: lang,
         }, (response) => {
             console.log('setLang: result', response);
@@ -47,10 +44,9 @@ let actions = {
     },
     setRunner: () => {
         postRequest('/action/session.php?action=set_runner', {
-            session: sessionId,
-            user: userId,
-            userName: userName,
-            action: 'set_runner',
+            file_id: fileId,
+            user_id: userId,
+            user_name: userName,
             runner: runnerInput.value,
             lang: currentLang,
         }, (response) => {
@@ -59,27 +55,26 @@ let actions = {
         });
     },
     setCode: (callback) => {
-        if (session.writer !== '' && session.writer !== userId) {
+        if (file.writer !== '' && file.writer !== userId) {
             callback();
             return;
         }
-        session.writer = userId;
-        let newCode = codeBlock.getValue();
-        session.code = newCode;
-        postRequest('/action/session.php?action=set_code', {
-            session: sessionId,
-            user: userId,
-            userName: userName,
-            action: 'set_code',
-            code: newCode,
+        file.writer = userId;
+        let newContent = contentBlock.getValue();
+        file.content = newContent;
+        postRequest('/file/set_content', {
+            file_id: fileId,
+            user_id: userId,
+            user_name: userName,
+            content: newContent,
             lang: currentLang,
         }, (response, statusCode) => {
             if (statusCode !== 200) {
                 console.log('setCode: result', response, statusCode);
             }
             if (statusCode === 403) {
-                if (session.writer === userId) {
-                    session.writer = '?';
+                if (file.writer === userId) {
+                    file.writer = '?';
                 }
             }
         }, () => {
@@ -88,8 +83,7 @@ let actions = {
     },
     cleanCode: (callback) => {
         postRequest('/action/result.php?action=clean', {
-            session: sessionId,
-            action: 'clean',
+            file_id: fileId,
         }, (response, statusCode) => {
             if (statusCode !== 200) {
                 console.log('cleanCode: result', response, statusCode);
@@ -100,8 +94,7 @@ let actions = {
     },
     runCode: (callback) => {
         postRequest('/action/request.php?action=set', {
-            session: sessionId,
-            action: 'set',
+            file_id: fileId,
         }, (response, statusCode) => {
             if (statusCode !== 200) {
                 console.log('runCode: result', response, statusCode);

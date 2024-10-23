@@ -76,7 +76,7 @@
 
 <script src="js/utils.js?v=1" defer></script>
 <script src="js/actions.js?v=1" defer></script>
-<script src="js/session.js?v=1" defer></script>
+<script src="js/file.js?v=1" defer></script>
 <script src="js/session_name.js?v=1" defer></script>
 <script src="js/users.js?v=1" defer></script>
 

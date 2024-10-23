@@ -16,7 +16,7 @@ sessionNameBlock.onkeydown = (event) => {
         setTimeout(() => {
             sessionNameBlock.setAttribute('contenteditable', 'true');
         }, 500);
-        codeBlock.focus();
+        contentBlock.focus();
         return false;
     }
     let allowedChars = /^[0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]*$/;

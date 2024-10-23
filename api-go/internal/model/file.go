@@ -8,19 +8,22 @@ import (
 )
 
 type File struct {
-	ID                 string    `json:"id" bson:"_id,omitempty"`
-	Name               string    `json:"name" bson:"name"`
-	Lang               string    `json:"lang" bson:"lang"`
-	Content            string    `json:"content" bson:"content"`
-	ContentUpdatedAt   time.Time `json:"content_updated_at" bson:"content_updated_at"`
-	Result             string    `json:"result" bson:"result"`
-	IsWaitingForResult bool      `json:"is_waiting_for_result"`
-	Writer             string    `json:"writer_id" bson:"writer_id"`
-	UsePublicRunner    bool      `json:"use_public_runner" bson:"use_public_runner"`
-	RunnerId           string    `json:"runner_id" bson:"runner_id"`
-	Users              []User    `json:"users" bson:"users"`
-	UpdatedAt          time.Time `json:"updated_at" bson:"updated_at"`
-	mutex              *sync.Mutex
+	ID               string    `json:"id" bson:"_id,omitempty"`
+	Name             string    `json:"name" bson:"name"`
+	Lang             string    `json:"lang" bson:"lang"`
+	Content          string    `json:"content" bson:"content"`
+	ContentUpdatedAt time.Time `json:"content_updated_at" bson:"content_updated_at"`
+	Result           string    `json:"result" bson:"result"`
+	Writer           string    `json:"writer_id" bson:"writer_id"`
+	UsePublicRunner  bool      `json:"use_public_runner" bson:"use_public_runner"`
+	RunnerId         string    `json:"runner_id" bson:"runner_id"`
+	Users            []User    `json:"users" bson:"users"`
+	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`
+
+	IsWaitingForResult bool `json:"is_waiting_for_result"`
+	IsRunnerOnline     bool `json:"is_runner_online"`
+
+	mutex *sync.Mutex
 }
 
 type User struct {
