@@ -29,9 +29,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		}
 
 		if file == nil {
-			if file == nil {
-				time.Sleep(time.Second * 1)
-			}
+			time.Sleep(time.Second * 1)
 			file, err = s.fileStore.GetFile(i.FileId)
 			if err != nil {
 				responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
@@ -39,7 +37,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 			}
 		}
 
-		if file.UpdatedAt.After(i.LastUpdate.Time) {
+		if file != nil && file.UpdatedAt.After(i.LastUpdate.Time) {
 			break
 		}
 
@@ -57,7 +55,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	if !file.UpdatedAt.After(i.LastUpdate.Time) {
+	if file != nil && !file.UpdatedAt.After(i.LastUpdate.Time) {
 		file = nil
 	}
 	responseOk(w, file)

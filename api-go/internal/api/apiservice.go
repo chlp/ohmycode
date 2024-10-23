@@ -43,13 +43,26 @@ func (s *Service) Run() {
 	mux.HandleFunc("/result/set", s.HandleSetResultRequest)
 	mux.HandleFunc("/result/clean", s.HandleCleanResultRequest)
 
-	log.Fatal(http.ListenAndServe(":8081", requestTimerMiddleware(mux)))
+	log.Fatal(http.ListenAndServe(":8081", corsMiddleware(timerMiddleware(mux))))
 }
 
-func requestTimerMiddleware(next http.Handler) http.Handler {
+func timerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), util.RequestStartTimeCtxKey, time.Now())
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -60,10 +73,22 @@ func responseErr(ctx context.Context, w http.ResponseWriter, str string, code in
 }
 
 func responseOk(w http.ResponseWriter, v interface{}) {
-	if v != nil {
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(v)
-	} else {
+	if v == nil {
 		w.WriteHeader(http.StatusNoContent)
+		return
 	}
+
+	jsonData, err := json.Marshal(v)
+	if err != nil {
+		responseErr(context.Background(), w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if string(jsonData) == "null" {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(jsonData)
 }
