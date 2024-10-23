@@ -27,12 +27,12 @@ type Db struct {
 
 func newDb(config DBConfig) *Db {
 	clientOptions := options.Client().ApplyURI(config.ConnectionString)
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		log.Fatalf("MongoDB connection failed: %v", err)
 	}
 
-	err = client.Ping(context.TODO(), nil)
+	err = client.Ping(context.Background(), nil)
 	if err != nil {
 		log.Fatalf("MongoDB ping failed: %v", err)
 	}

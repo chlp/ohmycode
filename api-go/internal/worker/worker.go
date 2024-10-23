@@ -25,8 +25,11 @@ func (w *Worker) Run() {
 		for _, file := range files {
 			file.CleanupUsers()
 			file.CleanupWriter()
+			file.CleanupWaitingForResult()
 
 			// send insert and update into db
+
+			// remove files from memory that not in usage anymore
 		}
 		time.Sleep(timeToSleepBetweenRuns)
 	}()

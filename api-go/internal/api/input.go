@@ -18,6 +18,7 @@ type input struct {
 	Hash        uint32      `json:"hash"`
 	Lang        string      `json:"lang"`
 	RunnerId    string      `json:"runner_id"`
+	Result      string      `json:"result"`
 	IsPublic    bool        `json:"is_public"`
 	IsKeepAlive bool        `json:"is_keep_alive"`
 	LastUpdate  util.OhTime `json:"last_update"`

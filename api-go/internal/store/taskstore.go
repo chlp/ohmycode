@@ -19,7 +19,7 @@ func NewTaskStore() *TaskStore {
 	}
 }
 
-func (ts *TaskStore) SetTask(file *model.File) {
+func (ts *TaskStore) AddTask(file *model.File) {
 	ts.mutex.Lock()
 	ts.tasks[file.ID] = &model.Task{
 		FileId:                 file.ID,
@@ -43,6 +43,12 @@ func (ts *TaskStore) GetTask(runnerId, lang string, hash uint32) *model.Task {
 		}
 	}
 	return nil
+}
+
+func (ts *TaskStore) DeleteTask(taskId string) {
+	ts.mutex.Lock()
+	defer ts.mutex.Unlock()
+	delete(ts.tasks, taskId)
 }
 
 const durationToRemoveGivenTime = time.Second * 3

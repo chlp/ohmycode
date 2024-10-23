@@ -17,7 +17,8 @@ func (s *Service) HandleRunAddTaskRequest(w http.ResponseWriter, r *http.Request
 		responseErr(r.Context(), w, "Runner is not online", http.StatusBadRequest)
 	}
 
-	s.taskStore.SetTask(file)
+	file.SetWaitingForResult()
+	s.taskStore.AddTask(file)
 
 	responseOk(w, nil)
 }

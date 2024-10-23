@@ -40,6 +40,9 @@ func (s *Service) Run() {
 	mux.HandleFunc("/run/get_tasks", s.HandleRunGetTasksRequest)
 	mux.HandleFunc("/run/ack_task", s.HandleRunAckTaskRequest)
 
+	mux.HandleFunc("/result/set", s.HandleSetResultRequest)
+	mux.HandleFunc("/result/clean", s.HandleCleanResultRequest)
+
 	log.Fatal(http.ListenAndServe(":8081", requestTimerMiddleware(mux)))
 }
 
