@@ -11,7 +11,7 @@ let file = {
     "runner": "",
     "is_runner_online": false,
     "updated_at": null,
-    "writer": "",
+    "writer_id": "",
     "users": [],
     "is_waiting_for_result": false,
     "result": ""
@@ -99,9 +99,9 @@ contentBlock.on('keydown', function (codemirror, event) {
     if (nonTextKeys.includes(event.key)) {
         return;
     }
-    if (file.writer !== '' && file.writer !== userId) {
+    if (file.writer_id !== '' && file.writer_id !== userId) {
         // todo: show hint
-        console.log('someone else is changing code now. wait please:', file.writer, userId);
+        console.log('someone else is changing code now. wait please:', file.writer_id, userId);
     }
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
@@ -122,14 +122,14 @@ langSelect.onchange = () => {
 };
 
 let writerBlocksUpdate = () => {
-    contentBlock.setOption('readOnly', file.writer !== '' && file.writer !== userId);
+    contentBlock.setOption('readOnly', file.writer_id !== '' && file.writer_id !== userId);
     let newWriterName = '?';
-    if (file.writer === '' || file.writer === userId) {
+    if (file.writer_id === '' || file.writer_id === userId) {
         newWriterName = '';
         currentWriterInfo.style.display = 'none';
     } else {
-        if (file.users[file.writer]) {
-            newWriterName = file.users[file.writer].name;
+        if (file.users[file.writer_id]) {
+            newWriterName = file.users[file.writer_id].name;
         } else {
             newWriterName = '???';
         }
@@ -266,7 +266,7 @@ let pageUpdater = () => {
 
         // update code
         if (
-            file.writer !== userId && // do not update if current user is writer
+            file.writer_id !== userId && // do not update if current user is writer
             ohMySimpleHash(sessionPreviousState.code) !== ohMySimpleHash(file.content) // do not update if code is the same already
         ) {
             let {left, top} = contentBlock.getScrollInfo();

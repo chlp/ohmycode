@@ -55,11 +55,11 @@ let actions = {
         });
     },
     setCode: (callback) => {
-        if (file.writer !== '' && file.writer !== userId) {
+        if (file.writer_id !== '' && file.writer_id !== userId) {
             callback();
             return;
         }
-        file.writer = userId;
+        file.writer_id = userId;
         let newContent = contentBlock.getValue();
         file.content = newContent;
         postRequest('/file/set_content', {
@@ -73,8 +73,8 @@ let actions = {
                 console.log('setCode: result', response, statusCode);
             }
             if (statusCode === 403) {
-                if (file.writer === userId) {
-                    file.writer = '?';
+                if (file.writer_id === userId) {
+                    file.writer_id = '?';
                 }
             }
         }, () => {

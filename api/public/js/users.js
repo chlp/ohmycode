@@ -49,7 +49,7 @@ let userOwnNameEditingFunc = (event) => {
 let usersContainerBlock = document.getElementById('users-container');
 let usersContainerState = '';
 let updateUsers = () => {
-    if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === file.writer + JSON.stringify(file.users)) {
+    if (sessionPreviousState.writer + JSON.stringify(sessionPreviousState.users) === file.writer_id + JSON.stringify(file.users)) {
         return;
     }
     let users = [];

@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"ohmycode_api/internal/model"
 	"time"
 )
 
@@ -12,14 +13,15 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	file, err := s.fileStore.GetFile(i.FileId)
-	if err != nil {
-		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+	var err error
+	var file *model.File
 	startTime := time.Now()
 	for {
+		file, err = s.fileStore.GetFile(i.FileId)
+		if err != nil {
+			responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		if file != nil {
 			file.TouchByUser(i.UserId, "")
 		}
@@ -28,20 +30,13 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 			break
 		}
 
-		if file == nil {
-			time.Sleep(time.Second * 1)
-			file, err = s.fileStore.GetFile(i.FileId)
-			if err != nil {
-				responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-
-		if file != nil && file.UpdatedAt.After(i.LastUpdate.Time) {
+		if time.Since(startTime) > keepAliveRequestMaxDuration {
 			break
 		}
 
-		if time.Since(startTime) > keepAliveRequestMaxDuration {
+		if file == nil {
+			time.Sleep(time.Second * 1)
+		} else if file.UpdatedAt.After(i.LastUpdate.Time) {
 			break
 		}
 
@@ -55,12 +50,13 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	if file != nil && !file.UpdatedAt.After(i.LastUpdate.Time) {
-		file = nil
+	if file != nil {
+		if !file.UpdatedAt.After(i.LastUpdate.Time) {
+			file = nil
+		} else if file.UsePublicRunner {
+			file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
+		} // todo: implement not for public
 	}
-	if file.UsePublicRunner {
-		file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
-	} // todo: implement not for public
 	responseOk(w, file)
 }
 
