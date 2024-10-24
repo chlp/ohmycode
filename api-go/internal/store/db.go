@@ -51,7 +51,7 @@ func (db *Db) Select(collection string, filter map[string]interface{}, resultTyp
 	coll := db.db.Collection(collection)
 	cursor, err := coll.Find(ctx, bson.M(filter))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to find document: %v", err)
 	}
 	defer cursor.Close(ctx)
 
@@ -65,26 +65,40 @@ func (db *Db) Select(collection string, filter map[string]interface{}, resultTyp
 		sliceValue = reflect.Append(sliceValue, reflect.ValueOf(elem).Elem())
 	}
 	if err = cursor.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed with cursor on select: %v", err)
 	}
 
 	return sliceValue.Interface(), nil
 }
 
-func (db *Db) Exec(collection string, operation string, document interface{}) (*mongo.InsertOneResult, error) {
+func (db *Db) Upsert(collection string, document interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
 	defer cancel()
 
 	coll := db.db.Collection(collection)
-	var res *mongo.InsertOneResult
-	var err error
-
-	switch operation {
-	case "insert":
-		res, err = coll.InsertOne(ctx, document)
-	default:
-		err = fmt.Errorf("unsupported operation: %s", operation)
+	docBytes, err := bson.Marshal(document)
+	if err != nil {
+		return fmt.Errorf("failed to marshal document: %v", err)
 	}
 
-	return res, err
+	var docMap bson.M
+	err = bson.Unmarshal(docBytes, &docMap)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal document: %v", err)
+	}
+
+	id, ok := docMap["_id"]
+	if !ok {
+		return fmt.Errorf("document must have an _id field")
+	}
+
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": docMap}
+
+	_, err = coll.UpdateOne(ctx, filter, update, options.Update().SetUpsert(true))
+	if err != nil {
+		return fmt.Errorf("failed to upsert document: %v", err)
+	}
+
+	return nil
 }
