@@ -7,12 +7,12 @@ import (
 )
 
 type Worker struct {
-	store *store.FileStore
+	fileStore *store.FileStore
 }
 
 func NewWorker(store *store.FileStore) *Worker {
 	return &Worker{
-		store: store,
+		fileStore: store,
 	}
 }
 
@@ -22,7 +22,7 @@ func (w *Worker) Run() {
 	util.Log(nil, "Worker started")
 	go func() {
 		for {
-			files := w.store.GetAllFiles()
+			files := w.fileStore.GetAllFiles()
 			for _, file := range files {
 				file.CleanupUsers()
 				file.CleanupWriter()
@@ -30,7 +30,9 @@ func (w *Worker) Run() {
 
 				// send insert and update into db
 
-				// remove files from memory that not in usage anymore
+				if file.IsUnused() {
+					w.fileStore.DeleteFile(file.ID)
+				}
 			}
 			time.Sleep(timeToSleepBetweenRuns)
 		}

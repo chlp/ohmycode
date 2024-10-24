@@ -77,6 +77,13 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 	return &files[0], nil
 }
 
+func (fs *FileStore) DeleteFile(fileId string) {
+	defer fs.lockFileMutex(fileId).Unlock()
+	fs.mutex.Lock()
+	defer fs.mutex.Unlock()
+	delete(fs.files, fileId)
+}
+
 func (fs *FileStore) lockFileMutex(fileId string) *sync.Mutex {
 	fs.mutex.Lock()
 	defer fs.mutex.Unlock()

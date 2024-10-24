@@ -37,6 +37,7 @@ const (
 	durationIsActiveFromLastUpdate = 5 * time.Second
 	durationIsWriterStillWriting   = 2 * time.Second
 	durationForWaitingForResultMax = 20 * time.Second
+	durationIsUnused               = 10 * time.Minute
 )
 
 func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
@@ -198,6 +199,21 @@ func (f *File) CleanupWaitingForResult() {
 		f.IsWaitingForResult = false
 		f.UpdatedAt = time.Now()
 	}
+}
+
+func (f *File) IsUnused() bool {
+	f.lock()
+	defer f.unlock()
+
+	if time.Since(f.UpdatedAt) > durationIsUnused {
+		for _, user := range f.Users {
+			if time.Since(user.TouchedAt) < durationIsUnused {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func (f *File) CleanupWriter() {
