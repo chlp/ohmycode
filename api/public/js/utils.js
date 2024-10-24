@@ -6,24 +6,6 @@ let isUuid = (id) => {
     return (new RegExp(`^[a-z0-9]{32}$`)).test(id);
 };
 
-let randomName = () => {
-    const adjectives = [
-        'Happy', 'Cheerful', 'Playful', 'Friendly', 'Bubbly', 'Jolly',
-        'Witty', 'Quirky', 'Silly', 'Goofy', 'Sunny', 'Joyful',
-        'Clever', 'Bouncy', 'Zippy', 'Peppy', 'Snazzy', 'Perky'
-    ];
-    const animals = [
-        'Penguin', 'Panda', 'Koala', 'Bunny', 'Squirrel', 'Dolphin',
-        'Turtle', 'Owl', 'Duckling', 'Kitten', 'Puppy', 'Sloth',
-        'Raccoon', 'Goldfish', 'Hedgehog', 'Llama', 'Frog', 'Otter'
-    ];
-
-    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const animal = animals[Math.floor(Math.random() * animals.length)];
-
-    return `${adjective} ${animal}`;
-}
-
 const languages = {
     go: {
         name: 'GoLang',

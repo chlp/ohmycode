@@ -19,10 +19,10 @@ let actions = {
             user_id: userId,
             user_name: newUserName,
             lang: currentLang,
-        }, (response) => {
-            console.log('setuser_name: result', newUserName, response);
-            if (response === '') {
-                localStorage['initialUserName'] = newUserName;
+        }, (response, statusCode) => {
+            console.log('setUserName: result', newUserName, response, statusCode);
+            if (statusCode === 200 || statusCode === 204) {
+                localStorage['user_name'] = newUserName;
             }
         }, () => {
         });

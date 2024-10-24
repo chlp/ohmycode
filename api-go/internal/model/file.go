@@ -76,7 +76,7 @@ func (f *File) TouchByUser(userId, userName string) {
 		}
 	}
 	if !isAlreadyExist {
-		if !util.IsValidName(userName) {
+		if userName == "" || !util.IsValidName(userName) {
 			userName = util.RandomName()
 		}
 		f.Users = append(f.Users, User{

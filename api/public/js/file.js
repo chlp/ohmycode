@@ -41,10 +41,9 @@ if (userId === undefined) {
     localStorage['userId'] = userId;
 }
 
-let userName = localStorage['initialUserName'];
+let userName = localStorage['user_name'];
 if (userName === undefined) {
-    userName = randomName();
-    localStorage['initialUserName'] = userName;
+    userName = '';
 }
 
 let currentLang = 'markdown';
