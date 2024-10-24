@@ -32,6 +32,7 @@ func (s *Service) HandleResultSetRequest(w http.ResponseWriter, r *http.Request)
 		responseErr(r.Context(), w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	s.taskStore.DeleteTask(file.ID)
 
 	responseOk(w, nil)
 }

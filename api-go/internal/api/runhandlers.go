@@ -47,7 +47,7 @@ func (s *Service) HandleRunGetTasksRequest(w http.ResponseWriter, r *http.Reques
 
 		select {
 		case <-r.Context().Done():
-			responseOk(w, "Client connection closed")
+			responseOk(w, nil)
 			return
 		default:
 			time.Sleep(time.Millisecond * 100)
