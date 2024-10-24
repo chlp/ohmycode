@@ -55,7 +55,7 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 
 	filesRaw, err := fs.db.Select("files", map[string]interface{}{"_id": fileId}, &model.File{})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	files, ok := filesRaw.([]model.File)
 	if !ok {

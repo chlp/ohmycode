@@ -165,23 +165,31 @@ runnerInput.onkeydown = (event) => {
     }
 };
 
+let isResultFilledWithInProgress = false;
 let resultBlockUpdate = () => {
     let isRunBtnShouldBeDisabled = false;
     if (file.is_waiting_for_result) {
         isRunBtnShouldBeDisabled = true;
-        if (resultBlock.getValue().startsWith('In progress')) {
+        if (isResultFilledWithInProgress) {
             resultBlock.setValue(resultBlock.getValue() + '.');
         } else {
+            isResultFilledWithInProgress = true;
             resultBlock.setValue('In progress...');
         }
     } else if (file.result.length > 0) {
-        if (ohMySimpleHash(sessionPreviousState.result) !== ohMySimpleHash(file.result)) {
+        if (
+            isResultFilledWithInProgress ||
+            ohMySimpleHash(sessionPreviousState.result) !== ohMySimpleHash(file.result)
+        ) {
+            isResultFilledWithInProgress = false;
             resultBlock.setValue(file.result);
         }
     } else if (file.is_runner_online) {
+        isResultFilledWithInProgress = false;
         resultBlock.setValue('runner will write result here...');
     } else {
         isRunBtnShouldBeDisabled = true;
+        isResultFilledWithInProgress = false;
         resultBlock.setValue('...');
     }
 
