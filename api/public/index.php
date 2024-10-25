@@ -33,7 +33,7 @@
 
 <div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
     <a href="#" id="file-name" contenteditable="true" spellcheck="false"
-       title="Rename file"></a><span id="session-status" class="online"></span>
+       title="Rename file"></a>
 </div>
 
 <div class="blocks-container" style="float: right; clear: right;">
@@ -57,10 +57,7 @@
 </div>
 
 <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
-    <span id="current-writer-info" style="padding: 0.4rem 0.8rem; display: none;">
-        Code is writing now by <span
-                id="current-writer-name"></span>
-    </span>
+    <span id="current-writer-info" style="padding: 0.4rem 0.8rem; display: none;"></span>
 </div>
 
 <div class="blocks-container" id="runner-container" style="float: left; margin-top: 1em; display: none;">

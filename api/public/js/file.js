@@ -17,9 +17,7 @@ let file = {
     "result": ""
 };
 
-let sessionStatusBlock = document.getElementById('session-status');
 let currentWriterInfo = document.getElementById('current-writer-info');
-let currentWriterName = document.getElementById('current-writer-name');
 let runButton = document.getElementById('run-button');
 let cleanResultButton = document.getElementById('clean-result-button');
 let runnerContainerBlock = document.getElementById('runner-container');
@@ -32,8 +30,8 @@ let controlsContainerBlock = document.getElementById('controls-container');
 let langSelect = document.getElementById('lang-select');
 
 
-let sessionPreviousState = {};
-let sessionIsOnline = true;
+let filePreviousState = {};
+let isOnline = true;
 
 let userId = localStorage['userId'];
 if (userId === undefined) {
@@ -121,20 +119,27 @@ langSelect.onchange = () => {
 };
 
 let writerBlocksUpdate = () => {
+    if (!isOnline) {
+        contentBlock.setOption('readOnly', true);
+        currentWriterInfo.style.removeProperty('display');
+        currentWriterInfo.innerHTML = 'Offline';
+        return;
+    }
+
     contentBlock.setOption('readOnly', file.writer_id !== '' && file.writer_id !== userId);
-    let newWriterName = '?';
     if (file.writer_id === '' || file.writer_id === userId) {
-        newWriterName = '';
         currentWriterInfo.style.display = 'none';
+        currentWriterInfo.innerHTML = '';
     } else {
+        let writerName = '';
         if (file.users[file.writer_id]) {
-            newWriterName = file.users[file.writer_id].name;
+            writerName = file.users[file.writer_id].name;
         } else {
-            newWriterName = '???';
+            writerName = '???';
         }
         currentWriterInfo.style.removeProperty('display');
+        currentWriterInfo.innerHTML = 'Code is writing now by ' + writerName;
     }
-    currentWriterName.innerHTML = newWriterName;
 };
 
 let runnerBlocksUpdate = () => {
@@ -178,7 +183,7 @@ let resultBlockUpdate = () => {
     } else if (file.result.length > 0) {
         if (
             isResultFilledWithInProgress ||
-            ohMySimpleHash(sessionPreviousState.result) !== ohMySimpleHash(file.result)
+            ohMySimpleHash(filePreviousState.result) !== ohMySimpleHash(file.result)
         ) {
             isResultFilledWithInProgress = false;
             resultBlock.setValue(file.result);
@@ -231,28 +236,41 @@ let pageUpdater = () => {
         lang: currentLang,
         last_update: file.updated_at,
         is_keep_alive: true,
-    }, (response) => {
+    }, (response, statusCode) => {
         response = response.trim();
-        pageUpdaterIsInProgress = false;
-        lastUpdateTimestamp = +new Date;
-        if (response.length === 0) {
+
+        if (statusCode === 200 || statusCode === 204) {
+            lastUpdateTimestamp = +new Date;
+            if (!isOnline) {
+                isOnline = true;
+                writerBlocksUpdate();
+            }
+        }
+
+        if (statusCode === 204 || response.length === 0) {
             resultBlockUpdate(); // adding more dots to "In progress..."
             return;
         }
+
+        if (statusCode !== 200) {
+            console.error("file::pageUpdater: error", statusCode, response)
+            return;
+        }
+
         let data = {};
         try {
             data = JSON.parse(response);
         } catch (error) {
-            console.error("session::pageUpdater: failed to parse JSON:", error, response);
+            console.error("file::pageUpdater: failed to parse JSON:", error, response);
             return;
         }
 
         if (data.error !== undefined) {
-            console.log('session::pageUpdater: getUpdate error', data);
+            console.log('file::pageUpdater: getUpdate error', data);
             return;
         }
 
-        sessionPreviousState = {...file};
+        filePreviousState = {...file};
         file = data;
 
         // update users
@@ -267,15 +285,15 @@ let pageUpdater = () => {
         // update result ui
         resultBlockUpdate();
 
-        // update session name
-        if (sessionPreviousState.name !== file.name && !fileNameEditing) {
+        // update file name
+        if (filePreviousState.name !== file.name && !fileNameEditing) {
             fileNameBlock.innerHTML = file.name;
         }
 
         // update code
         if (
             file.writer_id !== userId && // do not update if current user is writer
-            ohMySimpleHash(sessionPreviousState.code) !== ohMySimpleHash(file.content) // do not update if code is the same already
+            ohMySimpleHash(filePreviousState.code) !== ohMySimpleHash(file.content) // do not update if code is the same already
         ) {
             let {left, top} = contentBlock.getScrollInfo();
             let {line, ch} = contentBlock.getCursor();
@@ -285,7 +303,7 @@ let pageUpdater = () => {
         }
 
         // update lang
-        if (sessionPreviousState.lang !== file.lang) {
+        if (filePreviousState.lang !== file.lang) {
             currentLang = file.lang;
             langSelect.value = currentLang;
             contentBlock.setOption('mode', languages[currentLang].highlighter);
@@ -293,26 +311,19 @@ let pageUpdater = () => {
 
         controlsContainerBlock.style.display = 'block';
     }, () => {
+        if (isOnline && +new Date - lastUpdateTimestamp > 5000) {
+            isOnline = false;
+            writerBlocksUpdate();
+        }
+
+        console.log(isOnline ? 1000 : 5000)
         clearTimeout(pageUpdaterTimer);
         pageUpdaterTimer = setTimeout(() => {
             pageUpdater();
-        }, 1000);
+        }, isOnline ? 1000 : 5000);
+
+        pageUpdaterIsInProgress = false;
     });
-    if (+new Date - lastUpdateTimestamp > 10000) { // more than 10 seconds
-        if (sessionIsOnline) {
-            sessionIsOnline = false;
-            sessionStatusBlock.classList.remove('online');
-            sessionStatusBlock.classList.add('offline');
-            sessionStatusBlock.innerHTML = ' offline';
-        }
-    } else {
-        if (!sessionIsOnline) {
-            sessionIsOnline = true;
-            sessionStatusBlock.classList.remove('offline');
-            sessionStatusBlock.classList.add('online');
-            sessionStatusBlock.innerHTML = '';
-        }
-    }
 };
 pageUpdater();
 

@@ -22,19 +22,17 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 			responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if file != nil {
-			file.TouchByUser(i.UserId, "")
-		}
-		if i.LastUpdate.Time.IsZero() { // first request on page loading
-			if file == nil {
-				file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
-			}
+
+		if file == nil {
+			file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 			if file.UsePublicRunner {
 				file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
 			}
 			responseOk(w, file)
 			return
 		}
+
+		file.TouchByUser(i.UserId, "")
 
 		if !i.IsKeepAlive {
 			break

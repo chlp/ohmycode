@@ -57,10 +57,16 @@ let postRequest = (url, data, callback, final) => {
         headers: {
             "Content-type": "application/json; charset=UTF-8"
         }
-    }).then((response) => {
+    })
+    .then((response) => {
         const statusCode = response.status;
         return response.text().then((text) => ({text, statusCode}));
-    }).then(({text, statusCode}) => callback(text, statusCode)).finally(() => final());
+    })
+    .then(({text, statusCode}) => callback(text, statusCode))
+    .catch((error) => {
+        console.error("postRequest: fetch error:", error);
+    })
+    .finally(() => final());
 };
 
 let copyToClipboard = (text) => {
