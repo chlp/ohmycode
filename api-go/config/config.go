@@ -10,7 +10,8 @@ import (
 const confPath = "api-conf.json"
 
 type ApiConfig struct {
-	DB store.DBConfig `json:"db"`
+	DB       store.DBConfig `json:"db"`
+	HttpPort int            `json:"http_port"`
 }
 
 var conf ApiConfig

@@ -3,5 +3,6 @@
     "connectionString": "mongodb+srv://xxx:yyy@zzz.mongodb.net/",
     "dbname": "db",
     "timeout": "3s"
-  }
+  },
+  "http_port": 80
 }

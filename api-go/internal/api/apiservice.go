@@ -12,13 +12,15 @@ import (
 )
 
 type Service struct {
+	httpPort    int
 	fileStore   *store.FileStore
 	runnerStore *store.RunnerStore
 	taskStore   *store.TaskStore
 }
 
-func NewService(fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
+func NewService(httpPort int, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
 	return &Service{
+		httpPort:    httpPort,
 		fileStore:   fileStore,
 		runnerStore: runnerStore,
 		taskStore:   taskStore,
@@ -43,7 +45,7 @@ func (s *Service) Run() {
 	mux.HandleFunc("/result/set", s.HandleResultSetRequest)
 	mux.HandleFunc("/result/clean", s.HandleResultCleanRequest)
 
-	log.Fatal(http.ListenAndServe(":8081", corsMiddleware(timerMiddleware(mux))))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.httpPort), corsMiddleware(timerMiddleware(mux))))
 }
 
 func timerMiddleware(next http.Handler) http.Handler {
