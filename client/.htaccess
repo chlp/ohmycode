@@ -1,1 +1,4 @@
-FallbackResource /index.html
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . / [L,R=302]
