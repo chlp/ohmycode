@@ -202,8 +202,8 @@ func (f *File) CleanupUsers() {
 	defer f.unlock()
 
 	changed := false
-	for i, user := range f.Users {
-		if time.Since(user.TouchedAt) > durationIsActiveFromLastUpdate {
+	for i := len(f.Users) - 1; i >= 0; i-- {
+		if time.Since(f.Users[i].TouchedAt) > durationIsActiveFromLastUpdate {
 			f.Users = append(f.Users[:i], f.Users[i+1:]...)
 			changed = true
 		}
