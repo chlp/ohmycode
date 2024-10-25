@@ -51,7 +51,7 @@ let ohMySimpleHash = (str) => {
 };
 
 let postRequest = (url, data, callback, final) => {
-    fetch('http://localhost:8081' + url, {
+    fetch(apiUrl + url, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
