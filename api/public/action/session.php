@@ -79,7 +79,7 @@ switch ($action) {
         break;
     case 'set_session_name':
         $session = getSession($sessionId, $userId, $userName, $lang);
-        if (!$session->setSessionName((string)($input['sessionName'] ?? ''))) {
+        if (!$session->setSessionName((string)($input['fileName'] ?? ''))) {
             error('Wrong session name');
         }
         break;

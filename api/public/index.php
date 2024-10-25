@@ -31,8 +31,8 @@
 </head>
 <body>
 
-<div class="blocks-container" id="session-name-container" style="float: left; clear: left;">
-    <a href="#" id="session-name" contenteditable="true" spellcheck="false"
+<div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
+    <a href="#" id="file-name" contenteditable="true" spellcheck="false"
        title="Rename file"></a><span id="session-status" class="online"></span>
 </div>
 

@@ -1,14 +1,14 @@
 let actions = {
-    setSessionName: () => {
-        let newSessionName = sessionNameBlock.textContent;
+    setFileName: () => {
+        let newFileName = fileNameBlock.textContent;
         postRequest('/file/set_name', {
             file_id: fileId,
             user_id: userId,
             user_name: userName,
             lang: currentLang,
-            session_name: newSessionName,
+            file_name: newFileName,
         }, (response) => {
-            console.log('setSessionName: result', newSessionName, response);
+            console.log('setFileName: result', newFileName, response);
         }, () => {
         });
     },

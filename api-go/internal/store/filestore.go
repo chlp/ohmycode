@@ -79,9 +79,6 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 
 func (fs *FileStore) PersistFile(file *model.File) error {
 	defer fs.lockFileMutex(file.ID).Unlock()
-	if !file.UpdatedAt.After(file.PersistedAt) {
-		return nil
-	}
 	if err := fs.db.Upsert("files", file); err != nil {
 		return err
 	}

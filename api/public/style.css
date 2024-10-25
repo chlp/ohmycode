@@ -571,11 +571,11 @@ blockquote footer {
     margin-right: 1em;
 }
 
-#session-name-container {
+#file-name-container {
     margin-right: 5em;
 }
 
-#session-name-container > a, #users-container > a, #users-container > span {
+#file-name-container > a, #users-container > a, #users-container > span {
     padding: 3px 5px;
     border-radius: var(--border-radius);
     margin-bottom: .5em;
@@ -583,7 +583,7 @@ blockquote footer {
     display: inline-block;
 }
 
-#session-name-container > a, #users-container > a {
+#file-name-container > a, #users-container > a {
     cursor: text;
 }
 
@@ -596,7 +596,7 @@ blockquote footer {
     font-weight: bold;
 }
 
-#session-name-container > a:hover, #users-container > a:hover {
+#file-name-container > a:hover, #users-container > a:hover {
     background: var(--color-secondary-accent);
     color: var(--color-secondary);
 }

@@ -32,7 +32,7 @@ func (s *Service) Run() {
 	mux.HandleFunc("/file/get", s.HandleFileGetUpdateRequest)
 	mux.HandleFunc("/file/set_content", s.HandleFileSetContentRequest)
 	mux.HandleFunc("/file/set_name", s.HandleFileSetNameRequest)
-	mux.HandleFunc("/file/set_user_name", s.HandleFileSetContentRequest)
+	mux.HandleFunc("/file/set_user_name", s.HandleFileSetUserNameRequest)
 	mux.HandleFunc("/file/set_lang", s.HandleFileSetLangRequest)
 	mux.HandleFunc("/file/set_runner", s.HandleFileSetRunnerRequest)
 

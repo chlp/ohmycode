@@ -94,6 +94,9 @@ func (f *File) SetName(name string) bool {
 	if !util.IsValidName(name) {
 		return false
 	}
+	if f.Name == name {
+		return true
+	}
 	f.Name = name
 	f.UpdatedAt = time.Now()
 	return true
@@ -102,6 +105,9 @@ func (f *File) SetName(name string) bool {
 func (f *File) SetLang(lang string) bool {
 	if _, ok := Langs[lang]; !ok {
 		return false
+	}
+	if f.Lang == lang {
+		return true
 	}
 	f.Lang = lang
 	f.UpdatedAt = time.Now()
@@ -115,6 +121,9 @@ func (f *File) SetContent(content, userId string) error {
 	if f.Writer != "" && f.Writer != userId {
 		return errors.New("file is locked by another user")
 	}
+	if f.Content == content {
+		return nil
+	}
 
 	f.lock()
 	defer f.unlock()
@@ -127,6 +136,10 @@ func (f *File) SetContent(content, userId string) error {
 }
 
 func (f *File) SetWaitingForResult() {
+	if f.IsWaitingForResult {
+		return
+	}
+
 	f.lock()
 	defer f.unlock()
 
@@ -137,6 +150,9 @@ func (f *File) SetWaitingForResult() {
 func (f *File) SetResult(result string) error {
 	if len(result) > contentMaxLength {
 		return errors.New("result is too long")
+	}
+	if f.IsWaitingForResult == false && f.Result == result {
+		return nil
 	}
 
 	f.lock()
@@ -158,8 +174,10 @@ func (f *File) SetUserName(userId, userName string) bool {
 
 	for i, user := range f.Users {
 		if user.ID == userId {
-			f.Users[i].Name = userName
-			f.UpdatedAt = time.Now()
+			if f.Users[i].Name != userName {
+				f.Users[i].Name = userName
+				f.UpdatedAt = time.Now()
+			}
 			return true
 		}
 	}
@@ -170,6 +188,9 @@ func (f *File) SetUserName(userId, userName string) bool {
 func (f *File) SetRunnerId(runnerId string) bool {
 	if !util.IsUuid(runnerId) {
 		return false
+	}
+	if f.RunnerId == runnerId {
+		return true
 	}
 	f.RunnerId = runnerId
 	f.UpdatedAt = time.Now()

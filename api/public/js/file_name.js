@@ -1,20 +1,20 @@
-let sessionNameBlock = document.getElementById('session-name');
-let sessionNameSavingTimeout = null;
-let sessionNameEditing = false;
-sessionNameBlock.onkeydown = (event) => {
+let fileNameBlock = document.getElementById('file-name');
+let fileNameSavingTimeout = null;
+let fileNameEditing = false;
+fileNameBlock.onkeydown = (event) => {
     let key = event.key;
     if (key === 'Backspace' || key === 'Delete' || key === 'ArrowLeft' || key === 'ArrowRight') {
         return true;
     }
     if (key === 'Enter' || key === 'Escape') {
-        clearTimeout(sessionNameSavingTimeout);
-        sessionNameSavingTimeout = null;
-        sessionNameEditing = false;
-        actions.setSessionName();
+        clearTimeout(fileNameSavingTimeout);
+        fileNameSavingTimeout = null;
+        fileNameEditing = false;
+        actions.setFileName();
         event.preventDefault();
-        sessionNameBlock.setAttribute('contenteditable', 'false');
+        fileNameBlock.setAttribute('contenteditable', 'false');
         setTimeout(() => {
-            sessionNameBlock.setAttribute('contenteditable', 'true');
+            fileNameBlock.setAttribute('contenteditable', 'true');
         }, 500);
         contentBlock.focus();
         return false;
@@ -28,10 +28,10 @@ sessionNameBlock.onkeydown = (event) => {
         event.preventDefault();
         return false;
     }
-    sessionNameEditing = true;
-    clearTimeout(sessionNameSavingTimeout);
-    sessionNameSavingTimeout = setTimeout(() => {
-        actions.setSessionName();
-        sessionNameEditing = false;
+    fileNameEditing = true;
+    clearTimeout(fileNameSavingTimeout);
+    fileNameSavingTimeout = setTimeout(() => {
+        actions.setFileName();
+        fileNameEditing = false;
     }, 5000);
 };

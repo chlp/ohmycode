@@ -15,13 +15,6 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 	var file *model.File
 	var err error
 
-	if i.LastUpdate.Time.IsZero() {
-		file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
-		file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
-		responseOk(w, file)
-		return
-	}
-
 	startTime := time.Now()
 	for {
 		file, err = s.fileStore.GetFile(i.FileId)
@@ -31,6 +24,16 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 		}
 		if file != nil {
 			file.TouchByUser(i.UserId, "")
+		}
+		if i.LastUpdate.Time.IsZero() { // first request on page loading
+			if file == nil {
+				file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
+			}
+			if file.UsePublicRunner {
+				file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
+			}
+			responseOk(w, file)
+			return
 		}
 
 		if !i.IsKeepAlive {

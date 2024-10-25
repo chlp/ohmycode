@@ -208,7 +208,7 @@ let resultBlockUpdate = () => {
         cleanResultButton.setAttribute('disabled', 'true');
     }
 };
-resultBlockUpdate();
+
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         codeContainerBlock.style.transition = 'height 0.5s ease';
@@ -268,8 +268,8 @@ let pageUpdater = () => {
         resultBlockUpdate();
 
         // update session name
-        if (sessionPreviousState.name !== file.name && !sessionNameEditing) {
-            sessionNameBlock.innerHTML = file.name;
+        if (sessionPreviousState.name !== file.name && !fileNameEditing) {
+            fileNameBlock.innerHTML = file.name;
         }
 
         // update code
