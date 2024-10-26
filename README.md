@@ -17,7 +17,7 @@ Try it -> https://ohmycode.work/
     * `cd api`
     * `cp api-conf-example.json api-conf.json` and fill
     * `docker compose up --build --remove-orphans --force-recreate`
-      or `GOOS=linux GOARCH=amd64 go build -o ohmycode_api` and run binary
+      or `cd cmd` & `GOOS=linux GOARCH=amd64 go build -o ohmycode_api` and run binary
 2. runner:
     * `cd runner`
     * `cp conf-example.json conf.json` and fill
