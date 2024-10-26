@@ -29,15 +29,9 @@ while (true) {
         $lang = $request['lang'];
         $hash = $request['hash'];
         if (in_array($request['lang'], $conf->languages)) {
-            $res = $api->request('/run/ack_task', [
-                'lang' => $lang,
-                'hash' => (int)$hash,
-            ]);
-            if ($res->code !== 404) {
-                $filePath = __DIR__ . "/$lang/requests/$hash";
-                file_put_contents($filePath, $request['content']);
-                chmod($filePath, 0744);
-            }
+            $filePath = __DIR__ . "/$lang/requests/$hash";
+            file_put_contents($filePath, $request['content']);
+            chmod($filePath, 0744);
         } else {
             $api->result('/result/set', [
                 'lang' => $lang,

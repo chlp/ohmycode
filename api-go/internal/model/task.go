@@ -10,6 +10,5 @@ type Task struct {
 	RunnerId string
 	IsPublic bool
 
-	GivenToRunnerAt        time.Time
-	AcknowledgedByRunnerAt time.Time
+	GivenToRunnerAt time.Time
 }

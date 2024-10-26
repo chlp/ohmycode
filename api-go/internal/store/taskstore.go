@@ -22,14 +22,13 @@ func NewTaskStore() *TaskStore {
 func (ts *TaskStore) AddTask(file *model.File) {
 	ts.mutex.Lock()
 	ts.tasks[file.ID] = &model.Task{
-		FileId:                 file.ID,
-		Content:                file.Content,
-		Lang:                   file.Lang,
-		Hash:                   util.OhMySimpleHash(file.Content),
-		RunnerId:               file.RunnerId,
-		IsPublic:               file.UsePublicRunner,
-		GivenToRunnerAt:        time.Time{},
-		AcknowledgedByRunnerAt: time.Time{},
+		FileId:          file.ID,
+		Content:         file.Content,
+		Lang:            file.Lang,
+		Hash:            util.OhMySimpleHash(file.Content),
+		RunnerId:        file.RunnerId,
+		IsPublic:        file.UsePublicRunner,
+		GivenToRunnerAt: time.Time{},
 	}
 	ts.mutex.Unlock()
 }
@@ -62,22 +61,20 @@ func (ts *TaskStore) DeleteTask(taskId string) {
 	delete(ts.tasks, taskId)
 }
 
-const durationToRemoveGivenTime = time.Second * 3
-const durationToRemoveAcknowledgedTime = time.Second * 30
+const durationToRetryTask = time.Second * 30
 
 func (ts *TaskStore) GetTasksForRunner(runnerId string, isPublic bool) []*model.Task {
 	tasks := make([]*model.Task, 0)
 	ts.mutex.Lock()
 	defer ts.mutex.Unlock()
 	for _, task := range ts.tasks {
-		if time.Since(task.GivenToRunnerAt) < durationToRemoveGivenTime || time.Since(task.AcknowledgedByRunnerAt) < durationToRemoveAcknowledgedTime {
+		if time.Since(task.GivenToRunnerAt) < durationToRetryTask {
 			continue
 		}
 		if !(isPublic && task.IsPublic) && runnerId != task.RunnerId {
 			continue
 		}
 		task.GivenToRunnerAt = time.Now()
-		task.AcknowledgedByRunnerAt = time.Time{}
 		task.RunnerId = runnerId
 		tasks = append(tasks, task)
 	}

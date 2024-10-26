@@ -56,19 +56,3 @@ func (s *Service) HandleRunGetTasksRequest(w http.ResponseWriter, r *http.Reques
 
 	responseOk(w, tasks)
 }
-
-func (s *Service) HandleRunAckTaskRequest(w http.ResponseWriter, r *http.Request) {
-	i := getInput(w, r)
-	if i == nil {
-		return
-	}
-
-	task := s.taskStore.GetTask(i.RunnerId, i.Lang, i.Hash)
-	if task == nil {
-		responseErr(r.Context(), w, "Task not found (run)", http.StatusNotFound)
-		return
-	}
-	task.AcknowledgedByRunnerAt = time.Now()
-
-	responseOk(w, nil)
-}
