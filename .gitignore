@@ -3,4 +3,4 @@
 .php-cs-fixer.cache
 api-go/.idea
 api-go/api-conf.json
-client/js/conf.js
+client/public/js/conf.js
