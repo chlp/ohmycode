@@ -131,12 +131,13 @@ let writerBlocksUpdate = () => {
         currentWriterInfo.style.display = 'none';
         currentWriterInfo.innerHTML = '';
     } else {
-        let writerName = '';
-        if (file.users[file.writer_id]) {
-            writerName = file.users[file.writer_id].name;
-        } else {
-            writerName = '???';
-        }
+        let writerName = '???';
+        Object.keys(file.users).forEach((key) => {
+            let user = file.users[key];
+            if (user.id === file.writer_id) {
+                writerName = user.name;
+            }
+        });
         currentWriterInfo.style.removeProperty('display');
         currentWriterInfo.innerHTML = 'Code is writing now by ' + writerName;
     }
