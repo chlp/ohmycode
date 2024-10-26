@@ -1,9 +1,8 @@
 {
   "db": {
-    "servername": "mysql",
-    "port": 3306,
-    "username": "user",
-    "password": "pass",
-    "dbname": "ohmycode"
-  }
+    "connectionString": "mongodb+srv://xxx:yyy@zzz.mongodb.net/",
+    "dbname": "db",
+    "timeout": "3s"
+  },
+  "http_port": 80
 }
