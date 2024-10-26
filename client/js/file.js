@@ -31,7 +31,7 @@ let langSelect = document.getElementById('lang-select');
 
 
 let filePreviousState = {};
-let isOnline = true;
+let isOnline = false;
 
 let userId = localStorage['userId'];
 if (userId === undefined) {
@@ -329,6 +329,13 @@ pageUpdater();
 
 let codeSenderTimer = 0;
 let codeSender = () => {
+    if (!isOnline) {
+        clearTimeout(codeSenderTimer);
+        codeSenderTimer = setTimeout(() => {
+            codeSender();
+        }, 3000);
+        return;
+    }
     if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
         actions.setCode(() => {
             clearTimeout(codeSenderTimer);
