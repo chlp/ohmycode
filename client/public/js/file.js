@@ -24,14 +24,14 @@ let runnerContainerBlock = document.getElementById('runner-container');
 let runnerEditButton = document.getElementById('runner-edit-button');
 let runnerInput = document.getElementById('runner-input');
 let runnerSaveButton = document.getElementById('runner-save-button');
-let codeContainerBlock = document.getElementById('code-container');
+let contentContainerBlock = document.getElementById('content-container');
 let resultContainerBlock = document.getElementById('result-container');
 let controlsContainerBlock = document.getElementById('controls-container');
 let langSelect = document.getElementById('lang-select');
 
-
 let filePreviousState = {};
 let isOnline = false;
+let contentSenderTimer = 0;
 
 let userId = localStorage['userId'];
 if (userId === undefined) {
@@ -72,7 +72,7 @@ let getCodeTheme = () => {
 let getResultTheme = () => {
     return 'tomorrow-night-bright';
 };
-let contentBlock = CodeMirror.fromTextArea(document.getElementById('code'), {
+let contentBlock = CodeMirror.fromTextArea(document.getElementById('content'), {
     lineNumbers: true,
     mode: languages[currentLang].highlighter, // javascript, go, php, sql
     matchBrackets: true,
@@ -98,7 +98,14 @@ contentBlock.on('keydown', function (codemirror, event) {
     }
     if (file.writer_id !== '' && file.writer_id !== userId) {
         // todo: show hint
-        console.log('someone else is changing code now. wait please:', file.writer_id, userId);
+        console.log('someone else is changing content now. wait please:', file.writer_id, userId);
+        return;
+    }
+    if (file.writer_id === '') {
+        file.writer_id = userId;
+    }
+    if (contentSenderTimer === 0) {
+        contentSender();
     }
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
@@ -116,6 +123,7 @@ langSelect.onchange = () => {
     currentLang = langSelect.value;
     contentBlock.setOption('mode', languages[currentLang].highlighter);
     actions.setLang(currentLang);
+    contentBlock.focus();
 };
 
 let writerBlocksUpdate = () => {
@@ -139,7 +147,7 @@ let writerBlocksUpdate = () => {
             }
         });
         currentWriterInfo.style.removeProperty('display');
-        currentWriterInfo.innerHTML = 'Code is writing now by ' + writerName;
+        currentWriterInfo.innerHTML = 'Content is writing now by ' + writerName;
     }
 };
 
@@ -206,18 +214,18 @@ let resultBlockUpdate = () => {
 
     if (file.is_waiting_for_result || file.result.length > 0) {
         resultContainerBlock.style.display = 'block';
-        codeContainerBlock.style.height = 'calc(68vh - 90px)';
+        contentContainerBlock.style.height = 'calc(68vh - 90px)';
         cleanResultButton.removeAttribute('disabled');
     } else {
         resultContainerBlock.style.display = 'none';
-        codeContainerBlock.style.height = 'calc(98vh - 90px)';
+        contentContainerBlock.style.height = 'calc(98vh - 90px)';
         cleanResultButton.setAttribute('disabled', 'true');
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-        codeContainerBlock.style.transition = 'height 0.5s ease';
+        contentContainerBlock.style.transition = 'height 0.5s ease';
     }, 100);
 });
 
@@ -294,7 +302,7 @@ let pageUpdater = () => {
         // update code
         if (
             file.writer_id !== userId && // do not update if current user is writer
-            ohMySimpleHash(filePreviousState.code) !== ohMySimpleHash(file.content) // do not update if code is the same already
+            ohMySimpleHash(filePreviousState.content) !== ohMySimpleHash(file.content) // do not update if code is the same already
         ) {
             let {left, top} = contentBlock.getScrollInfo();
             let {line, ch} = contentBlock.getCursor();
@@ -327,57 +335,41 @@ let pageUpdater = () => {
 };
 pageUpdater();
 
-let codeSenderTimer = 0;
-let codeSender = () => {
+let contentSender = () => {
+    let getNextUpdateFunc = (timeout) => () => {
+        clearTimeout(contentSenderTimer);
+        contentSenderTimer = setTimeout(() => {
+            contentSender();
+        }, timeout);
+    };
     if (!isOnline) {
-        clearTimeout(codeSenderTimer);
-        codeSenderTimer = setTimeout(() => {
-            codeSender();
-        }, 3000);
-        return;
-    }
-    if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
-        actions.setCode(() => {
-            clearTimeout(codeSenderTimer);
-            codeSenderTimer = setTimeout(() => {
-                codeSender();
-            }, 1000);
-        });
+        getNextUpdateFunc(3000)();
+    } else if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
+        actions.setContent(getNextUpdateFunc(1000));
     } else {
-        clearTimeout(codeSenderTimer);
-        codeSenderTimer = setTimeout(() => {
-            codeSender();
-        }, 300);
+        getNextUpdateFunc(300)();
     }
 };
-codeSender();
 
-let runCode = () => {
+let runTask = () => {
     if (!file.is_runner_online) {
         resultBlock.setValue('No runner is available to run your code :(');
         return;
     }
     clearTimeout(pageUpdaterTimer);
-    let runCodeCall = () => {
+    actions.setContent(() => {
         file.result = 'In progress..';
         resultBlock.setValue('In progress..');
         runButton.setAttribute('disabled', 'true');
-        actions.runCode(pageUpdater);
-    };
-    if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
-        actions.setCode(() => {
-            runCodeCall();
-        });
-    } else {
-        runCodeCall();
-    }
+        actions.runTask(pageUpdater);
+    });
 };
 runButton.onclick = () => {
-    runCode();
+    runTask();
 };
-codeContainerBlock.onkeydown = (event) => {
+contentContainerBlock.onkeydown = (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        runCode();
+        runTask();
     }
 };
 

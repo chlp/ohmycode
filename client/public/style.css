@@ -618,7 +618,7 @@ blockquote footer {
     background: rgba(0, 0, 0, .3);
 }
 
-.textarea.code {
+.textarea.content {
     /*height: calc(68vh - 90px);*/
     height: calc(98vh - 90px);
     min-height: 300px;

@@ -54,7 +54,7 @@ let actions = {
         }, () => {
         });
     },
-    setCode: (callback) => {
+    setContent: (callback) => {
         if (file.writer_id !== '' && file.writer_id !== userId) {
             callback();
             return;
@@ -90,7 +90,7 @@ let actions = {
             callback();
         });
     },
-    runCode: (callback) => {
+    runTask: (callback) => {
         postRequest('/run/add_task', {
             file_id: fileId,
             user_id: userId,
