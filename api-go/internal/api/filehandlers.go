@@ -23,7 +23,7 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
-		if file == nil {
+		if file == nil && i.LastUpdate.Time.IsZero() {
 			file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 			if file.UsePublicRunner {
 				file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
@@ -32,7 +32,9 @@ func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
-		file.TouchByUser(i.UserId, "")
+		if file != nil {
+			file.TouchByUser(i.UserId, "")
+		}
 
 		if !i.IsKeepAlive {
 			break
