@@ -2,6 +2,9 @@
 
 cd /app
 
+mkdir -p tmp
+chmod -R 700 tmp
+
 export MYSQL_PWD=mysql8root
 
 while true; do

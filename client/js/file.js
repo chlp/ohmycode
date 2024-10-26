@@ -316,7 +316,6 @@ let pageUpdater = () => {
             writerBlocksUpdate();
         }
 
-        console.log(isOnline ? 1000 : 5000)
         clearTimeout(pageUpdaterTimer);
         pageUpdaterTimer = setTimeout(() => {
             pageUpdater();

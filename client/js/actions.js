@@ -69,9 +69,6 @@ let actions = {
             content: newContent,
             lang: currentLang,
         }, (response, statusCode) => {
-            if (statusCode !== 200) {
-                console.log('setCode: result', response, statusCode);
-            }
             if (statusCode === 403) {
                 if (file.writer_id === userId) {
                     file.writer_id = '?';
