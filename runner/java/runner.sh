@@ -5,7 +5,7 @@ adduser --disabled-password --gecos "" restricted_user
 mkdir -p java
 chmod -R 755 java
 mkdir -p tmp
-chmod -R 700 tmp
+chmod -R 744 tmp
 
 while [ True ]; do
     if [ -n "$(ls java)" ]; then
@@ -19,7 +19,7 @@ while [ True ]; do
             echo $REQUEST
             ID=$(basename $REQUEST)
             touch tmp/$ID
-            chmod 700 tmp/$ID
+            chmod 744 tmp/$ID
             mkdir -p java/$ID
             mv $REQUEST java/$ID/Main.java
             chmod -R 755 java/$ID

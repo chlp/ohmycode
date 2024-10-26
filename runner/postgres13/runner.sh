@@ -3,7 +3,6 @@
 cd /app
 
 mkdir -p tmp
-chmod -R 700 tmp
 
 export PGPASSWORD=password
 
@@ -16,7 +15,7 @@ while [ True ]; do
             echo $REQUEST
             ID=$(basename $REQUEST)
             touch tmp/$ID
-            chmod 700 tmp/$ID
+            chmod 744 tmp/$ID
             psql -U user -d mydatabase -c "CREATE DATABASE tmp_$ID;" 1>/dev/null 2>&1
             psql -U user -d tmp_$ID -c "CREATE USER tmp_user_$ID WITH PASSWORD 'password';" 1>/dev/null 2>&1
             psql -U user -d tmp_$ID -c "GRANT ALL PRIVILEGES ON DATABASE tmp_$ID TO tmp_user_$ID;" 1>/dev/null 2>&1

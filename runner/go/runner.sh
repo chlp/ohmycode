@@ -5,7 +5,7 @@ adduser --disabled-password restricted_user
 mkdir -p go
 chmod -R 755 go
 mkdir -p tmp
-chmod -R 700 tmp
+chmod -R 744 tmp
 
 while [ True ]; do
     if [ -n "$(ls go)" ]; then
@@ -19,7 +19,7 @@ while [ True ]; do
             echo $REQUEST
             ID=$(basename $REQUEST)
             touch tmp/$ID
-            chmod 700 tmp/$ID
+            chmod 744 tmp/$ID
             mv $REQUEST go/$ID.go
             chmod 755 go/$ID.go
             su -c "timeout 10 go run go/$ID.go" restricted_user 1>>tmp/$ID 2>&1

@@ -36,7 +36,7 @@ while (true) {
             if ($res->code !== 404) {
                 $filePath = __DIR__ . "/$lang/requests/$hash";
                 file_put_contents($filePath, $request['content']);
-                chmod($filePath, 0700);
+                chmod($filePath, 0744);
             }
         } else {
             $api->result('/result/set', [

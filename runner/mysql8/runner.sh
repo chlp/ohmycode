@@ -3,7 +3,7 @@
 cd /app
 
 mkdir -p tmp
-chmod -R 700 tmp
+chmod -R 744 tmp
 
 export MYSQL_PWD=mysql8root
 
@@ -26,7 +26,7 @@ while [ True ]; do
             echo $REQUEST
             ID=$(basename $REQUEST)
             touch tmp/$ID
-            chmod 700 tmp/$ID
+            chmod 744 tmp/$ID
             mysql -u root -e "CREATE DATABASE tmp_$ID;"
             timeout 5 mysql -u root tmp_$ID --table < $REQUEST 1>>tmp/$ID 2>&1
             if [ $? -eq 124 ]; then
