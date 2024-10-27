@@ -29,7 +29,6 @@ let resultContainerBlock = document.getElementById('result-container');
 let controlsContainerBlock = document.getElementById('controls-container');
 let langSelect = document.getElementById('lang-select');
 
-let filePreviousState = {};
 let isOnline = false;
 let contentSenderTimer = 0;
 
@@ -74,6 +73,7 @@ let getResultTheme = () => {
 };
 let contentBlock = CodeMirror.fromTextArea(document.getElementById('content'), {
     lineNumbers: true,
+    readOnly: true,
     mode: languages[currentLang].highlighter, // javascript, go, php, sql
     matchBrackets: true,
     indentWithTabs: false,
@@ -192,7 +192,7 @@ let resultBlockUpdate = () => {
     } else if (file.result.length > 0) {
         if (
             isResultFilledWithInProgress ||
-            ohMySimpleHash(filePreviousState.result) !== ohMySimpleHash(file.result)
+            ohMySimpleHash(file.result) !== ohMySimpleHash(resultBlock.getValue())
         ) {
             isResultFilledWithInProgress = false;
             resultBlock.setValue(file.result);
@@ -279,7 +279,6 @@ let pageUpdater = () => {
             return;
         }
 
-        filePreviousState = {...file};
         file = data;
 
         // update users
@@ -295,14 +294,14 @@ let pageUpdater = () => {
         resultBlockUpdate();
 
         // update file name
-        if (filePreviousState.name !== file.name && !fileNameEditing) {
+        if (fileNameBlock.innerHTML !== file.name && !fileNameEditing) {
             fileNameBlock.innerHTML = file.name;
         }
 
         // update code
         if (
             file.writer_id !== userId && // do not update if current user is writer
-            ohMySimpleHash(filePreviousState.content) !== ohMySimpleHash(file.content) // do not update if code is the same already
+            ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue()) // do not update if code is the same already
         ) {
             let {left, top} = contentBlock.getScrollInfo();
             let {line, ch} = contentBlock.getCursor();
@@ -312,7 +311,7 @@ let pageUpdater = () => {
         }
 
         // update lang
-        if (filePreviousState.lang !== file.lang) {
+        if (currentLang !== file.lang) {
             currentLang = file.lang;
             langSelect.value = currentLang;
             contentBlock.setOption('mode', languages[currentLang].highlighter);

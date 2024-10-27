@@ -47,11 +47,12 @@ let userOwnNameEditingFunc = (event) => {
 };
 
 let usersContainerBlock = document.getElementById('users-container');
-let usersContainerState = '';
+let usersContainerBlockStateHash = '';
 let updateUsers = () => {
-    if (filePreviousState.writer + JSON.stringify(filePreviousState.users) === file.writer_id + JSON.stringify(file.users)) {
+    if (userNameEditing || usersContainerBlockStateHash === ohMySimpleHash(file.writer_id + JSON.stringify(file.users))) {
         return;
     }
+    usersContainerBlockStateHash = ohMySimpleHash(file.writer_id + JSON.stringify(file.users));
     let users = [];
     let isOwnUserFound = false;
     Object.keys(file.users).forEach((key) => {
@@ -81,15 +82,9 @@ let updateUsers = () => {
             }
         })
     }
-    if (usersContainerState !== ohMySimpleHash(html) && !userNameEditing) {
-        usersContainerState = ohMySimpleHash(html);
-        usersContainerBlock.innerHTML = html;
-        if (html !== '') {
-            userOwnNameBlock = document.getElementById('own-name');
-            userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
-        }
+    usersContainerBlock.innerHTML = html;
+    if (html !== '') {
+        userOwnNameBlock = document.getElementById('own-name');
+        userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
     }
 };
-document.addEventListener('DOMContentLoaded', () => {
-    updateUsers();
-});
