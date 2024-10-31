@@ -1,1 +1,1 @@
-let apiUrl = 'http://localhost:52674';
+let apiUrl = '';

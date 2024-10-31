@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"ohmycode_api/internal/store"
 	"ohmycode_api/pkg/util"
+	"os"
 	"strconv"
 	"time"
 )
@@ -43,6 +45,16 @@ func (s *Service) Run() {
 
 	mux.HandleFunc("/result/set", s.HandleResultSetRequest)
 	mux.HandleFunc("/result/clean", s.HandleResultCleanRequest)
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		path := "./static" + r.URL.Path
+		if _, err := os.Stat(path); err == nil {
+			http.ServeFile(w, r, path)
+			return
+		}
+		http.ServeFile(w, r, "./static/index.html")
+		return
+	})
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.httpPort), corsMiddleware(timerMiddleware(mux))))
 }
