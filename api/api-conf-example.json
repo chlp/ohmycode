@@ -4,5 +4,5 @@
     "dbname": "db",
     "timeout": "3s"
   },
-  "http_port": 80
+  "http_port": 52674
 }
