@@ -10,5 +10,6 @@
     "php82",
     "postgres13"
   ],
-  "api": "http://host.docker.internal:8080"
+  "id": "32charsUUID",
+  "api": "http://host.docker.internal:52674"
 }
