@@ -1,0 +1,147 @@
+services:
+  ohmycode-runner-manager:
+    container_name: ohmycode-runner-manager
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ../data:/app/data
+  ohmycode-runner-go:
+    container_name: ohmycode-runner-go
+    networks:
+      - isolated-network-go
+    build:
+      context: go
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ../data/go/requests:/app/requests
+      - ../data/go/results:/app/results
+    tmpfs:
+      - /app/go:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+  ohmycode-runner-java:
+    container_name: ohmycode-runner-java
+    networks:
+      - isolated-network-java
+    build:
+      context: java
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ../data/java/requests:/app/requests
+      - ../data/java/results:/app/results
+    tmpfs:
+      - /app/java:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+  ohmycode-runner-json:
+    container_name: ohmycode-runner-json
+    networks:
+      - isolated-network-json
+    build:
+      context: json
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ../data/json/requests:/app/requests
+      - ../data/json/results:/app/results
+    tmpfs:
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+  ohmycode-runner-markdown:
+    container_name: ohmycode-runner-markdown
+    networks:
+      - isolated-network-markdown
+    build:
+      context: markdown
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ../data/markdown/requests:/app/requests
+      - ../data/markdown/results:/app/results
+    tmpfs:
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+  ohmycode-runner-mysql8:
+    container_name: ohmycode-runner-mysql8
+    networks:
+      - isolated-network-mysql8
+    build:
+      context: mysql8
+      dockerfile: Dockerfile
+    cap_add:
+      - SYS_NICE
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ../data/mysql8/requests:/app/requests
+      - ../data/mysql8/results:/app/results
+      - ./mysql8/runner.sh:/docker-entrypoint-initdb.d/runner.sh
+    tmpfs:
+      - /var/lib/mysql:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+    command: --default-authentication-plugin=mysql_native_password --log_error_verbosity=1 --skip-log-bin
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql8root
+  ohmycode-runner-php82:
+    container_name: ohmycode-runner-php82
+    networks:
+      - isolated-network-php82
+    build:
+      context: php82
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ../data/php82/requests:/app/requests
+      - ../data/php82/results:/app/results
+    tmpfs:
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+  ohmycode-runner-postgres13:
+    container_name: ohmycode-runner-postgres13
+    networks:
+      - isolated-network-postgres13
+    build:
+      context: postgres13
+      dockerfile: Dockerfile
+    cap_add:
+      - SYS_NICE
+    stop_grace_period: 1s
+    restart: always
+    volumes:
+      - ../data/postgres13/requests:/app/requests
+      - ../data/postgres13/results:/app/results
+      - ./postgres13/runner.sh:/docker-entrypoint-initdb.d/runner.sh
+    tmpfs:
+      - /var/lib/postgresql/data:mode=1777,uid=1000,gid=1000
+      - /app/tmp:mode=1777,uid=1000,gid=1000
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+networks:
+  isolated-network-go:
+    driver: bridge
+    internal: true
+  isolated-network-java:
+    driver: bridge
+    internal: true
+  isolated-network-json:
+    driver: bridge
+    internal: true
+  isolated-network-markdown:
+    driver: bridge
+    internal: true
+  isolated-network-mysql8:
+    driver: bridge
+    internal: true
+  isolated-network-php82:
+    driver: bridge
+    internal: true
+  isolated-network-postgres13:
+    driver: bridge
+    internal: true

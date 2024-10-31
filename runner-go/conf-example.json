@@ -1,0 +1,15 @@
+{
+  "name": "default-name",
+  "is_public": true,
+  "languages": [
+    "go",
+    "java",
+    "json",
+    "markdown",
+    "mysql8",
+    "php82",
+    "postgres13"
+  ],
+  "id": "32charsUUID",
+  "api": "http://host.docker.internal:8081"
+}

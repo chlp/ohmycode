@@ -23,7 +23,7 @@ type File struct {
 	IsWaitingForResult bool `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool `json:"is_runner_online"`
 
-	PersistedAt time.Time
+	PersistedAt time.Time `json:"-"`
 	mutex       *sync.Mutex
 }
 
