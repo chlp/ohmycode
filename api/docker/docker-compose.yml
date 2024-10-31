@@ -1,0 +1,10 @@
+services:
+  ohmycode-api:
+    container_name: ohmycode-api
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    ports:
+      - "8081:8081"

@@ -25,39 +25,43 @@ func NewResultProcessor(apiClient *api.Client, runnerId, lang string) *ResultPro
 	}
 }
 
-func (rp *ResultProcessor) Process() {
+func (rp *ResultProcessor) Process() error {
 	resultsDir := getDirForResults(rp.language)
 	resultFiles, err := os.ReadDir(resultsDir)
 	if err != nil {
 		util.Log(context.Background(), fmt.Sprintf("read results dir error: %v", err))
-		return
+		return err
 	}
 
 	for _, entry := range resultFiles {
 		if !isValidFile(entry) {
 			continue
 		}
-		rp.processOneFile(resultsDir, entry)
+		err = rp.processOneFile(resultsDir, entry)
 	}
+
+	return err
 }
 
 func isValidFile(entry os.DirEntry) bool {
 	return !entry.IsDir() && entry.Name()[0] != '.'
 }
 
-func (rp *ResultProcessor) processOneFile(resultsDir string, entry os.DirEntry) {
+func (rp *ResultProcessor) processOneFile(resultsDir string, entry os.DirEntry) error {
 	filePath := filepath.Join(resultsDir, entry.Name())
 
 	hash, err := strconv.ParseUint(entry.Name(), 10, 32)
 	if err != nil {
 		util.Log(context.Background(), fmt.Sprintf("wrong hash error: %v", err))
 		_ = os.Remove(filePath)
+		return err
 	}
 
 	result, err := os.ReadFile(filePath)
 	if err != nil {
 		util.Log(context.Background(), fmt.Sprintf("read result error: %v", err))
 		_ = os.Remove(filePath)
+		result = []byte("something wrong with result")
 	}
 
 	err = rp.apiClient.SetResult(&api.Task{
@@ -71,6 +75,7 @@ func (rp *ResultProcessor) processOneFile(resultsDir string, entry os.DirEntry) 
 	} else {
 		_ = os.Remove(filePath)
 	}
+	return err
 }
 
 func getDirForResults(lang string) string {

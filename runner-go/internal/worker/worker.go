@@ -37,7 +37,9 @@ func (w *Worker) Run() {
 			case <-w.appCtx.Done():
 				return
 			default:
-				taskDistributor.Process()
+				if taskDistributor.Process() != nil {
+					time.Sleep(intervalBetweenTasksReceive * 10)
+				}
 				time.Sleep(intervalBetweenTasksReceive)
 			}
 		}
@@ -50,7 +52,9 @@ func (w *Worker) Run() {
 				case <-w.appCtx.Done():
 					return
 				default:
-					resultProcessor.Process()
+					if resultProcessor.Process() != nil {
+						time.Sleep(intervalBetweenResultsSend * 10)
+					}
 					time.Sleep(intervalBetweenResultsSend)
 				}
 			}
