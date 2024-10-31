@@ -8,6 +8,7 @@ import (
 )
 
 const confPath = "api-conf.json"
+const confExamplePath = "api-conf-example.json"
 
 type ApiConfig struct {
 	DB       store.DBConfig `json:"db"`
@@ -17,7 +18,14 @@ type ApiConfig struct {
 var conf ApiConfig
 
 func LoadApiConf() ApiConfig {
-	data, err := os.ReadFile(confPath)
+	if _, err := os.Stat(confPath); os.IsNotExist(err) {
+		return loadConfFromFile(confExamplePath)
+	}
+	return loadConfFromFile(confPath)
+}
+
+func loadConfFromFile(filePath string) ApiConfig {
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatal("config: cannot read file")
 	}

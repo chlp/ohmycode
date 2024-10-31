@@ -8,6 +8,7 @@ import (
 )
 
 const confPath = "conf.json"
+const confExamplePath = "conf-example.json"
 
 type RunnerConf struct {
 	RunnerId   string   `json:"id"`
@@ -20,18 +21,28 @@ type RunnerConf struct {
 var conf RunnerConf
 
 func LoadRunnerConf() RunnerConf {
-	println(os.Getwd())
-	data, err := os.ReadFile(confPath)
+	var conf RunnerConf
+	if _, err := os.Stat(confPath); os.IsNotExist(err) {
+		conf = loadConfFromFile(confExamplePath)
+		conf.RunnerId = util.GenUuid()
+	} else {
+		conf = loadConfFromFile(confPath)
+	}
+	if !util.IsUuid(conf.RunnerId) {
+		log.Fatalf("config: runner id is wrong")
+	}
+	return conf
+}
+
+func loadConfFromFile(filePath string) RunnerConf {
+	data, err := os.ReadFile(filePath)
 	path, _ := os.Getwd()
 	if err != nil {
-		log.Fatalf("config: cannot read file: %s/%s", path, confPath)
+		log.Fatalf("config: cannot read file: %s/%s", path, filePath)
 	}
 	err = json.Unmarshal(data, &conf)
 	if err != nil {
-		log.Fatalf("config: cannot parse file: %s/%s", path, confPath)
-	}
-	if !util.IsUuid(conf.RunnerId) {
-		log.Fatalf("config: runner id is wrong: %s/%s", path, confPath)
+		log.Fatalf("config: cannot parse file: %s/%s", path, filePath)
 	}
 	return conf
 }

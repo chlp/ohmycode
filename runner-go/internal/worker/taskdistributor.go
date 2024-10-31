@@ -56,7 +56,6 @@ func (td *TaskDistributor) moveTask(task *api.Task) error {
 		return fmt.Errorf("no runner for %s", task.Lang)
 	}
 	filePath := fmt.Sprintf("%s/%d", getDirForRequests(task.Lang), task.Hash)
-	util.Log(context.Background(), filePath)
 	if err := os.WriteFile(filePath, []byte(task.Content), 0744); err != nil {
 		return fmt.Errorf("can not move task: %v", err)
 	}

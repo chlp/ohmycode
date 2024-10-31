@@ -1,3 +1,4 @@
+name: "ohmycode-runner"
 services:
   ohmycode-runner-manager:
     container_name: ohmycode-runner-manager

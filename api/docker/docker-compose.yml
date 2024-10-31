@@ -1,3 +1,4 @@
+name: "ohmycode-api"
 services:
   ohmycode-api:
     container_name: ohmycode-api
@@ -7,4 +8,4 @@ services:
     stop_grace_period: 1s
     restart: always
     ports:
-      - "52674:8081"
+      - "52674:52674"

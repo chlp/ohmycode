@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"ohmycode_runner/config"
 	"ohmycode_runner/internal/api"
 	"ohmycode_runner/internal/worker"
@@ -17,6 +18,7 @@ func main() {
 	defer stop()
 
 	apiConfig := config.LoadRunnerConf()
+	util.Log(appCtx, fmt.Sprintf("OhMyCode.Runner app started with id: %s", apiConfig.RunnerId))
 	apiClient := api.NewApiClient(apiConfig.RunnerId, apiConfig.IsPublic, apiConfig.ApiUrl)
 
 	worker.NewWorker(appCtx, apiConfig.RunnerId, apiClient, apiConfig.Languages).Run()

@@ -6,6 +6,6 @@ COPY . .
 RUN go build -o app cmd/main.go
 
 FROM alpine:latest
-COPY --from=builder /app/app /app/conf.json /app/
+COPY --from=builder /app/app /app/conf*.json /app/
 WORKDIR /app
 ENTRYPOINT ["/app/app"]
