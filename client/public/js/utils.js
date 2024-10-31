@@ -1,5 +1,8 @@
-let genUuid = () => {
-    return crypto.randomUUID().replace(/-/g, '');
+let genUuid = () => { // Генерация случайного UUID без дефисов
+    return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 };
 
 let isUuid = (id) => {
@@ -58,15 +61,15 @@ let postRequest = (url, data, callback, final) => {
             "Content-type": "application/json; charset=UTF-8"
         }
     })
-    .then((response) => {
-        const statusCode = response.status;
-        return response.text().then((text) => ({text, statusCode}));
-    })
-    .then(({text, statusCode}) => callback(text, statusCode))
-    .catch((error) => {
-        console.error("postRequest: fetch error:", error);
-    })
-    .finally(() => final());
+        .then((response) => {
+            const statusCode = response.status;
+            return response.text().then((text) => ({text, statusCode}));
+        })
+        .then(({text, statusCode}) => callback(text, statusCode))
+        .catch((error) => {
+            console.error("postRequest: fetch error:", error);
+        })
+        .finally(() => final());
 };
 
 let copyToClipboard = (text) => {
