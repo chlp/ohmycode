@@ -2,6 +2,8 @@ name: "ohmycode-api"
 services:
   ohmycode-api:
     container_name: ohmycode-api
+    depends_on:
+      - ohmycode-mongodb
     build:
       context: ../
       dockerfile: docker/Dockerfile
@@ -9,3 +11,15 @@ services:
     restart: always
     ports:
       - "52674:52674"
+  ohmycode-mongodb:
+    image: mongo:latest
+    container_name: ohmycode-mongodb
+    ports:
+      - "52675:27017"
+    volumes:
+      - ohmycode_mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ohmycode_mongo_pass
+volumes:
+  ohmycode_mongo_data:

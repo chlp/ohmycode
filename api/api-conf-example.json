@@ -1,6 +1,6 @@
 {
   "db": {
-    "connectionString": "mongodb+srv://xxx:yyy@zzz.mongodb.net/",
+    "connectionString": "mongodb://root:ohmycode_mongo_pass@ohmycode-mongodb:27017/",
     "dbname": "db",
     "timeout": "3s"
   },
