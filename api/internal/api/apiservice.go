@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"ohmycode_api/internal/store"
