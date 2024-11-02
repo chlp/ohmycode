@@ -15,8 +15,8 @@ Try it -> https://ohmycode.work/
 
 Run all services locally together (from the root of the repository):
 ```bash
-cd api/docker && docker compose up -d --build --remove-orphans --force-recreate &&  cd../../  && \
-cd ../../runner-go/docker && docker compose up -d --build --remove-orphans --force-recreate && cd../../
+docker compose -f api/docker/docker-compose.yml up -d --build --remove-orphans --force-recreate && \
+docker compose -f runner/docker/docker-compose.yml up -d --build --remove-orphans --force-recreate
 ```
 open http://localhost:52674/
 
