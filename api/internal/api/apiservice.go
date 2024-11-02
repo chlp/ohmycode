@@ -13,18 +13,20 @@ import (
 )
 
 type Service struct {
-	httpPort    int
-	fileStore   *store.FileStore
-	runnerStore *store.RunnerStore
-	taskStore   *store.TaskStore
+	httpPort         int
+	serveClientFiles bool
+	fileStore        *store.FileStore
+	runnerStore      *store.RunnerStore
+	taskStore        *store.TaskStore
 }
 
-func NewService(httpPort int, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
+func NewService(httpPort int, serveClientFiles bool, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
 	return &Service{
-		httpPort:    httpPort,
-		fileStore:   fileStore,
-		runnerStore: runnerStore,
-		taskStore:   taskStore,
+		httpPort:         httpPort,
+		serveClientFiles: serveClientFiles,
+		fileStore:        fileStore,
+		runnerStore:      runnerStore,
+		taskStore:        taskStore,
 	}
 }
 
@@ -45,15 +47,17 @@ func (s *Service) Run() {
 	mux.HandleFunc("/result/set", s.HandleResultSetRequest)
 	mux.HandleFunc("/result/clean", s.HandleResultCleanRequest)
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		path := "./static" + r.URL.Path
-		if _, err := os.Stat(path); err == nil {
-			http.ServeFile(w, r, path)
+	if s.serveClientFiles {
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			path := "./static" + r.URL.Path
+			if _, err := os.Stat(path); err == nil {
+				http.ServeFile(w, r, path)
+				return
+			}
+			http.ServeFile(w, r, "./static/index.html")
 			return
-		}
-		http.ServeFile(w, r, "./static/index.html")
-		return
-	})
+		})
+	}
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.httpPort), corsMiddleware(timerMiddleware(mux))))
 }

@@ -7,8 +7,8 @@ import (
 	"os"
 )
 
-const confPath = "conf.json"
-const confExamplePath = "conf-example.json"
+const confPath = "runner-conf.json"
+const confExamplePath = "runner-conf-example.json"
 
 type RunnerConf struct {
 	RunnerId   string   `json:"id"`

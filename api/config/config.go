@@ -11,8 +11,9 @@ const confPath = "api-conf.json"
 const confExamplePath = "api-conf-example.json"
 
 type ApiConfig struct {
-	DB       store.DBConfig `json:"db"`
-	HttpPort int            `json:"http_port"`
+	DB               store.DBConfig `json:"db"`
+	HttpPort         int            `json:"http_port"`
+	ServeClientFiles bool           `json:"serve_client_files"`
 }
 
 var conf ApiConfig

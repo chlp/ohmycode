@@ -4,5 +4,6 @@
     "dbname": "db",
     "timeout": "3s"
   },
-  "http_port": 52674
+  "http_port": 52674,
+  "serve_client_files": true
 }
