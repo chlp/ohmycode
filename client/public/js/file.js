@@ -30,7 +30,6 @@ let controlsContainerBlock = document.getElementById('controls-container');
 let langSelect = document.getElementById('lang-select');
 
 let isOnline = false;
-let contentSenderTimer = 0;
 
 let userId = localStorage['userId'];
 if (userId === undefined) {
@@ -103,9 +102,6 @@ contentBlock.on('keydown', function (codemirror, event) {
     }
     if (file.writer_id === '') {
         file.writer_id = userId;
-    }
-    if (contentSenderTimer === 0) {
-        contentSender();
     }
 });
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
@@ -231,13 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let lastUpdateTimestamp = +new Date;
 let pageUpdaterTimer = 0;
-let pageUpdaterIsInProgress = false;
 let pageUpdater = () => {
-    let start = +new Date;
-    if (pageUpdaterIsInProgress) {
-        return;
-    }
-    pageUpdaterIsInProgress = true;
     postRequest('/file/get', {
         file_id: fileId,
         user_id: userId,
@@ -248,15 +238,19 @@ let pageUpdater = () => {
     }, (response, statusCode) => {
         response = response.trim();
 
-        if (statusCode === 200 || statusCode === 204) {
-            lastUpdateTimestamp = +new Date;
-            if (!isOnline) {
-                isOnline = true;
-                writerBlocksUpdate();
+        let onlineTicker = () => {
+            if (statusCode === 200 || statusCode === 204) {
+                lastUpdateTimestamp = +new Date;
+                if (!isOnline) {
+                    isOnline = true;
+                    contentSender();
+                    writerBlocksUpdate();
+                }
             }
-        }
+        };
 
         if (statusCode === 204 || response.length === 0) {
+            onlineTicker();
             resultBlockUpdate(); // adding more dots to "In progress..."
             return;
         }
@@ -301,8 +295,11 @@ let pageUpdater = () => {
 
         // update code
         if (
-            file.writer_id !== userId && previousWriterId !== userId && // do not update if current user is writer
-            ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue()) // do not update if code is the same already
+            !isOnline || // first load
+            (
+                file.writer_id !== userId && previousWriterId !== userId && // do not update if current user is writer
+                ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue()) // do not update if code is the same already
+            )
         ) {
             let {left, top} = contentBlock.getScrollInfo();
             let {line, ch} = contentBlock.getCursor();
@@ -319,6 +316,8 @@ let pageUpdater = () => {
         }
 
         controlsContainerBlock.style.display = 'block';
+
+        onlineTicker();
     }, () => {
         if (isOnline && +new Date - lastUpdateTimestamp > 5000) {
             isOnline = false;
@@ -329,25 +328,25 @@ let pageUpdater = () => {
         pageUpdaterTimer = setTimeout(() => {
             pageUpdater();
         }, isOnline ? 1000 : 5000);
-
-        pageUpdaterIsInProgress = false;
     });
 };
 pageUpdater();
 
+let contentSenderTimer = 0;
 let contentSender = () => {
+    if (!isOnline) {
+        return;
+    }
     let getNextUpdateFunc = (timeout) => () => {
         clearTimeout(contentSenderTimer);
         contentSenderTimer = setTimeout(() => {
             contentSender();
         }, timeout);
     };
-    if (!isOnline) {
-        getNextUpdateFunc(3000)();
-    } else if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
+    if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
         actions.setContent(getNextUpdateFunc(1000));
     } else {
-        getNextUpdateFunc(300)();
+        getNextUpdateFunc(500)();
     }
 };
 

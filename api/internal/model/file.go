@@ -121,9 +121,6 @@ func (f *File) SetContent(content, userId string) error {
 	if f.Writer != "" && f.Writer != userId {
 		return errors.New("file is locked by another user")
 	}
-	if f.Content == content {
-		return nil
-	}
 
 	f.lock()
 	defer f.unlock()

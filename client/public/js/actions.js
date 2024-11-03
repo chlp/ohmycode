@@ -55,6 +55,10 @@ let actions = {
         });
     },
     setContent: (callback) => {
+        if (!isOnline) {
+            callback();
+            return;
+        }
         if (file.writer_id !== '' && file.writer_id !== userId) {
             callback();
             return;
