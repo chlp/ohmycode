@@ -279,6 +279,7 @@ let pageUpdater = () => {
             return;
         }
 
+        let previousWriterId = file.writer_id;
         file = data;
 
         // update users
@@ -300,7 +301,7 @@ let pageUpdater = () => {
 
         // update code
         if (
-            file.writer_id !== userId && // do not update if current user is writer
+            file.writer_id !== userId && previousWriterId !== userId && // do not update if current user is writer
             ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue()) // do not update if code is the same already
         ) {
             let {left, top} = contentBlock.getScrollInfo();
