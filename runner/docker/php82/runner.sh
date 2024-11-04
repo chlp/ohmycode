@@ -8,6 +8,9 @@ while [ True ]; do
     if [ -n "$(ls tmp)" ]; then
       rm tmp/*
     fi
+    if [ -n "$(ls /tmp)" ]; then
+      rm /tmp/*
+    fi
     if [ -n "$(ls requests)" ]; then
         for REQUEST_FILEPATH in requests/*; do
             echo $REQUEST_FILEPATH
