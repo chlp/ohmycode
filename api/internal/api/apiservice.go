@@ -49,10 +49,12 @@ func (s *Service) Run() {
 
 	if s.serveClientFiles {
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			path := "./static" + r.URL.Path
-			if _, err := os.Stat(path); err == nil {
-				http.ServeFile(w, r, path)
-				return
+			if r.URL.Path != "/" && r.URL.Path != "/index.html" {
+				file := "./static" + r.URL.Path
+				if _, err := os.Stat(file); err == nil {
+					http.ServeFile(w, r, file)
+					return
+				}
 			}
 			http.ServeFile(w, r, "./static/index.html")
 			return
