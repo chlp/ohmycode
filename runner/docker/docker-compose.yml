@@ -9,6 +9,8 @@ services:
     restart: always
     volumes:
       - ../data:/app/data
+    mem_limit: 256m
+    cpus: "0.3"
   ohmycode-runner-go:
     container_name: ohmycode-runner-go
     networks:
@@ -24,6 +26,8 @@ services:
     tmpfs:
       - /app/go:mode=1777,uid=1000,gid=1000
       - /app/tmp:mode=1777,uid=1000,gid=1000
+    mem_limit: 512m
+    cpus: "1"
   ohmycode-runner-java:
     container_name: ohmycode-runner-java
     networks:
@@ -39,6 +43,8 @@ services:
     tmpfs:
       - /app/java:mode=1777,uid=1000,gid=1000
       - /app/tmp:mode=1777,uid=1000,gid=1000
+    mem_limit: 512m
+    cpus: "1"
   ohmycode-runner-json:
     container_name: ohmycode-runner-json
     networks:
@@ -53,6 +59,8 @@ services:
       - ../data/json/results:/app/results
     tmpfs:
       - /app/tmp:mode=1777,uid=1000,gid=1000
+    mem_limit: 128m
+    cpus: "0.2"
   ohmycode-runner-markdown:
     container_name: ohmycode-runner-markdown
     networks:
@@ -67,6 +75,8 @@ services:
       - ../data/markdown/results:/app/results
     tmpfs:
       - /app/tmp:mode=1777,uid=1000,gid=1000
+    mem_limit: 128m
+    cpus: "0.2"
   ohmycode-runner-mysql8:
     container_name: ohmycode-runner-mysql8
     networks:
@@ -88,6 +98,8 @@ services:
     command: --default-authentication-plugin=mysql_native_password --log_error_verbosity=1 --skip-log-bin
     environment:
       MYSQL_ROOT_PASSWORD: mysql8root
+    mem_limit: 512m
+    cpus: "0.5"
   ohmycode-runner-php82:
     container_name: ohmycode-runner-php82
     networks:
@@ -102,6 +114,8 @@ services:
       - ../data/php82/results:/app/results
     tmpfs:
       - /app/tmp:mode=1777,uid=1000,gid=1000
+    mem_limit: 128m
+    cpus: "0.2"
   ohmycode-runner-postgres13:
     container_name: ohmycode-runner-postgres13
     networks:
@@ -124,6 +138,8 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mydatabase
+    mem_limit: 512m
+    cpus: "0.5"
 networks:
   isolated-network-go:
     driver: bridge
