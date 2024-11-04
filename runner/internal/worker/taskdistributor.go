@@ -22,7 +22,8 @@ func NewTaskDistributor(apiClient *api.Client, runnerId string, languages []stri
 	}
 	for _, lang := range languages {
 		td.languages[lang] = nil
-		_ = os.MkdirAll(getDirForRequests(lang), os.ModePerm)
+		_ = os.MkdirAll(getDirForRequests(lang), 0o777)
+		_ = os.Chmod(getDirForRequests(lang), 0o777)
 	}
 	return td
 }

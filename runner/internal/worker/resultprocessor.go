@@ -17,7 +17,8 @@ type ResultProcessor struct {
 }
 
 func NewResultProcessor(apiClient *api.Client, runnerId, lang string) *ResultProcessor {
-	_ = os.MkdirAll(getDirForResults(lang), os.ModePerm)
+	_ = os.MkdirAll(getDirForResults(lang), 0o777)
+	_ = os.Chmod(getDirForResults(lang), 0o777)
 	return &ResultProcessor{
 		apiClient: apiClient,
 		runnerId:  runnerId,
