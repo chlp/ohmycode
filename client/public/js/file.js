@@ -72,6 +72,7 @@ let getResultTheme = () => {
 };
 let contentBlock = CodeMirror.fromTextArea(document.getElementById('content'), {
     lineNumbers: true,
+    lineWrapping: true,
     readOnly: true,
     mode: languages[currentLang].highlighter, // javascript, go, php, sql
     matchBrackets: true,
