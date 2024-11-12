@@ -47,6 +47,8 @@ func (s *Service) Run() {
 	mux.HandleFunc("/result/set", s.HandleResultSetRequest)
 	mux.HandleFunc("/result/clean", s.HandleResultCleanRequest)
 
+	mux.HandleFunc("/file", s.HandleWsFile)
+
 	if s.serveClientFiles {
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/" && r.URL.Path != "/index.html" {

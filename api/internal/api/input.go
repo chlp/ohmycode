@@ -10,6 +10,7 @@ import (
 )
 
 type input struct {
+	Action      string      `json:"action"`
 	FileId      string      `json:"file_id"`
 	FileName    string      `json:"file_name"`
 	UserId      string      `json:"user_id"`
