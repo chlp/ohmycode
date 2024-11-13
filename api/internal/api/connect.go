@@ -51,6 +51,7 @@ func (s *Service) HandleWsFile(w http.ResponseWriter, r *http.Request) {
 	conn.SetReadLimit(WsMessageLimit)
 
 	conn.SetPongHandler(func(appData string) error {
+		util.Log("pong handler")
 		if err = conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
 			responseErr(r.Context(), w, err.Error(), http.StatusBadRequest)
 		}
@@ -62,8 +63,9 @@ func (s *Service) HandleWsFile(w http.ResponseWriter, r *http.Request) {
 			case <-done:
 				return
 			default:
+				util.Log("ping")
 				if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-					responseErr(r.Context(), w, "Ping error: "+err.Error(), http.StatusConflict)
+					util.Log(context.Background(), "Ping error: "+err.Error())
 					return
 				}
 				time.Sleep(5 * time.Second)
@@ -82,10 +84,20 @@ func (s *Service) HandleWsFile(w http.ResponseWriter, r *http.Request) {
 			case <-done:
 				return
 			default:
+				util.Log("r?")
 				wsMessageType, message, err := conn.ReadMessage()
 				if err != nil {
+					util.Log("errrr" + err.Error())
 					closeDone()
 					return
+				}
+				if wsMessageType == websocket.PongMessage {
+					util.Log("r:pong")
+					break
+				}
+				if wsMessageType == websocket.PingMessage {
+					util.Log("r:ping")
+					break
 				}
 				if wsMessageType == websocket.CloseMessage {
 					closeDone()
@@ -105,22 +117,21 @@ func (s *Service) HandleWsFile(w http.ResponseWriter, r *http.Request) {
 				case "init":
 					println("init")
 					client.userId = i.UserId
-					file, err := s.fileStore.GetFile(i.FileId)
+					client.file, err = s.fileStore.GetFile(i.FileId)
 					if err != nil {
 						// todo: send error msg
 						responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
 						return
 					}
-					if file == nil {
-						file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
-						if file.UsePublicRunner {
-							file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
+					if client.file == nil {
+						client.file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
+						if client.file.UsePublicRunner {
+							client.file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
 						}
 					}
-					client.file = file
 					client.lastUpdate = time.Now()
-					if err = client.write(file); err != nil {
-						responseErr(r.Context(), w, err.Error(), http.StatusBadRequest)
+					if err = client.sendFile(); err != nil {
+						closeDone()
 						return
 					}
 				case "set_content":
@@ -140,31 +151,31 @@ func (s *Service) HandleWsFile(w http.ResponseWriter, r *http.Request) {
 		case <-done:
 			return
 		default:
-			// todo: send file updates
-			println("send file updates")
-			time.Sleep(1 * time.Second)
-
-			// todo: if not initialized for 10 seconds -> close
+			if client.file != nil && client.file.UpdatedAt.After(client.lastUpdate) {
+				if err = client.sendFile(); err != nil {
+					return
+				}
+			}
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
 }
 
-func (client *fileWsClient) write(v interface{}) error {
-	if v == nil {
-		util.Log(context.Background(), "write nil")
+func (client *fileWsClient) sendFile() error {
+	if client.file == nil {
+		util.Log(context.Background(), "sendFile nil")
 		return nil
 	}
 
-	jsonData, err := json.Marshal(v)
+	jsonData, err := json.Marshal(client.file)
 	if err != nil {
 		return err
 	}
 
 	if bytes.Equal(jsonData, []byte("null")) {
-		util.Log(context.Background(), "write null")
+		util.Log(context.Background(), "sendFile null")
 		return nil
 	}
 
-	_ = client.conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
 	return client.conn.WriteMessage(websocket.TextMessage, jsonData)
 }
