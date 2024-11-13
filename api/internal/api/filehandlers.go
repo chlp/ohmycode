@@ -2,72 +2,7 @@ package api
 
 import (
 	"net/http"
-	"ohmycode_api/internal/model"
-	"time"
 )
-
-func (s *Service) HandleFileGetUpdateRequest(w http.ResponseWriter, r *http.Request) {
-	i := getInputForFile(w, r)
-	if i == nil {
-		return
-	}
-
-	var file *model.File
-	var err error
-
-	startTime := time.Now()
-	for {
-		file, err = s.fileStore.GetFile(i.FileId)
-		if err != nil {
-			responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if file == nil && i.LastUpdate.Time.IsZero() {
-			file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
-			if file.UsePublicRunner {
-				file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
-			}
-			responseOk(w, file)
-			return
-		}
-
-		if file != nil {
-			file.TouchByUser(i.UserId, "")
-		}
-
-		if !i.IsKeepAlive {
-			break
-		}
-
-		if time.Since(startTime) > keepAliveRequestMaxDuration {
-			break
-		}
-
-		if file == nil {
-			time.Sleep(time.Second * 1)
-		} else if file.UpdatedAt.After(i.LastUpdate.Time) {
-			break
-		}
-
-		select {
-		case <-r.Context().Done():
-			responseOk(w, nil)
-			return
-		default:
-			time.Sleep(time.Millisecond * 100)
-		}
-	}
-
-	if file != nil {
-		if !file.UpdatedAt.After(i.LastUpdate.Time) {
-			file = nil
-		} else if file.UsePublicRunner {
-			file.IsRunnerOnline = s.runnerStore.IsOnline(true, "")
-		} // todo: implement not for public
-	}
-	responseOk(w, file)
-}
 
 func (s *Service) HandleFileSetContentRequest(w http.ResponseWriter, r *http.Request) {
 	i, file := s.getFileOrCreateHandler(w, r)

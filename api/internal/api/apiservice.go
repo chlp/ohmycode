@@ -31,10 +31,9 @@ func NewService(httpPort int, serveClientFiles bool, fileStore *store.FileStore,
 }
 
 func (s *Service) Run() {
-	util.Log(nil, "API Service started")
+	util.Log("API Service started")
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/file/get", s.HandleFileGetUpdateRequest)
 	mux.HandleFunc("/file/set_content", s.HandleFileSetContentRequest)
 	mux.HandleFunc("/file/set_name", s.HandleFileSetNameRequest)
 	mux.HandleFunc("/file/set_user_name", s.HandleFileSetUserNameRequest)

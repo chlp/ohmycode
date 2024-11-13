@@ -46,16 +46,17 @@ func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 		fileName = "File " + time.Now().Format("2006-01-02")
 	}
 	file := &File{
-		ID:               fileId,
-		Name:             fileName,
-		Lang:             lang,
-		Content:          content,
-		Writer:           "",
-		UsePublicRunner:  true,
-		RunnerId:         "",
-		UpdatedAt:        time.Now(),
-		ContentUpdatedAt: time.Now(),
-		Users:            nil,
+		ID:                 fileId,
+		Name:               fileName,
+		Lang:               lang,
+		Content:            content,
+		Writer:             "",
+		UsePublicRunner:    true,
+		RunnerId:           "",
+		UpdatedAt:          time.Now(),
+		ContentUpdatedAt:   time.Now(),
+		Users:              nil,
+		IsWaitingForResult: true, // todo: set correct
 	}
 	file.TouchByUser(userId, userName)
 	return file
