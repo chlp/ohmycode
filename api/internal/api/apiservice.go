@@ -34,17 +34,8 @@ func (s *Service) Run() {
 	util.Log("API Service started")
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/file/set_name", s.HandleFileSetNameRequest)
-	mux.HandleFunc("/file/set_user_name", s.HandleFileSetUserNameRequest)
-	mux.HandleFunc("/file/set_lang", s.HandleFileSetLangRequest)
-	mux.HandleFunc("/file/set_runner", s.HandleFileSetRunnerRequest)
-
-	mux.HandleFunc("/run/add_task", s.HandleRunAddTaskRequest)
 	mux.HandleFunc("/run/get_tasks", s.HandleRunGetTasksRequest)
-
 	mux.HandleFunc("/result/set", s.HandleResultSetRequest)
-	mux.HandleFunc("/result/clean", s.HandleResultCleanRequest)
-
 	mux.HandleFunc("/file", s.HandleWsFile)
 
 	if s.serveClientFiles {

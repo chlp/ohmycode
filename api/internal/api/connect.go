@@ -91,8 +91,7 @@ func (s *Service) HandleWsFile(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 
-				switch i.Action {
-				case "init":
+				if i.Action == "init" {
 					client.userId = i.UserId
 					client.file, err = s.fileStore.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 					if err != nil {
@@ -105,19 +104,47 @@ func (s *Service) HandleWsFile(w http.ResponseWriter, r *http.Request) {
 						closeDone()
 						return
 					}
+					continue
+				}
+
+				if client.file == nil {
+					continue
+				}
+
+				switch i.Action {
 				case "set_content":
-					if client.file == nil {
-						continue
-					}
 					if err := client.file.SetContent(i.Content, i.UserId); err != nil {
 						util.Log("set_content error: " + err.Error())
 					}
 				case "set_name":
+					if !client.file.SetName(i.FileName) {
+						util.Log("set_name error: " + err.Error())
+					}
 				case "set_user_name":
+					if !client.file.SetUserName(client.userId, i.FileName) {
+						util.Log("set_user_name error: " + err.Error())
+					}
 				case "set_lang":
+					if !client.file.SetLang(i.Lang) {
+						util.Log("set_lang error: " + err.Error())
+					}
 				case "set_runner":
+					if !client.file.SetRunnerId(i.RunnerId) {
+						util.Log("set_runner error: " + err.Error())
+					}
 				case "clean_result":
+					s.taskStore.DeleteTask(client.file.ID)
+					err = client.file.SetResult("")
+					if err != nil {
+						util.Log("set_runner error: " + err.Error())
+					}
 				case "run_task":
+					if !s.runnerStore.IsOnline(client.file.UsePublicRunner, client.file.RunnerId) {
+						responseErr(r.Context(), w, "Runner is not online", http.StatusBadRequest)
+					} else {
+						client.file.SetWaitingForResult()
+						s.taskStore.AddTask(client.file)
+					}
 				default:
 					util.Log("Unknown message type: " + string(message))
 				}

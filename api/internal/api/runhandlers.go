@@ -7,22 +7,6 @@ import (
 	"time"
 )
 
-func (s *Service) HandleRunAddTaskRequest(w http.ResponseWriter, r *http.Request) {
-	_, file := s.getFileOrCreateHandler(w, r)
-	if file == nil {
-		return
-	}
-	if !s.runnerStore.IsOnline(file.UsePublicRunner, file.RunnerId) {
-		responseErr(r.Context(), w, "Runner is not online", http.StatusBadRequest)
-		return
-	}
-
-	file.SetWaitingForResult()
-	s.taskStore.AddTask(file)
-
-	responseOk(w, nil)
-}
-
 func (s *Service) HandleRunGetTasksRequest(w http.ResponseWriter, r *http.Request) {
 	i := getInput(w, r)
 	if i == nil {

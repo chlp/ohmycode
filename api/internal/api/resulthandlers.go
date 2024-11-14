@@ -36,30 +36,3 @@ func (s *Service) HandleResultSetRequest(w http.ResponseWriter, r *http.Request)
 
 	responseOk(w, nil)
 }
-
-func (s *Service) HandleResultCleanRequest(w http.ResponseWriter, r *http.Request) {
-	i := getInputForFile(w, r)
-	if i == nil {
-		return
-	}
-
-	file, err := s.fileStore.GetFile(i.FileId)
-	if err != nil {
-		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if file == nil {
-		responseOk(w, nil)
-		return
-	}
-
-	err = file.SetResult("")
-	if err != nil {
-		responseErr(r.Context(), w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	s.taskStore.DeleteTask(file.ID)
-
-	responseOk(w, nil)
-}
