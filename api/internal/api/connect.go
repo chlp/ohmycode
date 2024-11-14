@@ -94,20 +94,30 @@ func (s *Service) HandleWsFile(w http.ResponseWriter, r *http.Request) {
 				switch i.Action {
 				case "init":
 					client.userId = i.UserId
-					client.file, err = s.fileStore.GetFile(i.FileId)
+					client.file, err = s.fileStore.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 					if err != nil {
 						util.Log("GetFile error: " + err.Error())
 						closeDone()
 						return
 					}
 					if client.file == nil {
-						client.file = model.NewFile(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
+						util.Log("GetFile not found")
+						closeDone()
+						return
 					}
 				case "set_content":
+					if client.file == nil {
+						continue
+					}
+					if err := client.file.SetContent(i.Content, i.UserId); err != nil {
+						util.Log("set_content error: " + err.Error())
+					}
 				case "set_name":
 				case "set_user_name":
 				case "set_lang":
 				case "set_runner":
+				case "clean_result":
+				case "run_task":
 				default:
 					util.Log("Unknown message type: " + string(message))
 				}

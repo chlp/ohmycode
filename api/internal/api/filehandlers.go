@@ -4,19 +4,6 @@ import (
 	"net/http"
 )
 
-func (s *Service) HandleFileSetContentRequest(w http.ResponseWriter, r *http.Request) {
-	i, file := s.getFileOrCreateHandler(w, r)
-	if file == nil {
-		return
-	}
-
-	if err := file.SetContent(i.Content, i.UserId); err != nil {
-		responseErr(r.Context(), w, err.Error(), http.StatusBadRequest)
-	} else {
-		responseOk(w, nil)
-	}
-}
-
 func (s *Service) HandleFileSetNameRequest(w http.ResponseWriter, r *http.Request) {
 	i, file := s.getFileOrCreateHandler(w, r)
 	if file == nil {

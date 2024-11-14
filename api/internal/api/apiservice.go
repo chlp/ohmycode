@@ -34,7 +34,6 @@ func (s *Service) Run() {
 	util.Log("API Service started")
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/file/set_content", s.HandleFileSetContentRequest)
 	mux.HandleFunc("/file/set_name", s.HandleFileSetNameRequest)
 	mux.HandleFunc("/file/set_user_name", s.HandleFileSetUserNameRequest)
 	mux.HandleFunc("/file/set_lang", s.HandleFileSetLangRequest)

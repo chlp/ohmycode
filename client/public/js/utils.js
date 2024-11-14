@@ -53,23 +53,17 @@ let ohMySimpleHash = (str) => {
     return hash;
 };
 
-let postRequest = (url, data, callback, final) => {
-    fetch(apiUrl + url, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
+let postRequest = (action, data, callback) => {
+    try {
+        socket.send(JSON.stringify({
+            ...data,
+            action: action,
+        }));
+    } finally {
+        if (typeof callback === 'function') {
+            callback();
         }
-    })
-        .then((response) => {
-            const statusCode = response.status;
-            return response.text().then((text) => ({text, statusCode}));
-        })
-        .then(({text, statusCode}) => callback(text, statusCode))
-        .catch((error) => {
-            console.error("postRequest: fetch error:", error);
-        })
-        .finally(() => final());
+    }
 };
 
 let copyToClipboard = (text) => {
