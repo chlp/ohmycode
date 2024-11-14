@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"ohmycode_api/internal/model"
@@ -12,6 +14,7 @@ import (
 type wsClient struct {
 	file       *model.File
 	userId     string
+	runner     *model.Runner
 	lastUpdate time.Time
 	conn       *websocket.Conn
 	done       chan struct{}
@@ -76,4 +79,24 @@ func (client *wsClient) pingPongHandling() {
 			time.Sleep(5 * time.Second)
 		}
 	}
+}
+
+func (client *wsClient) send(v interface{}) error {
+	if v == nil {
+		util.Log("wsClient.send nil")
+		return nil
+	}
+
+	jsonData, err := json.Marshal(v)
+	if err != nil {
+		util.Log("wsClient.send json err: " + err.Error())
+		return err
+	}
+
+	if bytes.Equal(jsonData, []byte("null")) {
+		util.Log("wsClient.send null")
+		return nil
+	}
+
+	return client.conn.WriteMessage(websocket.TextMessage, jsonData)
 }

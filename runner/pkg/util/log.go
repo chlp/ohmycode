@@ -3,12 +3,27 @@ package util
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 )
 
 const RequestStartTimeCtxKey string = "RequestStartTime"
 
-func Log(ctx context.Context, msg string) {
+func Log(args ...interface{}) {
+	var ctx context.Context = nil
+	var msg string
+
+	switch len(args) {
+	case 1:
+		msg, _ = args[0].(string)
+	case 2:
+		ctx, _ = args[0].(context.Context)
+		msg, _ = args[1].(string)
+	default:
+		log.Fatal("wrong Log usage")
+		return
+	}
+
 	if ctx == nil {
 		ctx = context.Background()
 	}

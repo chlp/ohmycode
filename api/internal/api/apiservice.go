@@ -34,9 +34,8 @@ func (s *Service) Run() {
 	util.Log("API Service started")
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/run/get_tasks", s.HandleRunGetTasksRequest)
-	mux.HandleFunc("/result/set", s.HandleResultSetRequest)
-	mux.HandleFunc("/file", s.HandleWsFile)
+	mux.HandleFunc("/file", s.handleWsFileConnection)
+	mux.HandleFunc("/runner", s.handleWsRunnerConnection)
 
 	if s.serveClientFiles {
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

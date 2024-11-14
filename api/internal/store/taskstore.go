@@ -63,7 +63,8 @@ func (ts *TaskStore) DeleteTask(taskId string) {
 
 const durationToRetryTask = time.Second * 30
 
-func (ts *TaskStore) GetTasksForRunner(runnerId string, isPublic bool) []*model.Task {
+func (ts *TaskStore) GetTasksForRunner(runner *model.Runner) []*model.Task {
+	runner.CheckedAt = time.Now()
 	tasks := make([]*model.Task, 0)
 	ts.mutex.Lock()
 	defer ts.mutex.Unlock()
@@ -71,11 +72,11 @@ func (ts *TaskStore) GetTasksForRunner(runnerId string, isPublic bool) []*model.
 		if time.Since(task.GivenToRunnerAt) < durationToRetryTask {
 			continue
 		}
-		if !(isPublic && task.IsPublic) && runnerId != task.RunnerId {
+		if !(runner.IsPublic && task.IsPublic) && runner.ID != task.RunnerId {
 			continue
 		}
 		task.GivenToRunnerAt = time.Now()
-		task.RunnerId = runnerId
+		task.RunnerId = runner.ID
 		tasks = append(tasks, task)
 	}
 	return tasks
