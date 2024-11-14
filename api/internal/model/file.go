@@ -142,6 +142,7 @@ func (f *File) SetWaitingForResult() {
 	defer f.unlock()
 
 	f.IsWaitingForResult = true
+	f.Result = "Started execution at " + time.Now().UTC().Format("15:04:05") + " UTC"
 	f.UpdatedAt = time.Now()
 }
 
