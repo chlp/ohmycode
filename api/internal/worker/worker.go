@@ -21,9 +21,11 @@ func NewWorker(appCtx context.Context, fileStore *store.FileStore, runnerStore *
 	}
 }
 
-const timeToSleepBetweenCleanups = 100 * time.Millisecond
-const timeToSleepBetweenPersists = 30 * time.Second
-const timeToSleepBetweenSetIsRunnerOnline = 500 * time.Millisecond
+const (
+	timeToSleepBetweenCleanups          = 100 * time.Millisecond
+	timeToSleepBetweenPersists          = 30 * time.Second
+	timeToSleepBetweenSetIsRunnerOnline = 500 * time.Millisecond
+)
 
 func (w *Worker) Run() {
 	util.Log("Worker started")
