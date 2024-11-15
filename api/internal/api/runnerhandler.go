@@ -36,8 +36,6 @@ func (s *Service) runnerMessageHandler(client *wsClient, message []byte) (ok boo
 		return true
 	}
 
-	println("runnerMessageHandler " + i.Action + i.RunnerId)
-
 	if i.Action == "init" {
 		if !util.IsUuid(i.RunnerId) {
 			util.Log("runnerMessageHandler: Wrong runner_id: " + i.RunnerId)
