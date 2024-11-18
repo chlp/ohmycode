@@ -62,7 +62,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 
 	switch i.Action {
 	case "set_content":
-		if err := client.file.SetContent(i.Content, i.UserId); err != nil {
+		if err := client.file.SetContent(i.Content, client.userId); err != nil {
 			util.Log("fileMessageHandler: set_content error: " + err.Error())
 		}
 	case "set_name":
