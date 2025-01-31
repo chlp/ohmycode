@@ -94,10 +94,23 @@ let copyToClipboard = (text) => {
     }
 };
 
+let saveContentToFile = () => {
+    const text = contentBlock.getValue();
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = file.name + '.txt';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+};
+
 document.addEventListener('keydown', function (event) {
     if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
-        console.log('Already saved :)');
+        saveContentToFile();
     }
 });
 
