@@ -11,6 +11,8 @@ Try it -> https://ohmycode.work/
 
 ![OhMyCode preview](OhMyCode-preview.png)
 
+Technical Article: ["OhMyCode: System Design Reflections"](https://chlp8.medium.com/ohmycode-system-design-reflections-07c26f91b861)
+
 # Build and run
 
 Run all services locally together (from the root of the repository):
