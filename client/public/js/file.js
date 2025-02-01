@@ -105,6 +105,45 @@ contentBlock.on('keydown', function (codemirror, event) {
         file.writer_id = userId;
     }
 });
+contentBlock.on('drop', (cm, event) => {
+    event.preventDefault();
+});
+
+document.addEventListener('dragover', (event) => {
+    event.preventDefault();
+});
+document.addEventListener('drop', (event) => {
+    event.preventDefault();
+    const droppedFiles = event.dataTransfer.files;
+    if (droppedFiles.length > 0) {
+        const droppedFile = droppedFiles[0];
+        if (droppedFile.size > 256 * 1024) {
+            console.log('File too large (>256Kb)', droppedFile);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            if (await isFileBinary(droppedFile)) {
+                console.log("Wrong file (binary)", droppedFile);
+                return;
+            }
+            let newFileName = droppedFile.name;
+            const allowedCharsRegex = /[^0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]/g;
+            newFileName = newFileName.replace(allowedCharsRegex, '');
+            newFileName = newFileName.substring(0, 64);
+            fileNameBlock.innerHTML = newFileName;
+            actions.setFileName();
+            setTimeout(() => {
+                contentBlock.setValue(e.target.result);
+            }, 100);
+        };
+        reader.onerror = function() {
+            console.error('Error occurred: ' + droppedFile);
+        };
+        reader.readAsText(droppedFile);
+    }
+});
+
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,

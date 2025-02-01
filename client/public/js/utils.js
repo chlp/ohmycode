@@ -96,10 +96,14 @@ let copyToClipboard = (text) => {
 
 let saveContentToFile = () => {
     const text = contentBlock.getValue();
-    const blob = new Blob([text], { type: 'text/plain' });
+    const blob = new Blob([text], {type: 'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = file.name + '.txt';
+    let fileName = file.name;
+    if (!/\.[0-9a-z]+$/i.test(fileName)) {
+        fileName += '.txt';
+    }
+    a.download = fileName;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
@@ -113,6 +117,20 @@ document.addEventListener('keydown', function (event) {
         saveContentToFile();
     }
 });
+
+let isFileBinary = async (file) => {
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const maxBytesToCheck = Math.min(bytes.length, 512);
+    let nonPrintableCount = 0;
+    for (let i = 0; i < maxBytesToCheck; i++) {
+        const byte = bytes[i];
+        if ((byte < 32 || byte > 126) && byte !== 9 && byte !== 10 && byte !== 13) {
+            nonPrintableCount++;
+        }
+    }
+    return nonPrintableCount / maxBytesToCheck > 0.2;
+}
 
 
 let processId = genUuid();
