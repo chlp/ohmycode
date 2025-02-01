@@ -121,7 +121,7 @@ document.addEventListener('keydown', function (event) {
 let isFileBinary = async (file) => {
     const buffer = await file.arrayBuffer();
     const bytes = new Uint8Array(buffer);
-    const maxBytesToCheck = Math.min(bytes.length, 512);
+    const maxBytesToCheck = Math.min(bytes.length, 32 * 1024);
     let nonPrintableCount = 0;
     for (let i = 0; i < maxBytesToCheck; i++) {
         const byte = bytes[i];
@@ -129,7 +129,11 @@ let isFileBinary = async (file) => {
             nonPrintableCount++;
         }
     }
-    return nonPrintableCount / maxBytesToCheck > 0.2;
+    let nonPrintableRateForBinary = 0.4;
+    if (bytes.length < 1024) {
+        nonPrintableRateForBinary = 0.6;
+    }
+    return nonPrintableCount / maxBytesToCheck > nonPrintableRateForBinary;
 }
 
 
