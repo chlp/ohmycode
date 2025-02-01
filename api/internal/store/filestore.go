@@ -71,6 +71,8 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 		return nil, errors.New("problem with fileId")
 	}
 
+	files[0].ShouldPersist = true
+
 	fs.mutex.Lock()
 	fs.files[fileId] = &files[0]
 	fs.mutex.Unlock()

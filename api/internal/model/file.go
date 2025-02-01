@@ -23,8 +23,9 @@ type File struct {
 	IsWaitingForResult bool `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool `json:"is_runner_online"`
 
-	PersistedAt time.Time `json:"-"`
-	mutex       *sync.Mutex
+	ShouldPersist bool
+	PersistedAt   time.Time `json:"-"`
+	mutex         *sync.Mutex
 }
 
 type User struct {
@@ -34,7 +35,7 @@ type User struct {
 }
 
 const (
-	contentMaxLength               = 32768
+	contentMaxLength               = 512 * (1 << 10) // 512 Kb
 	durationIsActiveFromLastUpdate = 5 * time.Second
 	durationIsWriterStillWriting   = 2 * time.Second
 	durationForWaitingForResultMax = 20 * time.Second
@@ -46,16 +47,19 @@ func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 		fileName = "File " + time.Now().Format("2006-01-02")
 	}
 	file := &File{
-		ID:               fileId,
-		Name:             fileName,
-		Lang:             lang,
-		Content:          content,
-		Writer:           "",
-		UsePublicRunner:  true,
-		RunnerId:         "",
-		UpdatedAt:        time.Now(),
-		ContentUpdatedAt: time.Now(),
-		Users:            nil,
+		ID:                 fileId,
+		Name:               fileName,
+		Lang:               lang,
+		Content:            content,
+		Writer:             "",
+		UsePublicRunner:    true,
+		RunnerId:           "",
+		UpdatedAt:          time.Now(),
+		ContentUpdatedAt:   time.Now(),
+		Users:              nil,
+		IsWaitingForResult: false,
+		ShouldPersist:      false,
+		IsRunnerOnline:     true, // todo: set correct
 	}
 	file.TouchByUser(userId, userName)
 	return file
@@ -97,6 +101,7 @@ func (f *File) SetName(name string) bool {
 	if f.Name == name {
 		return true
 	}
+	f.ShouldPersist = true
 	f.Name = name
 	f.UpdatedAt = time.Now()
 	return true
@@ -125,6 +130,7 @@ func (f *File) SetContent(content, userId string) error {
 	f.lock()
 	defer f.unlock()
 
+	f.ShouldPersist = true
 	f.Content = content
 	f.Writer = userId
 	f.ContentUpdatedAt = time.Now()
@@ -140,7 +146,9 @@ func (f *File) SetWaitingForResult() {
 	f.lock()
 	defer f.unlock()
 
+	f.ShouldPersist = true
 	f.IsWaitingForResult = true
+	f.Result = "Started execution at " + time.Now().UTC().Format("15:04:05") + " UTC"
 	f.UpdatedAt = time.Now()
 }
 
@@ -155,6 +163,7 @@ func (f *File) SetResult(result string) error {
 	f.lock()
 	defer f.unlock()
 
+	f.ShouldPersist = true
 	f.IsWaitingForResult = false
 	f.Result = result
 	f.UpdatedAt = time.Now()
@@ -189,6 +198,7 @@ func (f *File) SetRunnerId(runnerId string) bool {
 	if f.RunnerId == runnerId {
 		return true
 	}
+	f.ShouldPersist = true
 	f.RunnerId = runnerId
 	f.UpdatedAt = time.Now()
 	return false

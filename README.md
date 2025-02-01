@@ -11,8 +11,6 @@ Try it -> https://ohmycode.work/
 
 ![OhMyCode preview](OhMyCode-preview.png)
 
-[New version (based on WebSockets)](https://github.com/chlp/ohmycode/tree/ws)
-
 Technical Article: ["OhMyCode: System Design Reflections"](https://chlp8.medium.com/ohmycode-system-design-reflections-07c26f91b861)
 
 # Build and run

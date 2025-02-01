@@ -8,22 +8,27 @@ import (
 )
 
 type Worker struct {
-	fileStore *store.FileStore
-	appCtx    context.Context
+	fileStore   *store.FileStore
+	runnerStore *store.RunnerStore
+	appCtx      context.Context
 }
 
-func NewWorker(appCtx context.Context, fileStore *store.FileStore) *Worker {
+func NewWorker(appCtx context.Context, fileStore *store.FileStore, runnerStore *store.RunnerStore) *Worker {
 	return &Worker{
-		fileStore: fileStore,
-		appCtx:    appCtx,
+		fileStore:   fileStore,
+		runnerStore: runnerStore,
+		appCtx:      appCtx,
 	}
 }
 
-const timeToSleepBetweenCleanups = 100 * time.Millisecond
-const timeToSleepBetweenPersists = 30 * time.Second
+const (
+	timeToSleepBetweenCleanups          = 100 * time.Millisecond
+	timeToSleepBetweenPersists          = 30 * time.Second
+	timeToSleepBetweenSetIsRunnerOnline = 500 * time.Millisecond
+)
 
 func (w *Worker) Run() {
-	util.Log(nil, "Worker started")
+	util.Log("Worker started")
 	go func() {
 		for {
 			select {
@@ -46,6 +51,17 @@ func (w *Worker) Run() {
 			}
 		}
 	}()
+	go func() {
+		for {
+			select {
+			case <-w.appCtx.Done():
+				return
+			default:
+				w.filesSetIsRunnerOnline()
+				time.Sleep(timeToSleepBetweenSetIsRunnerOnline)
+			}
+		}
+	}()
 }
 
 func (w *Worker) filesCleanUp() {
@@ -64,9 +80,21 @@ func (w *Worker) filesCleanUp() {
 func (w *Worker) filesPersisting() {
 	files := w.fileStore.GetAllFiles()
 	for _, file := range files {
+		if !file.ShouldPersist {
+			continue
+		}
 		if !file.UpdatedAt.After(file.PersistedAt) {
 			continue
 		}
 		_ = w.fileStore.PersistFile(file)
+	}
+}
+
+func (w *Worker) filesSetIsRunnerOnline() {
+	files := w.fileStore.GetAllFiles()
+	for _, file := range files {
+		if file.UsePublicRunner {
+			file.IsRunnerOnline = w.runnerStore.IsOnline(true, "")
+		} // todo: implement for !UsePublicRunner
 	}
 }

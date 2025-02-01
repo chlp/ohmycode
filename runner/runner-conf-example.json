@@ -11,5 +11,5 @@
     "postgres13"
   ],
   "id": "32charsUUID",
-  "api": "http://host.docker.internal:52674"
+  "api": "ws://host.docker.internal:52674"
 }

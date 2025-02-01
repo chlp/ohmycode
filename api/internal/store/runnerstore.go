@@ -19,27 +19,39 @@ func NewRunnerStore() *RunnerStore {
 	}
 }
 
-func (rs *RunnerStore) SetRunner(id string, isPublic bool) {
+func (rs *RunnerStore) GetRunner(id string) *model.Runner {
 	if !util.IsUuid(id) {
-		return
+		return nil
 	}
-
 	rs.mutex.RLock()
 	if runner, ok := rs.runners[id]; ok {
-		runner.IsPublic = isPublic
-		runner.CheckedAt = time.Now()
 		rs.mutex.RUnlock()
-		return
+		return runner
 	}
 	rs.mutex.RUnlock()
+	return nil
+}
+
+func (rs *RunnerStore) SetRunner(id string, isPublic bool) *model.Runner {
+	runner := rs.GetRunner(id)
+	if runner != nil {
+		if runner.IsPublic != isPublic {
+			rs.mutex.Lock()
+			runner.IsPublic = isPublic
+			rs.mutex.Unlock()
+		}
+		return runner
+	}
 
 	rs.mutex.Lock()
-	rs.runners[id] = &model.Runner{
+	runner = &model.Runner{
 		ID:        id,
 		IsPublic:  isPublic,
 		CheckedAt: time.Now(),
 	}
+	rs.runners[id] = runner
 	rs.mutex.Unlock()
+	return runner
 }
 
 const durationIsActiveFromLastUpdate = 5 * time.Second

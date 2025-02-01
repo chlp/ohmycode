@@ -105,6 +105,45 @@ contentBlock.on('keydown', function (codemirror, event) {
         file.writer_id = userId;
     }
 });
+contentBlock.on('drop', (cm, event) => {
+    event.preventDefault();
+});
+
+document.addEventListener('dragover', (event) => {
+    event.preventDefault();
+});
+document.addEventListener('drop', (event) => {
+    event.preventDefault();
+    const droppedFiles = event.dataTransfer.files;
+    if (droppedFiles.length > 0) {
+        const droppedFile = droppedFiles[0];
+        if (droppedFile.size > 256 * 1024) {
+            console.log('File too large (>256Kb)', droppedFile);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            if (await isFileBinary(droppedFile)) {
+                console.log("Wrong file (binary)", droppedFile);
+                return;
+            }
+            let newFileName = droppedFile.name;
+            const allowedCharsRegex = /[^0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]/g;
+            newFileName = newFileName.replace(allowedCharsRegex, '');
+            newFileName = newFileName.substring(0, 64);
+            fileNameBlock.innerHTML = newFileName;
+            actions.setFileName();
+            setTimeout(() => {
+                contentBlock.setValue(e.target.result);
+            }, 100);
+        };
+        reader.onerror = function() {
+            console.error('Error occurred: ' + droppedFile);
+        };
+        reader.readAsText(droppedFile);
+    }
+});
+
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,
@@ -226,112 +265,103 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
-let lastUpdateTimestamp = +new Date;
-let pageUpdaterTimer = 0;
-let pageUpdater = () => {
-    postRequest('/file/get', {
-        file_id: fileId,
-        user_id: userId,
-        user_name: userName,
-        lang: currentLang,
-        last_update: file.updated_at,
-        is_keep_alive: true,
-    }, (response, statusCode) => {
-        response = response.trim();
-
-        let onlineTicker = () => {
-            if (statusCode === 200 || statusCode === 204) {
-                lastUpdateTimestamp = +new Date;
-                if (!isOnline) {
-                    isOnline = true;
-                    contentSender();
-                    writerBlocksUpdate();
-                }
-            }
-        };
-
-        if (statusCode === 204 || response.length === 0) {
-            onlineTicker();
-            resultBlockUpdate(); // adding more dots to "In progress..."
-            return;
+let socket = null;
+let createWebSocket = () => {
+    socket = new WebSocket(`${apiUrl}/file`);
+    socket.onopen = () => {
+        socket.send(JSON.stringify({
+            action: 'init',
+            file_id: fileId,
+            user_id: userId,
+            user_name: userName,
+            lang: currentLang
+        }));
+    };
+    socket.onclose = (event) => {
+        if (event.wasClean) {
+            console.log(`Connection closed, code=${event.code}, reason=${event.reason}`);
+        } else {
+            console.log('Connection closed with error');
         }
-
-        if (statusCode !== 200) {
-            console.error("file::pageUpdater: error", statusCode, response)
-            return;
-        }
-
-        let data = {};
-        try {
-            data = JSON.parse(response);
-        } catch (error) {
-            console.error("file::pageUpdater: failed to parse JSON:", error, response);
-            return;
-        }
-
-        if (data.error !== undefined) {
-            console.log('file::pageUpdater: getUpdate error', data);
-            return;
-        }
-
-        let previousWriterId = file.writer_id;
-        file = data;
-
-        // update users
-        updateUsers();
-
-        // update "Code is writing now by" block
+        isOnline = false;
         writerBlocksUpdate();
+        socket = null;
+    };
+    socket.onerror = (error) => {
+        console.log('WebSocket error: ', error);
+    };
+    socket.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.error !== undefined) {
+                console.log('file::pageUpdater: getUpdate error', data);
+                return;
+            }
 
-        // update runner ui
-        runnerBlocksUpdate();
+            let previousWriterId = file.writer_id;
+            file = data;
 
-        // update result ui
-        resultBlockUpdate();
+            // update users
+            updateUsers();
 
-        // update file name
-        if (fileNameBlock.innerHTML !== file.name && !fileNameEditing) {
-            fileNameBlock.innerHTML = file.name;
-        }
-
-        // update code
-        if (
-            !isOnline || // first load
-            (
-                file.writer_id !== userId && previousWriterId !== userId && // do not update if current user is writer
-                ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue()) // do not update if code is the same already
-            )
-        ) {
-            let {left, top} = contentBlock.getScrollInfo();
-            let {line, ch} = contentBlock.getCursor();
-            contentBlock.setValue(file.content);
-            contentBlock.scrollTo(left, top);
-            contentBlock.setCursor({line: line, ch: ch});
-        }
-
-        // update lang
-        if (currentLang !== file.lang) {
-            currentLang = file.lang;
-            langSelect.value = currentLang;
-            contentBlock.setOption('mode', languages[currentLang].highlighter);
-        }
-
-        controlsContainerBlock.style.display = 'block';
-
-        onlineTicker();
-    }, () => {
-        if (isOnline && +new Date - lastUpdateTimestamp > 5000) {
-            isOnline = false;
+            // update "Code is writing now by" block
             writerBlocksUpdate();
-        }
 
-        clearTimeout(pageUpdaterTimer);
-        pageUpdaterTimer = setTimeout(() => {
-            pageUpdater();
-        }, isOnline ? 1000 : 5000);
-    });
+            // update runner ui
+            runnerBlocksUpdate();
+
+            // update result ui
+            resultBlockUpdate();
+
+            // update file name
+            if (fileNameBlock.innerHTML !== file.name && !fileNameEditing) {
+                fileNameBlock.innerHTML = file.name;
+            }
+
+            // update code
+            if (
+                !isOnline || // first load
+                (
+                    file.writer_id !== userId && previousWriterId !== userId && // do not update if current user is writer
+                    ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue()) // do not update if code is the same already
+                )
+            ) {
+                let {left, top} = contentBlock.getScrollInfo();
+                let {line, ch} = contentBlock.getCursor();
+                contentBlock.setValue(file.content);
+                contentBlock.scrollTo(left, top);
+                contentBlock.setCursor({line: line, ch: ch});
+            }
+
+            // update lang
+            if (currentLang !== file.lang) {
+                currentLang = file.lang;
+                langSelect.value = currentLang;
+                contentBlock.setOption('mode', languages[currentLang].highlighter);
+            }
+
+            controlsContainerBlock.style.display = 'block';
+
+            if (!isOnline) {
+                isOnline = true;
+                contentSender();
+                writerBlocksUpdate();
+            }
+        } catch (error) {
+            console.error('Wrong message:', error);
+        }
+    };
 };
-pageUpdater();
+createWebSocket();
+let reconnectAttempts = 0;
+setInterval(() => {
+    if (socket === null) {
+        reconnectAttempts++;
+        createWebSocket();
+    } else {
+        reconnectAttempts = 0;
+    }
+}, 1000 * Math.min(2 ** reconnectAttempts, 30) + Math.random() * 3000);
 
 let contentSenderTimer = 0;
 let contentSender = () => {
@@ -356,12 +386,12 @@ let runTask = () => {
         resultBlock.setValue('No runner is available to run your code :(');
         return;
     }
-    clearTimeout(pageUpdaterTimer);
     actions.setContent(() => {
         file.result = 'In progress..';
         resultBlock.setValue('In progress..');
         runButton.setAttribute('disabled', 'true');
-        actions.runTask(pageUpdater);
+        actions.runTask(() => {
+        });
     });
 };
 runButton.onclick = () => {

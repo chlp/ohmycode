@@ -53,23 +53,17 @@ let ohMySimpleHash = (str) => {
     return hash;
 };
 
-let postRequest = (url, data, callback, final) => {
-    fetch(apiUrl + url, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
+let postRequest = (action, data, callback) => {
+    try {
+        socket.send(JSON.stringify({
+            ...data,
+            action: action,
+        }));
+    } finally {
+        if (typeof callback === 'function') {
+            callback();
         }
-    })
-        .then((response) => {
-            const statusCode = response.status;
-            return response.text().then((text) => ({text, statusCode}));
-        })
-        .then(({text, statusCode}) => callback(text, statusCode))
-        .catch((error) => {
-            console.error("postRequest: fetch error:", error);
-        })
-        .finally(() => final());
+    }
 };
 
 let copyToClipboard = (text) => {
@@ -100,12 +94,43 @@ let copyToClipboard = (text) => {
     }
 };
 
+let saveContentToFile = () => {
+    const text = contentBlock.getValue();
+    const blob = new Blob([text], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    let fileName = file.name;
+    if (!/\.[0-9a-z]+$/i.test(fileName)) {
+        fileName += '.txt';
+    }
+    a.download = fileName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+};
+
 document.addEventListener('keydown', function (event) {
     if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
-        console.log('Already saved :)');
+        saveContentToFile();
     }
 });
+
+let isFileBinary = async (file) => {
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const maxBytesToCheck = Math.min(bytes.length, 512);
+    let nonPrintableCount = 0;
+    for (let i = 0; i < maxBytesToCheck; i++) {
+        const byte = bytes[i];
+        if ((byte < 32 || byte > 126) && byte !== 9 && byte !== 10 && byte !== 13) {
+            nonPrintableCount++;
+        }
+    }
+    return nonPrintableCount / maxBytesToCheck > 0.2;
+}
 
 
 let processId = genUuid();
