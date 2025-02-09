@@ -127,6 +127,10 @@ document.addEventListener('drop', (event) => {
                 console.log("Wrong file (binary)", droppedFile);
                 return;
             }
+            if (file.writer_id !== '' && file.writer_id !== userId) {
+                return;
+            }
+
             let newFileName = droppedFile.name;
             const allowedCharsRegex = /[^0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]/g;
             newFileName = newFileName.replace(allowedCharsRegex, '');
@@ -134,6 +138,7 @@ document.addEventListener('drop', (event) => {
             fileNameBlock.innerHTML = newFileName;
             actions.setFileName(() => {
                 contentBlock.setValue(e.target.result);
+                contentSender();
             });
         };
         reader.onerror = function() {
