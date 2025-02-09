@@ -1,8 +1,12 @@
 let actions = {
-    setFileName: () => {
+    setFileName: (callback) => {
         let newFileName = fileNameBlock.textContent;
         postRequest('set_name', {
             file_name: newFileName,
+        }, () => {
+            if (callback !== undefined) {
+                callback();
+            }
         });
     },
     setUserName: () => {

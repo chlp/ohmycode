@@ -132,10 +132,9 @@ document.addEventListener('drop', (event) => {
             newFileName = newFileName.replace(allowedCharsRegex, '');
             newFileName = newFileName.substring(0, 64);
             fileNameBlock.innerHTML = newFileName;
-            actions.setFileName();
-            setTimeout(() => {
+            actions.setFileName(() => {
                 contentBlock.setValue(e.target.result);
-            }, 100);
+            });
         };
         reader.onerror = function() {
             console.error('Error occurred: ' + droppedFile);
