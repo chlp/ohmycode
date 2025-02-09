@@ -74,7 +74,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			util.Log("fileMessageHandler: set_name error")
 		}
 	case "set_user_name":
-		if !client.file.SetUserName(client.userId, i.FileName) {
+		if !client.file.SetUserName(client.userId, i.UserName) {
 			util.Log("fileMessageHandler: set_user_name error")
 		}
 	case "set_lang":
