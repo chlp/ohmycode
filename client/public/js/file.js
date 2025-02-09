@@ -117,8 +117,8 @@ document.addEventListener('drop', (event) => {
     const droppedFiles = event.dataTransfer.files;
     if (droppedFiles.length > 0) {
         const droppedFile = droppedFiles[0];
-        if (droppedFile.size > 256 * 1024) {
-            console.log('File too large (>256Kb)', droppedFile);
+        if (droppedFile.size > 512 * 1024) {
+            console.log('File too large (>512Kb)', droppedFile);
             return;
         }
         const reader = new FileReader();
@@ -298,7 +298,13 @@ let createWebSocket = () => {
             }
 
             let previousWriterId = file.writer_id;
-            file = data;
+            if (typeof data.content === 'undefined') {
+                const currentContent = file.content;
+                file = data;
+                file.content = currentContent;
+            } else {
+                file = data;
+            }
 
             // update users
             updateUsers();

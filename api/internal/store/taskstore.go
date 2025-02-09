@@ -23,9 +23,9 @@ func (ts *TaskStore) AddTask(file *model.File) {
 	ts.mutex.Lock()
 	ts.tasks[file.ID] = &model.Task{
 		FileId:          file.ID,
-		Content:         file.Content,
+		Content:         *file.Content,
 		Lang:            file.Lang,
-		Hash:            util.OhMySimpleHash(file.Content),
+		Hash:            util.OhMySimpleHash(*file.Content),
 		RunnerId:        file.RunnerId,
 		IsPublic:        file.UsePublicRunner,
 		GivenToRunnerAt: time.Time{},

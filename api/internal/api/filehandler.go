@@ -19,8 +19,12 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 	}
 	client.file.TouchByUser(client.userId, "")
 	if client.file.UpdatedAt.After(client.lastUpdate) {
+		fileToSend := *client.file
+		if client.file.ContentUpdatedAt.Before(client.lastUpdate) {
+			fileToSend.Content = nil
+		}
 		client.lastUpdate = time.Now()
-		if err := client.send(client.file); err != nil {
+		if err := client.send(fileToSend); err != nil {
 			util.Log("fileWork: send file error: " + err.Error())
 			return false
 		}

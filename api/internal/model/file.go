@@ -11,7 +11,7 @@ type File struct {
 	ID               string    `json:"id" bson:"_id,omitempty"`
 	Name             string    `json:"name" bson:"name"`
 	Lang             string    `json:"lang" bson:"lang"`
-	Content          string    `json:"content" bson:"content"`
+	Content          *string   `json:"content,omitempty" bson:"content"`
 	ContentUpdatedAt time.Time `json:"content_updated_at" bson:"content_updated_at"`
 	Result           string    `json:"result" bson:"result"`
 	Writer           string    `json:"writer_id" bson:"writer_id"`
@@ -23,7 +23,7 @@ type File struct {
 	IsWaitingForResult bool `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool `json:"is_runner_online"`
 
-	ShouldPersist bool
+	ShouldPersist bool      `json:"-"`
 	PersistedAt   time.Time `json:"-"`
 	mutex         *sync.Mutex
 }
@@ -50,7 +50,7 @@ func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 		ID:                 fileId,
 		Name:               fileName,
 		Lang:               lang,
-		Content:            content,
+		Content:            &content,
 		Writer:             "",
 		UsePublicRunner:    true,
 		RunnerId:           "",
@@ -131,7 +131,7 @@ func (f *File) SetContent(content, userId string) error {
 	defer f.unlock()
 
 	f.ShouldPersist = true
-	f.Content = content
+	f.Content = &content
 	f.Writer = userId
 	f.ContentUpdatedAt = time.Now()
 	f.UpdatedAt = time.Now()
