@@ -119,11 +119,11 @@ func (f *File) SetLang(lang string) bool {
 	return true
 }
 
-func (f *File) SetContent(content, userId string) error {
+func (f *File) SetContent(content, appId string) error {
 	if len(content) > contentMaxLength {
 		return errors.New("content is too long")
 	}
-	if f.Writer != "" && f.Writer != userId {
+	if f.Writer != "" && f.Writer != appId {
 		return errors.New("file is locked by another user")
 	}
 
@@ -132,7 +132,7 @@ func (f *File) SetContent(content, userId string) error {
 
 	f.ShouldPersist = true
 	f.Content = &content
-	f.Writer = userId
+	f.Writer = appId
 	f.ContentUpdatedAt = time.Now()
 	f.UpdatedAt = time.Now()
 	return nil

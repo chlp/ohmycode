@@ -12,6 +12,7 @@ type input struct {
 	Action   string `json:"action"`
 	FileId   string `json:"file_id"`
 	FileName string `json:"file_name"`
+	AppId    string `json:"app_id"`
 	UserId   string `json:"user_id"`
 	UserName string `json:"user_name"`
 	Content  string `json:"content"`

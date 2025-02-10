@@ -31,6 +31,7 @@ let langSelect = document.getElementById('lang-select');
 
 let isOnline = false;
 
+let appId = genUuid();
 let userId = localStorage['userId'];
 if (userId === undefined) {
     userId = genUuid();
@@ -96,13 +97,13 @@ contentBlock.on('keydown', function (codemirror, event) {
     if (nonTextKeys.includes(event.key)) {
         return;
     }
-    if (file.writer_id !== '' && file.writer_id !== userId) {
+    if (file.writer_id !== '' && file.writer_id !== appId) {
         // todo: show hint
-        console.log('someone else is changing content now. wait please:', file.writer_id, userId);
+        console.log('someone else is changing content now. wait please:', file.writer_id, appId);
         return;
     }
     if (file.writer_id === '') {
-        file.writer_id = userId;
+        file.writer_id = appId;
     }
 });
 contentBlock.on('drop', (cm, event) => {
@@ -129,7 +130,7 @@ document.addEventListener('drop', (event) => {
             console.warn("Wrong file (binary)", droppedFile);
             return;
         }
-        if (file.writer_id !== '' && file.writer_id !== userId) {
+        if (file.writer_id !== '' && file.writer_id !== appId) {
             return;
         }
 
@@ -177,20 +178,13 @@ let writerBlocksUpdate = () => {
         return;
     }
 
-    contentBlock.setOption('readOnly', file.writer_id !== '' && file.writer_id !== userId);
-    if (file.writer_id === '' || file.writer_id === userId) {
+    contentBlock.setOption('readOnly', file.writer_id !== '' && file.writer_id !== appId);
+    if (file.writer_id === '' || file.writer_id === appId) {
         currentWriterInfo.style.display = 'none';
         currentWriterInfo.innerHTML = '';
     } else {
-        let writerName = '???';
-        Object.keys(file.users).forEach((key) => {
-            let user = file.users[key];
-            if (user.id === file.writer_id) {
-                writerName = user.name;
-            }
-        });
         currentWriterInfo.style.removeProperty('display');
-        currentWriterInfo.innerHTML = 'Content is writing now by ' + writerName;
+        currentWriterInfo.innerHTML = 'Editing is blocked by someone else';
     }
 };
 
@@ -279,6 +273,7 @@ let createWebSocket = () => {
         socket.send(JSON.stringify({
             action: 'init',
             file_id: fileId,
+            app_id: appId,
             user_id: userId,
             user_name: userName,
             lang: currentLang
@@ -335,7 +330,7 @@ let createWebSocket = () => {
             if (
                 !isOnline || // first load
                 (
-                    file.writer_id !== userId && previousWriterId !== userId && // do not update if current user is writer
+                    file.writer_id !== appId && previousWriterId !== appId && // do not update if current user is writer
                     ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue()) // do not update if code is the same already
                 )
             ) {

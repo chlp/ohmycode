@@ -14,6 +14,7 @@ import (
 type wsClient struct {
 	file       *model.File
 	userId     string
+	appId      string
 	runner     *model.Runner
 	lastUpdate time.Time
 	conn       *websocket.Conn

@@ -46,6 +46,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			util.Log("fileMessageHandler: Wrong file_id or user_id: " + i.FileId + ", " + i.UserId)
 			return false
 		}
+		client.appId = i.AppId
 		client.userId = i.UserId
 		client.file, err = s.fileStore.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 		if err != nil {
@@ -66,7 +67,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 
 	switch i.Action {
 	case "set_content":
-		if err := client.file.SetContent(i.Content, client.userId); err != nil {
+		if err := client.file.SetContent(i.Content, client.appId); err != nil {
 			util.Log("fileMessageHandler: set_content error: " + err.Error())
 		}
 	case "set_name":

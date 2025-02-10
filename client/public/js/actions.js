@@ -34,11 +34,11 @@ let actions = {
             callback();
             return;
         }
-        if (file.writer_id !== '' && file.writer_id !== userId) {
+        if (file.writer_id !== '' && file.writer_id !== appId) {
             callback();
             return;
         }
-        file.writer_id = userId;
+        file.writer_id = appId;
         file.content = content;
         postRequest('set_content', {
             content: content,
