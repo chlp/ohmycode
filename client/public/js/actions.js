@@ -29,7 +29,7 @@ let actions = {
             runner_id: runnerInput.value,
         });
     },
-    setContent: (callback) => {
+    setContent: (content, callback) => {
         if (!isOnline) {
             callback();
             return;
@@ -39,10 +39,9 @@ let actions = {
             return;
         }
         file.writer_id = userId;
-        let newContent = contentBlock.getValue();
-        file.content = newContent;
+        file.content = content;
         postRequest('set_content', {
-            content: newContent,
+            content: content,
         }, callback);
     },
     cleanResult: (callback) => {

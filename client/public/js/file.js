@@ -115,37 +115,40 @@ document.addEventListener('dragover', (event) => {
 document.addEventListener('drop', (event) => {
     event.preventDefault();
     const droppedFiles = event.dataTransfer.files;
-    if (droppedFiles.length > 0) {
-        const droppedFile = droppedFiles[0];
-        if (droppedFile.size > 512 * 1024) {
-            console.log('File too large (>512Kb)', droppedFile);
+    if (droppedFiles.length === 0) {
+        return;
+    }
+    const droppedFile = droppedFiles[0];
+    if (droppedFile.size > 512 * 1024) {
+        console.warn('File too large (>512Kb)', droppedFile);
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        if (await isFileBinary(droppedFile)) {
+            console.warn("Wrong file (binary)", droppedFile);
             return;
         }
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            if (await isFileBinary(droppedFile)) {
-                console.log("Wrong file (binary)", droppedFile);
-                return;
-            }
-            if (file.writer_id !== '' && file.writer_id !== userId) {
-                return;
-            }
+        if (file.writer_id !== '' && file.writer_id !== userId) {
+            return;
+        }
 
-            let newFileName = droppedFile.name;
-            const allowedCharsRegex = /[^0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]/g;
-            newFileName = newFileName.replace(allowedCharsRegex, '');
-            newFileName = newFileName.substring(0, 64);
-            fileNameBlock.innerHTML = newFileName;
-            actions.setFileName(() => {
-                contentBlock.setValue(e.target.result);
-                contentSender();
+        let newFileName = droppedFile.name;
+        let newContent = e.target.result;
+        const allowedCharsRegex = /[^0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]/g;
+        newFileName = newFileName.replace(allowedCharsRegex, '');
+        newFileName = newFileName.substring(0, 64);
+        fileNameBlock.innerHTML = newFileName;
+        actions.setFileName(() => {
+            contentBlock.setValue(newContent);
+            actions.setContent(newContent, () => {
             });
-        };
-        reader.onerror = function() {
-            console.error('Error occurred: ' + droppedFile);
-        };
-        reader.readAsText(droppedFile);
-    }
+        });
+    };
+    reader.onerror = function () {
+        console.error('Error occurred: ' + droppedFile);
+    };
+    reader.readAsText(droppedFile);
 });
 
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
@@ -385,7 +388,7 @@ let contentSender = () => {
         }, timeout);
     };
     if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
-        actions.setContent(getNextUpdateFunc(1000));
+        actions.setContent(contentBlock.getValue(), getNextUpdateFunc(1000));
     } else {
         getNextUpdateFunc(500)();
     }
@@ -396,7 +399,7 @@ let runTask = () => {
         resultBlock.setValue('No runner is available to run your code :(');
         return;
     }
-    actions.setContent(() => {
+    actions.setContent(contentBlock.getValue(), () => {
         file.result = 'In progress..';
         resultBlock.setValue('In progress..');
         runButton.setAttribute('disabled', 'true');
