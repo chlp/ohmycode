@@ -2,12 +2,10 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"ohmycode_api/internal/store"
 	"ohmycode_api/pkg/util"
-	"os"
 	"strconv"
 	"time"
 )
@@ -36,19 +34,8 @@ func (s *Service) Run() {
 
 	mux.HandleFunc("/file", s.handleWsFileConnection)
 	mux.HandleFunc("/runner", s.handleWsRunnerConnection)
-
 	if s.serveClientFiles {
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/" && r.URL.Path != "/index.html" {
-				file := "./static" + r.URL.Path
-				if _, err := os.Stat(file); err == nil {
-					http.ServeFile(w, r, file)
-					return
-				}
-			}
-			http.ServeFile(w, r, "./static/index.html")
-			return
-		})
+		serveStaticFiles(mux)
 	}
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.httpPort), corsMiddleware(timerMiddleware(mux))))
@@ -72,31 +59,4 @@ func corsMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func responseErr(ctx context.Context, w http.ResponseWriter, str string, code int) {
-	util.Log(ctx, "action.responseErr: "+strconv.Itoa(code)+" ("+http.StatusText(code)+"): "+str)
-	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(map[string]string{"error": str})
-}
-
-func responseOk(w http.ResponseWriter, v interface{}) {
-	if v == nil {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	jsonData, err := json.Marshal(v)
-	if err != nil {
-		responseErr(context.Background(), w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if string(jsonData) == "null" {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(jsonData)
 }
