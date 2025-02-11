@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"ohmycode_api/pkg/util"
 	"path"
-	"strings"
+	"path/filepath"
 )
 
 //go:embed static/*
@@ -45,9 +45,7 @@ func serveStaticFiles(mux *http.ServeMux) {
 			requestedFile := path.Clean(r.URL.Path)
 			fileToServe := fmt.Sprintf("static%s", requestedFile)
 			if _, err := staticFS.Open(requestedFile[1:]); err == nil {
-				if strings.HasSuffix(requestedFile, ".css") {
-					w.Header().Set("Content-Type", "text/css")
-				}
+				w.Header().Set("Content-Type", getMimeType(requestedFile))
 				data, _ := staticFiles.ReadFile(fileToServe)
 				_, _ = w.Write(data)
 				return
@@ -56,4 +54,39 @@ func serveStaticFiles(mux *http.ServeMux) {
 		_, _ = w.Write(indexHtmlData)
 		return
 	})
+}
+
+var mimeTypes = map[string]string{
+	".html":  "text/html; charset=utf-8",
+	".css":   "text/css",
+	".js":    "application/javascript",
+	".json":  "application/json",
+	".xml":   "application/xml",
+	".svg":   "image/svg+xml",
+	".png":   "image/png",
+	".jpg":   "image/jpeg",
+	".jpeg":  "image/jpeg",
+	".gif":   "image/gif",
+	".ico":   "image/x-icon",
+	".woff":  "font/woff",
+	".woff2": "font/woff2",
+	".ttf":   "font/ttf",
+	".otf":   "font/otf",
+	".eot":   "application/vnd.ms-fontobject",
+	".mp4":   "video/mp4",
+	".webm":  "video/webm",
+	".ogg":   "audio/ogg",
+	".mp3":   "audio/mpeg",
+	".wav":   "audio/wav",
+	".zip":   "application/zip",
+	".pdf":   "application/pdf",
+	".txt":   "text/plain; charset=utf-8",
+}
+
+func getMimeType(filename string) string {
+	ext := filepath.Ext(filename)
+	if mime, found := mimeTypes[ext]; found {
+		return mime
+	}
+	return "application/octet-stream"
 }
