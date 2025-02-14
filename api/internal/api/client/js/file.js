@@ -311,6 +311,7 @@ let createWebSocket = () => {
             }
 
             saveFileToDB(file.id, file.name, file.content_updated_at);
+            document.title = `OhMyCode – ${file.name}`;
 
             // update users
             updateUsers();
