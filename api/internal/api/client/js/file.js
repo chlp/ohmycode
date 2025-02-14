@@ -17,31 +17,6 @@ let file = {
     "result": ""
 };
 
-function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open("FilesDB", 1);
-
-        request.onupgradeneeded = (event) => {
-            let db = event.target.result;
-            if (!db.objectStoreNames.contains("files")) {
-                let store = db.createObjectStore("files", {keyPath: "id"});
-                store.createIndex("updated_at", "updated_at", {unique: false});
-            }
-        };
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject("Error opening database");
-    });
-}
-
-async function saveFileToDB(id, fileName, updatedAt) {
-    const db = await openDB();
-    const tx = db.transaction("files", "readwrite");
-    const store = tx.objectStore("files");
-    store.put({id: id, name: fileName, updated_at: updatedAt});
-    return tx.complete;
-}
-
 let currentWriterInfo = document.getElementById('current-writer-info');
 let runButton = document.getElementById('run-button');
 let cleanResultButton = document.getElementById('clean-result-button');
