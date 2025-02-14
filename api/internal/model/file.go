@@ -19,13 +19,13 @@ type File struct {
 	RunnerId         string    `json:"runner_id" bson:"runner_id"`
 	Users            []User    `json:"users" bson:"users"`
 	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`
+	Persisted        bool      `json:"persisted"`
 
 	IsWaitingForResult bool `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool `json:"is_runner_online"`
 
-	ShouldPersist bool      `json:"-"`
-	PersistedAt   time.Time `json:"-"`
-	mutex         *sync.Mutex
+	PersistedAt time.Time `json:"-"`
+	mutex       *sync.Mutex
 }
 
 type User struct {
@@ -58,7 +58,7 @@ func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 		ContentUpdatedAt:   time.Now(),
 		Users:              nil,
 		IsWaitingForResult: false,
-		ShouldPersist:      false,
+		Persisted:          false,
 		IsRunnerOnline:     true, // todo: set correct
 	}
 	file.TouchByUser(userId, userName)
@@ -101,7 +101,7 @@ func (f *File) SetName(name string) bool {
 	if f.Name == name {
 		return true
 	}
-	f.ShouldPersist = true
+	f.Persisted = true
 	f.Name = name
 	f.ContentUpdatedAt = time.Now()
 	f.UpdatedAt = time.Now()
@@ -131,7 +131,7 @@ func (f *File) SetContent(content, appId string) error {
 	f.lock()
 	defer f.unlock()
 
-	f.ShouldPersist = true
+	f.Persisted = true
 	f.Content = &content
 	f.Writer = appId
 	f.ContentUpdatedAt = time.Now()
@@ -147,7 +147,7 @@ func (f *File) SetWaitingForResult() {
 	f.lock()
 	defer f.unlock()
 
-	f.ShouldPersist = true
+	f.Persisted = true
 	f.IsWaitingForResult = true
 	f.Result = "Started execution at " + time.Now().UTC().Format("15:04:05") + " UTC"
 	f.UpdatedAt = time.Now()
@@ -164,7 +164,7 @@ func (f *File) SetResult(result string) error {
 	f.lock()
 	defer f.unlock()
 
-	f.ShouldPersist = true
+	f.Persisted = true
 	f.IsWaitingForResult = false
 	f.Result = result
 	f.UpdatedAt = time.Now()
@@ -199,7 +199,7 @@ func (f *File) SetRunnerId(runnerId string) bool {
 	if f.RunnerId == runnerId {
 		return true
 	}
-	f.ShouldPersist = true
+	f.Persisted = true
 	f.RunnerId = runnerId
 	f.UpdatedAt = time.Now()
 	return false

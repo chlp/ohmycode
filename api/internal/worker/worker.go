@@ -80,7 +80,7 @@ func (w *Worker) filesCleanUp() {
 func (w *Worker) filesPersisting() {
 	files := w.fileStore.GetAllFiles()
 	for _, file := range files {
-		if !file.ShouldPersist {
+		if !file.Persisted {
 			continue
 		}
 		if !file.UpdatedAt.After(file.PersistedAt) {

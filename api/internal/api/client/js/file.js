@@ -15,7 +15,8 @@ let file = {
     "writer_id": "",
     "users": [],
     "is_waiting_for_result": false,
-    "result": ""
+    "result": "",
+    "persisted": false,
 };
 
 let currentWriterInfo = document.getElementById('current-writer-info');
@@ -310,7 +311,9 @@ let createWebSocket = () => {
                 file = data;
             }
 
-            saveFileToDB(file.id, file.name, file.content_updated_at);
+            if (file.persisted) {
+                saveFileToDB(file.id, file.name, file.content_updated_at);
+            }
             document.title = `OhMyCode – ${file.name}`;
 
             // update users
