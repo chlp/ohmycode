@@ -103,6 +103,7 @@ func (f *File) SetName(name string) bool {
 	}
 	f.ShouldPersist = true
 	f.Name = name
+	f.ContentUpdatedAt = time.Now()
 	f.UpdatedAt = time.Now()
 	return true
 }
