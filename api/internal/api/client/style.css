@@ -644,7 +644,9 @@ button.transparent:hover {
     float: left;
     clear: left;
     width: 20em;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 98vh;
 }
 
 #history > a {
