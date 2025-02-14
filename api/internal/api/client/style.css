@@ -658,3 +658,12 @@ button.transparent:hover {
     clear: right;
     width: calc(-22em + 100vw);
 }
+
+@media (max-width: 800px) {
+    #history {
+        display: none;
+    }
+    #file {
+        width: auto;
+    }
+}
