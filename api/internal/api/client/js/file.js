@@ -11,6 +11,7 @@ let file = {
     "runner": "",
     "is_runner_online": false,
     "updated_at": null,
+    "content_updated_at": null,
     "writer_id": "",
     "users": [],
     "is_waiting_for_result": false,
@@ -309,7 +310,7 @@ let createWebSocket = () => {
                 file = data;
             }
 
-            saveFileToDB(file.id, file.name, file.updated_at);
+            saveFileToDB(file.id, file.name, file.content_updated_at);
 
             // update users
             updateUsers();
