@@ -639,3 +639,22 @@ button.transparent {
 button.transparent:hover {
     background: rgba(0,0,0,.7);
 }
+
+#history {
+    float: left;
+    clear: left;
+    width: 20em;
+    overflow: hidden;
+}
+
+#history > a {
+    margin-top: .5em;
+    padding-bottom: .5em;
+    border-bottom: 1px solid var(--color-bg-secondary);
+}
+
+#file {
+    float: right;
+    clear: right;
+    width: calc(-22em + 100vw);
+}
