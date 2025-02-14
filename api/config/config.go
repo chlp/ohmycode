@@ -14,6 +14,7 @@ type ApiConfig struct {
 	DB               store.DBConfig `json:"db"`
 	HttpPort         int            `json:"http_port"`
 	ServeClientFiles bool           `json:"serve_client_files"`
+	UseDynamicFiles  bool           `json:"use_dynamic_files"`
 }
 
 var conf ApiConfig

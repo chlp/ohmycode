@@ -13,15 +13,17 @@ import (
 type Service struct {
 	httpPort         int
 	serveClientFiles bool
+	useDynamicFiles  bool
 	fileStore        *store.FileStore
 	runnerStore      *store.RunnerStore
 	taskStore        *store.TaskStore
 }
 
-func NewService(httpPort int, serveClientFiles bool, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
+func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
 	return &Service{
 		httpPort:         httpPort,
 		serveClientFiles: serveClientFiles,
+		useDynamicFiles:  useDynamicFiles,
 		fileStore:        fileStore,
 		runnerStore:      runnerStore,
 		taskStore:        taskStore,
@@ -35,7 +37,11 @@ func (s *Service) Run() {
 	mux.HandleFunc("/file", s.handleWsFileConnection)
 	mux.HandleFunc("/runner", s.handleWsRunnerConnection)
 	if s.serveClientFiles {
-		serveStaticFiles(mux)
+		if s.useDynamicFiles {
+			serveDynamicFiles(mux)
+		} else {
+			serveStaticFiles(mux)
+		}
 	}
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.httpPort), corsMiddleware(timerMiddleware(mux))))

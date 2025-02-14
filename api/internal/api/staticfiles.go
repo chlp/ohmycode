@@ -7,15 +7,30 @@ import (
 	"log"
 	"net/http"
 	"ohmycode_api/pkg/util"
+	"os"
 	"path"
 	"path/filepath"
 )
 
-//go:embed static/*
+//go:embed client/*
 var staticFiles embed.FS
 
+func serveDynamicFiles(mux *http.ServeMux) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsUuid(r.URL.Path[1:]) {
+			file := "./internal/api/client" + r.URL.Path
+			if _, err := os.Stat(file); err == nil {
+				http.ServeFile(w, r, file)
+				return
+			}
+		}
+		http.ServeFile(w, r, "./internal/api/client/index.html")
+		return
+	})
+}
+
 func serveStaticFiles(mux *http.ServeMux) {
-	staticFS, _ := fs.Sub(staticFiles, "static")
+	staticFS, _ := fs.Sub(staticFiles, "client")
 	indexHtmlFound := false
 	styleCssFound := false
 	fileJsFound := false
@@ -36,14 +51,14 @@ func serveStaticFiles(mux *http.ServeMux) {
 	if !indexHtmlFound || !styleCssFound || !fileJsFound {
 		log.Fatal("important static http file not found")
 	}
-	indexHtmlData, err := staticFiles.ReadFile("static/index.html")
+	indexHtmlData, err := staticFiles.ReadFile("client/index.html")
 	if err != nil {
 		log.Fatal("index.html not found")
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsUuid(r.URL.Path[1:]) {
 			requestedFile := path.Clean(r.URL.Path)
-			fileToServe := fmt.Sprintf("static%s", requestedFile)
+			fileToServe := fmt.Sprintf("client%s", requestedFile)
 			if _, err := staticFS.Open(requestedFile[1:]); err == nil {
 				w.Header().Set("Content-Type", getMimeType(requestedFile))
 				data, _ := staticFiles.ReadFile(fileToServe)

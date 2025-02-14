@@ -5,5 +5,6 @@
     "timeout": "3s"
   },
   "http_port": 52674,
-  "serve_client_files": true
+  "serve_client_files": true,
+  "use_dynamic_files": false
 }
