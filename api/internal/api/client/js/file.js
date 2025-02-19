@@ -306,7 +306,7 @@ let createWebSocket = () => {
             }
 
             if (file.persisted) {
-                saveFileToDB(file.id, file.name, file.content_updated_at);
+                FilesHistory.saveFileToDB(file.id, file.name, file.content_updated_at);
             }
             document.title = `OhMyCode – ${file.name}`;
 

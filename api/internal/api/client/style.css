@@ -640,32 +640,34 @@ button.transparent:hover {
     background: rgba(0,0,0,.7);
 }
 
+#file {
+    float: right;
+    clear: right;
+}
+
 #history {
     float: left;
     clear: left;
-    width: 20em;
+    height: 98vh;
+    padding-top: 3em;
     overflow-x: hidden;
     overflow-y: scroll;
-    height: 98vh;
+    text-overflow: ellipsis;
 }
 
 #history > a {
     margin-top: .5em;
     padding-bottom: .5em;
     border-bottom: 1px solid var(--color-bg-secondary);
+    white-space: nowrap;
 }
 
-#file {
-    float: right;
-    clear: right;
-    width: calc(-22em + 100vw);
+.history-item {
+    display: inline-block;
+    white-space: nowrap;
 }
 
-@media (max-width: 800px) {
-    #history {
-        display: none;
-    }
-    #file {
-        width: auto;
-    }
+.history-item > a {
+    font-weight: normal;
+    cursor: pointer;
 }

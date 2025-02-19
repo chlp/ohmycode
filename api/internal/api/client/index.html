@@ -8,9 +8,9 @@
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
-    <link rel="shortcut icon" href="favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon-apple-touch.png" />
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96"/>
+    <link rel="shortcut icon" href="favicon.ico"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon-apple-touch.png"/>
 
     <link rel="stylesheet" href="style.css?v=4">
 
@@ -30,10 +30,15 @@
     <script src="codemirror/mode/sql.js" defer></script>
     <script src="codemirror/mode/xml.js" defer></script>
 </head>
-<body>
+<body style="opacity: 0; transition: opacity 0.3s;">
+<script>
+    window.onload = () => {
+        document.body.style.opacity = "1";
+    };
+</script>
 
-<div id="history"></div>
-<div id="file">
+<div id="history" style="width: 0;"></div>
+<div id="file" style="width: calc(-2em + 100vw);">
     <div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
         <a href="#" id="file-name" contenteditable="true" spellcheck="false"
            title="Rename file"></a>
@@ -57,7 +62,7 @@
         <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
         <button onclick="copyToClipboard(window.location.href)">Copy URL</button>
         <button onclick="saveContentToFile()">Download</button>
-        <button onclick="toggleHistoryVisibility()">History</button>
+        <button onclick="FilesHistory.toggleHistoryVisibility()">History</button>
         <a href="/" class="button" target="_blank">New file</a>
     </div>
 
@@ -79,7 +84,7 @@
 
 <script>let apiUrl = '';</script>
 <script src="js/utils.js?v=4" defer></script>
-<script src="js/db.js?v=4" defer></script>
+<script src="js/history.js?v=4" defer></script>
 <script src="js/actions.js?v=4" defer></script>
 <script src="js/users.js?v=4" defer></script>
 <script src="js/file.js?v=4" defer></script>
