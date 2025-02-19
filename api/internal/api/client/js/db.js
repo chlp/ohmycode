@@ -38,7 +38,6 @@ let getSortedFilesFromDB = async () => {
     });
 };
 
-let historyBlock = document.getElementById("history");
 // monitor changes in the db
 let updateHistoryBlock = () => {
     getSortedFilesFromDB().then(files => {

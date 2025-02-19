@@ -19,17 +19,17 @@ let file = {
     "persisted": false,
 };
 
-let currentWriterInfo = document.getElementById('current-writer-info');
-let runButton = document.getElementById('run-button');
-let cleanResultButton = document.getElementById('clean-result-button');
-let runnerContainerBlock = document.getElementById('runner-container');
-let runnerEditButton = document.getElementById('runner-edit-button');
-let runnerInput = document.getElementById('runner-input');
-let runnerSaveButton = document.getElementById('runner-save-button');
-let contentContainerBlock = document.getElementById('content-container');
-let resultContainerBlock = document.getElementById('result-container');
-let controlsContainerBlock = document.getElementById('controls-container');
-let langSelect = document.getElementById('lang-select');
+const currentWriterInfo = document.getElementById('current-writer-info');
+const runButton = document.getElementById('run-button');
+const cleanResultButton = document.getElementById('clean-result-button');
+const runnerContainerBlock = document.getElementById('runner-container');
+const runnerEditButton = document.getElementById('runner-edit-button');
+const runnerInput = document.getElementById('runner-input');
+const runnerSaveButton = document.getElementById('runner-save-button');
+const contentContainerBlock = document.getElementById('content-container');
+const resultContainerBlock = document.getElementById('result-container');
+const controlsContainerBlock = document.getElementById('controls-container');
+const langSelect = document.getElementById('lang-select');
 
 let isOnline = false;
 
@@ -261,12 +261,6 @@ let resultBlockUpdate = () => {
         cleanResultButton.setAttribute('disabled', 'true');
     }
 };
-
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        contentContainerBlock.style.transition = 'height 0.5s ease';
-    }, 100);
-});
 
 let socket = null;
 let createWebSocket = () => {

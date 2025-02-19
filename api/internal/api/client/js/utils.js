@@ -66,6 +66,31 @@ let postRequest = (action, data, callback) => {
     }
 };
 
+const historyBlock = document.getElementById('history');
+const fileBlock = document.getElementById('file');
+
+let isHistoryVisible = true;
+if (localStorage['isHistoryVisible'] === undefined) {
+    localStorage['isHistoryVisible'] = JSON.stringify(isHistoryVisible);
+} else {
+    isHistoryVisible = JSON.parse(localStorage['isHistoryVisible']);
+}
+let toggleHistoryVisibility = () => {
+    if (isHistoryVisible) {
+        historyBlock.style.width = '0';
+        fileBlock.style.width = 'calc(-2em + 100vw)';
+    } else {
+        historyBlock.style.width = '20em';
+        fileBlock.style.width = 'calc(-22em + 100vw)';
+    }
+    isHistoryVisible = !isHistoryVisible;
+    localStorage['isHistoryVisible'] = JSON.stringify(isHistoryVisible);
+};
+if (!isHistoryVisible) {
+    historyBlock.style.width = '0';
+    fileBlock.style.width = 'calc(-2em + 100vw)';
+}
+
 let copyToClipboard = (text) => {
     if (navigator.clipboard && window.isSecureContext) {
         return navigator.clipboard.writeText(text).then(() => {
