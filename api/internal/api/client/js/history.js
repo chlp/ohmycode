@@ -100,13 +100,13 @@ const FilesHistory = (() => {
     }
     const showHistory = () => {
         historyBlock.style.width = '20em';
-        fileBlock.style.width = 'calc(-22em + 100vw)';
+        fileBlock.style.width = 'calc(-23em + 100vw)';
         isHistoryVisible = true;
         localStorage['isHistoryVisible'] = JSON.stringify(true);
     };
     const hideHistory = () => {
         historyBlock.style.width = '0';
-        fileBlock.style.width = 'calc(-2em + 100vw)';
+        fileBlock.style.width = 'calc(-3em + 100vw)';
         isHistoryVisible = false;
         localStorage['isHistoryVisible'] = JSON.stringify(false);
     };
