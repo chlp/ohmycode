@@ -1,10 +1,5 @@
-let fileId = window.location.pathname.slice(1);
-if (!isUuid(fileId)) {
-    fileId = genUuid();
-    history.pushState({}, null, '/' + fileId);
-}
 let file = {
-    "id": fileId,
+    "id": getFileIdFromUrl(),
     "name": "",
     "content": "",
     "lang": 'markdown',
@@ -61,7 +56,7 @@ for (const key in languages) {
 }
 langSelect.value = currentLang;
 
-let contentBlock = CodeMirror.fromTextArea(document.getElementById('content'), {
+let contentCodeMirror = CodeMirror.fromTextArea(document.getElementById('content'), {
     lineNumbers: true,
     lineWrapping: true,
     readOnly: true,
@@ -72,7 +67,7 @@ let contentBlock = CodeMirror.fromTextArea(document.getElementById('content'), {
     theme: 'base16-dark',
     autofocus: true,
 });
-contentBlock.on('keydown', function (codemirror, event) {
+contentCodeMirror.on('keydown', function (codemirror, event) {
     if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
         return;
     }
@@ -96,7 +91,7 @@ contentBlock.on('keydown', function (codemirror, event) {
         file.writer_id = appId;
     }
 });
-contentBlock.on('drop', (cm, event) => {
+contentCodeMirror.on('drop', (cm, event) => {
     event.preventDefault();
 });
 
@@ -134,7 +129,7 @@ document.addEventListener('drop', (event) => {
         file.name = newFileName;
         actions.setFileName(newFileName);
 
-        contentBlock.setValue(newContent);
+        contentCodeMirror.setValue(newContent);
         actions.setContent(newContent);
     };
     reader.onerror = function () {
@@ -143,28 +138,22 @@ document.addEventListener('drop', (event) => {
     reader.readAsText(droppedFile);
 });
 
-let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
-    lineNumbers: true,
-    readOnly: true,
-    theme: 'tomorrow-night-bright',
-});
-
 langSelect.onchange = () => {
     currentLang = langSelect.value;
-    contentBlock.setOption('mode', languages[currentLang].highlighter);
+    contentCodeMirror.setOption('mode', languages[currentLang].highlighter);
     actions.setLang(currentLang);
-    contentBlock.focus();
+    contentCodeMirror.focus();
 };
 
 let writerBlocksUpdate = () => {
     if (!isOnline) {
-        contentBlock.setOption('readOnly', true);
+        contentCodeMirror.setOption('readOnly', true);
         currentWriterInfo.style.removeProperty('display');
         currentWriterInfo.innerHTML = 'Offline';
         return;
     }
 
-    contentBlock.setOption('readOnly', file.writer_id !== '' && file.writer_id !== appId);
+    contentCodeMirror.setOption('readOnly', file.writer_id !== '' && file.writer_id !== appId);
     if (file.writer_id === '' || file.writer_id === appId) {
         currentWriterInfo.style.display = 'none';
         currentWriterInfo.innerHTML = '';
@@ -201,58 +190,13 @@ runnerInput.onkeydown = (event) => {
     }
 };
 
-let isResultFilledWithInProgress = false;
-let resultBlockUpdate = () => {
-    let isRunBtnShouldBeDisabled = false;
-    if (file.is_waiting_for_result) {
-        isRunBtnShouldBeDisabled = true;
-        if (isResultFilledWithInProgress) {
-            resultBlock.setValue(resultBlock.getValue() + '.');
-        } else {
-            isResultFilledWithInProgress = true;
-            resultBlock.setValue('In progress...');
-        }
-    } else if (file.result.length > 0) {
-        if (
-            isResultFilledWithInProgress ||
-            ohMySimpleHash(file.result) !== ohMySimpleHash(resultBlock.getValue())
-        ) {
-            isResultFilledWithInProgress = false;
-            resultBlock.setValue(file.result);
-        }
-    } else if (file.is_runner_online) {
-        isResultFilledWithInProgress = false;
-        resultBlock.setValue('runner will write result here...');
-    } else {
-        isRunBtnShouldBeDisabled = true;
-        isResultFilledWithInProgress = false;
-        resultBlock.setValue('...');
-    }
-
-    if (isRunBtnShouldBeDisabled) {
-        runButton.setAttribute('disabled', 'true');
-    } else {
-        runButton.removeAttribute('disabled');
-    }
-
-    if (file.is_waiting_for_result || file.result.length > 0) {
-        resultContainerBlock.style.display = 'block';
-        contentContainerBlock.style.height = 'calc(68vh - 90px)';
-        cleanResultButton.removeAttribute('disabled');
-    } else {
-        resultContainerBlock.style.display = 'none';
-        contentContainerBlock.style.height = 'calc(98vh - 90px)';
-        cleanResultButton.setAttribute('disabled', 'true');
-    }
-};
-
 let socket = null;
 let createWebSocket = () => {
     socket = new WebSocket(`${apiUrl}/file`);
     socket.onopen = () => {
         socket.send(JSON.stringify({
             action: 'init',
-            file_id: fileId,
+            file_id: file.id,
             app_id: appId,
             user_id: userId,
             user_name: userName,
@@ -281,13 +225,11 @@ let createWebSocket = () => {
             }
 
             let previousWriterId = file.writer_id;
+
             if (typeof data.content === 'undefined') {
-                const currentContent = file.content;
-                file = data;
-                file.content = currentContent;
-            } else {
-                file = data;
+                data.content = file.content;
             }
+            file = data;
 
             if (file.persisted) {
                 FilesHistory.saveFileToDB(file.id, file.name, file.content_updated_at);
@@ -316,21 +258,21 @@ let createWebSocket = () => {
                 !isOnline || // first load
                 (
                     file.writer_id !== appId && previousWriterId !== appId && // do not update if current user is writer
-                    ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue()) // do not update if code is the same already
+                    ohMySimpleHash(file.content) !== ohMySimpleHash(contentCodeMirror.getValue()) // do not update if code is the same already
                 )
             ) {
-                let {left, top} = contentBlock.getScrollInfo();
-                let {line, ch} = contentBlock.getCursor();
-                contentBlock.setValue(file.content);
-                contentBlock.scrollTo(left, top);
-                contentBlock.setCursor({line: line, ch: ch});
+                let {left, top} = contentCodeMirror.getScrollInfo();
+                let {line, ch} = contentCodeMirror.getCursor();
+                contentCodeMirror.setValue(file.content);
+                contentCodeMirror.scrollTo(left, top);
+                contentCodeMirror.setCursor({line: line, ch: ch});
             }
 
             // update lang
             if (currentLang !== file.lang) {
                 currentLang = file.lang;
                 langSelect.value = currentLang;
-                contentBlock.setOption('mode', languages[currentLang].highlighter);
+                contentCodeMirror.setOption('mode', languages[currentLang].highlighter);
             }
 
             controlsContainerBlock.style.display = 'block';
@@ -367,38 +309,10 @@ let contentSender = () => {
             contentSender();
         }, timeout);
     };
-    if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
-        actions.setContent(contentBlock.getValue());
+    if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentCodeMirror.getValue())) {
+        actions.setContent(contentCodeMirror.getValue());
         getNextUpdateFunc(1000);
     } else {
         getNextUpdateFunc(500);
     }
-};
-
-let runTask = () => {
-    if (!file.is_runner_online) {
-        resultBlock.setValue('No runner is available to run your code :(');
-        return;
-    }
-    actions.setContent(contentBlock.getValue());
-    file.result = 'In progress..';
-    resultBlock.setValue('In progress..');
-    runButton.setAttribute('disabled', 'true');
-    actions.runTask();
-};
-runButton.onclick = () => {
-    runTask();
-};
-contentContainerBlock.onkeydown = (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        runTask();
-    }
-};
-
-cleanResultButton.onclick = () => {
-    file.result = '';
-    resultBlock.setValue('');
-    actions.cleanResult(() => {
-        resultBlockUpdate();
-    });
 };

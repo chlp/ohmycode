@@ -21,7 +21,7 @@ let userOwnNameEditingFunc = (event) => {
         setTimeout(() => {
             userOwnNameBlock.setAttribute('contenteditable', 'true');
         }, 500);
-        contentBlock.focus();
+        contentCodeMirror.focus();
         return false;
     }
     let allowedChars = /^[0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]*$/;
