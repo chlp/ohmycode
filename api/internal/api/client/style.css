@@ -605,9 +605,9 @@ blockquote footer {
 }
 
 .textarea.content {
-    /*height: calc(68vh - 90px);*/
     height: calc(98vh - 90px);
     min-height: 300px;
+    overflow: hidden;
 }
 
 .textarea.result {
@@ -674,21 +674,22 @@ button.transparent:hover {
     cursor: pointer;
 }
 
-.markdown-body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
+#content-markdown {
+    height: inherit;
+    width: inherit;
+    overflow: scroll;
 }
-.markdown-body h1, .markdown-body h2, .markdown-body h3 {
-    border-bottom: 1px solid #eaecef;
-    padding-bottom: 0.3em;
+
+#content-markdown h1, #content-markdown h2, #content-markdown h3 {
+    border-bottom: 1px solid;
 }
-.markdown-body pre {
-    background-color: #f6f8fa;
+
+#content-markdown pre {
     padding: 1em;
     overflow: auto;
 }
-.markdown-body code {
-    background-color: #f6f8fa;
+
+#content-markdown code {
     padding: 0.2em 0.4em;
     border-radius: 3px;
 }

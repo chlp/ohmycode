@@ -26,6 +26,10 @@ var Langs = map[string]Lang{
 		Name:        "Markdown",
 		Highlighter: "text/x-markdown",
 	},
+	"markdown_view": {
+		Name:        "Markdown View",
+		Highlighter: "text/x-markdown",
+	},
 	"mysql8": {
 		Name:        "MySQL 8",
 		Highlighter: "sql",

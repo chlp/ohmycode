@@ -26,6 +26,8 @@ const resultContainerBlock = document.getElementById('result-container');
 const controlsContainerBlock = document.getElementById('controls-container');
 const langSelect = document.getElementById('lang-select');
 
+const contentMarkdownBlock = document.getElementById('content-markdown');
+
 let isOnline = false;
 
 let appId = genUuid();
@@ -40,33 +42,17 @@ if (userName === undefined) {
     userName = '';
 }
 
-let currentLang = 'markdown';
-if (localStorage['initialLang'] === undefined) {
-    localStorage['initialLang'] = currentLang;
-} else {
-    currentLang = localStorage['initialLang'];
-}
-for (const key in languages) {
-    if (languages.hasOwnProperty(key)) {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = languages[key].name;
-        langSelect.appendChild(option);
-    }
-}
-langSelect.value = currentLang;
-
 let contentCodeMirror = CodeMirror.fromTextArea(document.getElementById('content'), {
     lineNumbers: true,
     lineWrapping: true,
     readOnly: true,
-    mode: languages[currentLang].highlighter, // javascript, go, php, sql, ...
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
     theme: 'base16-dark',
     autofocus: true,
 });
+const contentCodeMirrorBlock = contentContainerBlock.getElementsByClassName('CodeMirror')[0];
 contentCodeMirror.on('keydown', function (codemirror, event) {
     if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
         return;
@@ -91,6 +77,7 @@ contentCodeMirror.on('keydown', function (codemirror, event) {
         file.writer_id = appId;
     }
 });
+
 contentCodeMirror.on('drop', (cm, event) => {
     event.preventDefault();
 });
@@ -98,6 +85,7 @@ contentCodeMirror.on('drop', (cm, event) => {
 document.addEventListener('dragover', (event) => {
     event.preventDefault();
 });
+
 document.addEventListener('drop', (event) => {
     event.preventDefault();
     const droppedFiles = event.dataTransfer.files;
@@ -130,6 +118,7 @@ document.addEventListener('drop', (event) => {
         actions.setFileName(newFileName);
 
         contentCodeMirror.setValue(newContent);
+        contentMarkdownBlock.innerHTML = marked.parse(file.content);
         actions.setContent(newContent);
     };
     reader.onerror = function () {
@@ -138,12 +127,45 @@ document.addEventListener('drop', (event) => {
     reader.readAsText(droppedFile);
 });
 
+let currentLang, currentRenderer;
+
+for (const key in languages) {
+    if (languages.hasOwnProperty(key)) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = languages[key].name;
+        langSelect.appendChild(option);
+    }
+}
 langSelect.onchange = () => {
-    currentLang = langSelect.value;
-    contentCodeMirror.setOption('mode', languages[currentLang].highlighter);
+    setLang(langSelect.value);
     actions.setLang(currentLang);
     contentCodeMirror.focus();
 };
+
+const setLang = (newLang) => {
+    if (currentLang === newLang) {
+        return;
+    }
+    if (languages[newLang] === undefined) {
+        newLang = 'markdown';
+    }
+    currentLang = newLang;
+    contentCodeMirror.setOption('mode', languages[currentLang].highlighter);
+    if (currentRenderer !== languages[currentLang].renderer) {
+        if (languages[currentLang].renderer === 'markdown') {
+            contentCodeMirrorBlock.style.display = 'none';
+            contentMarkdownBlock.style.display = '';
+        } else { // codemirror for else
+            contentCodeMirrorBlock.style.display = '';
+            contentMarkdownBlock.style.display = 'none';
+            contentCodeMirror.refresh()
+        }
+        currentRenderer = languages[currentLang].renderer;
+    }
+    langSelect.value = currentLang;
+};
+setLang(localStorage['initialLang']);
 
 let writerBlocksUpdate = () => {
     if (!isOnline) {
@@ -264,18 +286,17 @@ let createWebSocket = () => {
                 let {left, top} = contentCodeMirror.getScrollInfo();
                 let {line, ch} = contentCodeMirror.getCursor();
                 contentCodeMirror.setValue(file.content);
+                contentMarkdownBlock.innerHTML = marked.parse(file.content);
                 contentCodeMirror.scrollTo(left, top);
                 contentCodeMirror.setCursor({line: line, ch: ch});
             }
 
             // update lang
-            if (currentLang !== file.lang) {
-                currentLang = file.lang;
-                langSelect.value = currentLang;
-                contentCodeMirror.setOption('mode', languages[currentLang].highlighter);
-            }
+            setLang(file.lang);
 
-            controlsContainerBlock.style.display = 'block';
+            if (controlsContainerBlock.style.display !== 'block') {
+                controlsContainerBlock.style.display = 'block';
+            }
 
             if (!isOnline) {
                 isOnline = true;
@@ -309,8 +330,10 @@ let contentSender = () => {
             contentSender();
         }, timeout);
     };
-    if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentCodeMirror.getValue())) {
-        actions.setContent(contentCodeMirror.getValue());
+    const newContent = contentCodeMirror.getValue();
+    if (ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
+        contentMarkdownBlock.innerHTML = marked.parse(newContent);
+        actions.setContent(newContent);
         getNextUpdateFunc(1000);
     } else {
         getNextUpdateFunc(500);
