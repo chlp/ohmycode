@@ -13,31 +13,43 @@ const languages = {
     go: {
         name: 'GoLang',
         highlighter: 'go',
+        renderer: 'codemirror',
     },
     java: {
         name: 'Java',
         highlighter: 'text/x-java',
+        renderer: 'codemirror',
     },
     json: {
         name: 'JSON',
         highlighter: 'application/json',
+        renderer: 'codemirror',
     },
     markdown: {
         name: 'Markdown',
         highlighter: 'text/x-markdown',
+        renderer: 'codemirror',
+    },
+    markdown_view: {
+        name: 'Markdown View',
+        highlighter: null,
+        renderer: 'markdown',
     },
     mysql8: {
         name: 'MySQL 8',
         highlighter: 'sql',
+        renderer: 'codemirror',
     },
     php82: {
         name: 'PHP 8.2',
         highlighter: 'php',
+        renderer: 'codemirror',
     },
     postgres13: {
         name: 'PostgreSQL 13',
         highlighter: 'sql',
-    }
+        renderer: 'codemirror',
+    },
 };
 
 let ohMySimpleHash = (str) => {
@@ -94,12 +106,11 @@ let copyToClipboard = (text) => {
     }
 };
 
-let saveContentToFile = () => {
+let saveContentToFile = (fileName) => {
     const text = contentBlock.getValue();
     const blob = new Blob([text], {type: 'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    let fileName = file.name;
     if (!/\.[0-9a-z]+$/i.test(fileName)) {
         fileName += '.txt';
     }

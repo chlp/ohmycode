@@ -61,27 +61,15 @@ for (const key in languages) {
 }
 langSelect.value = currentLang;
 
-let getCodeTheme = () => {
-    // https://codemirror.net/5/demo/theme.html
-    // todo: temporary turned off light/dark scheme changing
-    return 'base16-dark';
-    // if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    //     return 'base16-dark';
-    // }
-    // return 'base16-light';
-};
-let getResultTheme = () => {
-    return 'tomorrow-night-bright';
-};
 let contentBlock = CodeMirror.fromTextArea(document.getElementById('content'), {
     lineNumbers: true,
     lineWrapping: true,
     readOnly: true,
-    mode: languages[currentLang].highlighter, // javascript, go, php, sql
+    mode: languages[currentLang].highlighter, // javascript, go, php, sql, ...
     matchBrackets: true,
     indentWithTabs: false,
     tabSize: 4,
-    theme: getCodeTheme(),
+    theme: 'base16-dark',
     autofocus: true,
 });
 contentBlock.on('keydown', function (codemirror, event) {
@@ -141,12 +129,13 @@ document.addEventListener('drop', (event) => {
         const allowedCharsRegex = /[^0-9a-zA-Z_!?:=+\-,.\s'\u0400-\u04ff]/g;
         newFileName = newFileName.replace(allowedCharsRegex, '');
         newFileName = newFileName.substring(0, 64);
+
         fileNameBlock.innerHTML = newFileName;
-        actions.setFileName(() => {
-            contentBlock.setValue(newContent);
-            actions.setContent(newContent, () => {
-            });
-        });
+        file.name = newFileName;
+        actions.setFileName(newFileName);
+
+        contentBlock.setValue(newContent);
+        actions.setContent(newContent);
     };
     reader.onerror = function () {
         console.error('Error occurred: ' + droppedFile);
@@ -157,12 +146,7 @@ document.addEventListener('drop', (event) => {
 let resultBlock = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,
-    theme: getResultTheme(),
-});
-// todo: here we could show hint that it is not editable result
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    contentBlock.setOption('theme', getCodeTheme());
-    resultBlock.setOption('theme', getResultTheme());
+    theme: 'tomorrow-night-bright',
 });
 
 langSelect.onchange = () => {
@@ -377,16 +361,17 @@ let contentSender = () => {
     if (!isOnline) {
         return;
     }
-    let getNextUpdateFunc = (timeout) => () => {
+    let getNextUpdateFunc = (timeout) => {
         clearTimeout(contentSenderTimer);
         contentSenderTimer = setTimeout(() => {
             contentSender();
         }, timeout);
     };
     if (ohMySimpleHash(file.content) !== ohMySimpleHash(contentBlock.getValue())) {
-        actions.setContent(contentBlock.getValue(), getNextUpdateFunc(1000));
+        actions.setContent(contentBlock.getValue());
+        getNextUpdateFunc(1000);
     } else {
-        getNextUpdateFunc(500)();
+        getNextUpdateFunc(500);
     }
 };
 
@@ -395,13 +380,11 @@ let runTask = () => {
         resultBlock.setValue('No runner is available to run your code :(');
         return;
     }
-    actions.setContent(contentBlock.getValue(), () => {
-        file.result = 'In progress..';
-        resultBlock.setValue('In progress..');
-        runButton.setAttribute('disabled', 'true');
-        actions.runTask(() => {
-        });
-    });
+    actions.setContent(contentBlock.getValue());
+    file.result = 'In progress..';
+    resultBlock.setValue('In progress..');
+    runButton.setAttribute('disabled', 'true');
+    actions.runTask();
 };
 runButton.onclick = () => {
     runTask();

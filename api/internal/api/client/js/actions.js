@@ -1,12 +1,8 @@
 let actions = {
-    setFileName: (callback) => {
-        let newFileName = fileNameBlock.textContent;
+    setFileName: (newFileName) => {
         postRequest('set_name', {
             file_name: newFileName,
         }, () => {
-            if (callback !== undefined) {
-                callback();
-            }
         });
     },
     setUserName: () => {
@@ -47,7 +43,7 @@ let actions = {
     cleanResult: (callback) => {
         postRequest('clean_result', {}, callback);
     },
-    runTask: (callback) => {
-        postRequest('run_task', {}, callback);
+    runTask: () => {
+        postRequest('run_task', {});
     },
 };

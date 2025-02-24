@@ -10,7 +10,8 @@ fileNameBlock.onkeydown = (event) => {
         clearTimeout(fileNameSavingTimeout);
         fileNameSavingTimeout = null;
         fileNameEditing = false;
-        actions.setFileName();
+        file.name = fileNameBlock.textContent;
+        actions.setFileName(fileNameBlock.textContent);
         event.preventDefault();
         fileNameBlock.setAttribute('contenteditable', 'false');
         setTimeout(() => {
@@ -31,7 +32,8 @@ fileNameBlock.onkeydown = (event) => {
     fileNameEditing = true;
     clearTimeout(fileNameSavingTimeout);
     fileNameSavingTimeout = setTimeout(() => {
-        actions.setFileName();
+        file.name = fileNameBlock.textContent;
+        actions.setFileName(fileNameBlock.textContent);
         fileNameEditing = false;
     }, 5000);
 };

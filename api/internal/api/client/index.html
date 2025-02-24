@@ -29,6 +29,7 @@
     <script src="codemirror/mode/php.js" defer></script>
     <script src="codemirror/mode/sql.js" defer></script>
     <script src="codemirror/mode/xml.js" defer></script>
+    <script src="md/marked.min.js" defer></script>
 </head>
 <body style="opacity: 0; transition: opacity 0.3s;">
 <script>
@@ -61,7 +62,7 @@
         <button id="clean-result-button" disabled>Clean result</button>
         <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
         <button onclick="copyToClipboard(window.location.href)">Copy URL</button>
-        <button onclick="saveContentToFile()">Download</button>
+        <button onclick="saveContentToFile(file.name)">Download</button>
         <button onclick="FilesHistory.toggleHistoryVisibility()">History</button>
         <a href="/" class="button" target="_blank">New file</a>
     </div>
