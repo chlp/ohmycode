@@ -607,7 +607,7 @@ blockquote footer {
 .textarea.content {
     height: calc(98vh - 90px);
     min-height: 300px;
-    overflow: hidden;
+    overflow: scroll;
 }
 
 .textarea.result {
@@ -675,9 +675,6 @@ button.transparent:hover {
 }
 
 #content-markdown {
-    height: inherit;
-    width: fit-content;
-    overflow: scroll;
     padding: 1em;
 }
 
