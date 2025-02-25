@@ -674,6 +674,14 @@ button.transparent:hover {
     cursor: pointer;
 }
 
+.history-item > a:first-child {
+    visibility: hidden;
+}
+
+.history-item:hover > a:first-child {
+    visibility: visible;
+}
+
 #content-markdown {
     padding: 1em;
 }
