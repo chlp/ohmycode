@@ -46,3 +46,21 @@ document.addEventListener('drop', (event) => {
     };
     reader.readAsText(droppedFile);
 });
+
+let isFileBinary = async (file) => {
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const maxBytesToCheck = Math.min(bytes.length, 32 * 1024);
+    let nonPrintableCount = 0;
+    for (let i = 0; i < maxBytesToCheck; i++) {
+        const byte = bytes[i];
+        if ((byte < 32 || byte > 126) && byte !== 9 && byte !== 10 && byte !== 13) {
+            nonPrintableCount++;
+        }
+    }
+    let nonPrintableRateForBinary = 0.4;
+    if (bytes.length < 1024) {
+        nonPrintableRateForBinary = 0.6;
+    }
+    return nonPrintableCount / maxBytesToCheck > nonPrintableRateForBinary;
+}

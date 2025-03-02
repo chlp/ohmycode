@@ -1,3 +1,46 @@
+const languages = {
+    go: {
+        name: 'GoLang',
+        highlighter: 'go',
+        renderer: 'codemirror',
+    },
+    java: {
+        name: 'Java',
+        highlighter: 'text/x-java',
+        renderer: 'codemirror',
+    },
+    json: {
+        name: 'JSON',
+        highlighter: 'application/json',
+        renderer: 'codemirror',
+    },
+    markdown: {
+        name: 'Markdown',
+        highlighter: 'text/x-markdown',
+        renderer: 'codemirror',
+    },
+    markdown_view: {
+        name: 'Markdown View',
+        highlighter: null,
+        renderer: 'markdown',
+    },
+    mysql8: {
+        name: 'MySQL 8',
+        highlighter: 'sql',
+        renderer: 'codemirror',
+    },
+    php82: {
+        name: 'PHP 8.2',
+        highlighter: 'php',
+        renderer: 'codemirror',
+    },
+    postgres13: {
+        name: 'PostgreSQL 13',
+        highlighter: 'sql',
+        renderer: 'codemirror',
+    },
+};
+
 const langSelect = document.getElementById('lang-select');
 
 for (const key in languages) {

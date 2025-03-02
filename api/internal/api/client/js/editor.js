@@ -75,3 +75,25 @@ let contentSender = () => {
         getNextUpdateFunc(500);
     }
 };
+
+let saveContentToFile = (text, fileName) => {
+    const blob = new Blob([text], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    if (!/\.[0-9a-z]+$/i.test(fileName)) {
+        fileName += '.txt';
+    }
+    a.download = fileName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+};
+
+document.addEventListener('keydown', function (event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        saveContentToFile();
+    }
+});
