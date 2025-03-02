@@ -15,7 +15,9 @@ let userOwnNameEditingFunc = (event) => {
             }, 500);
         }
         userNameEditing = false;
-        actions.setUserName();
+        let newUserName = userOwnNameBlock.textContent;
+        actions.setUserName(newUserName);
+        localStorage['user_name'] = newUserName;
         event.preventDefault();
         userOwnNameBlock.setAttribute('contenteditable', 'false');
         setTimeout(() => {
@@ -36,7 +38,8 @@ let userOwnNameEditingFunc = (event) => {
     userNameEditing = true;
     clearTimeout(userNameSavingTimeout);
     userNameSavingTimeout = setTimeout(() => {
-        actions.setUserName();
+        let newUserName = userOwnNameBlock.textContent;
+        actions.setUserName(newUserName);
         if (userNameEditing) {
             setTimeout(() => {
                 updateUsers();

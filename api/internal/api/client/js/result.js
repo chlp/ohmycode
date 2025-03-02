@@ -5,7 +5,7 @@ const resultContainerBlock = document.getElementById('result-container');
 
 const runnerSaveButton = document.getElementById('runner-save-button');
 runnerSaveButton.onclick = () => {
-    actions.setRunner();
+    actions.setRunner(runnerInput.value);
 };
 
 
@@ -13,9 +13,7 @@ const cleanResultButton = document.getElementById('clean-result-button');
 cleanResultButton.onclick = () => {
     file.result = '';
     resultCodeMirror.setValue('');
-    actions.cleanResult(() => {
-        resultBlockUpdate();
-    });
+    actions.cleanResult();
 };
 
 const runnerEditButton = document.getElementById('runner-edit-button');
@@ -37,7 +35,7 @@ let runnerEditButtonOnclick = () => {
 runnerInput.onkeydown = (event) => {
     if (event.key === 'Enter') {
         event.preventDefault();
-        actions.setRunner();
+        actions.setRunner(runnerInput.value);
     } else if (event.key === 'Escape') {
         runnerEditButtonOnclick();
     }

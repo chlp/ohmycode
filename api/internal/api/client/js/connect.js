@@ -1,5 +1,5 @@
 const controlsContainerBlock = document.getElementById('controls-container');
-let createWebSocket = (app) => {
+const createWebSocket = (app) => {
     app.socket = new WebSocket(`${apiUrl}/file`);
     app.socket.onopen = () => {
         console.log(`Connection opened`);
@@ -103,6 +103,7 @@ let createWebSocket = (app) => {
     };
 };
 createWebSocket(app);
+
 let reconnectAttempts = 0;
 setInterval(() => {
     if (app.socket === null) {
@@ -113,7 +114,7 @@ setInterval(() => {
     }
 }, 1000 * Math.min(2 ** reconnectAttempts, 30) + Math.random() * 3000);
 
-let postRequest = (action, data, callback) => {
+const postRequest = (action, data, callback) => {
     try {
         app.socket.send(JSON.stringify({
             ...data,
@@ -124,4 +125,46 @@ let postRequest = (action, data, callback) => {
             callback();
         }
     }
+};
+
+const actions = {
+    setFileName: (newFileName) => {
+        postRequest('set_name', {
+            file_name: newFileName,
+        });
+    },
+    setUserName: (newUserName) => {
+        postRequest('set_user_name', {
+            user_name: newUserName,
+        });
+    },
+    setLang: (lang) => {
+        postRequest('set_lang', {
+            lang: lang,
+        });
+    },
+    setRunner: (runnerId) => {
+        postRequest('set_runner', {
+            runner_id: runnerId,
+        });
+    },
+    setContent: (content) => {
+        if (!app.isOnline) {
+            return;
+        }
+        if (file.writer_id !== '' && file.writer_id !== app.id) {
+            return;
+        }
+        file.writer_id = app.id;
+        file.content = content;
+        postRequest('set_content', {
+            content: content,
+        });
+    },
+    cleanResult: () => {
+        postRequest('clean_result', {});
+    },
+    runTask: () => {
+        postRequest('run_task', {});
+    },
 };

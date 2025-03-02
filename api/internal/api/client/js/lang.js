@@ -11,6 +11,7 @@ for (const key in languages) {
 langSelect.onchange = () => {
     setLang(langSelect.value);
     actions.setLang(app.lang);
+    localStorage['initialLang'] = app.lang;
     contentCodeMirror.focus();
 };
 
