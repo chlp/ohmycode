@@ -92,7 +92,7 @@ const Sidebar = (() => {
     const sidebarToggleVisibilitySpan = document.getElementById('sidebar-toggle-visibility');
     const historyBlock = document.getElementById('history');
     const fileBlock = document.getElementById('file');
-    const hideWithSidebarBlocks = document.getElementsByClassName('hide-with-sidebar');
+    const collapseWithSidebarBlocks = document.getElementsByClassName('collapse-with-sidebar');
 
     let isSidebarVisible = false;
     if (localStorage['isSidebarVisible'] === undefined) {
@@ -104,9 +104,10 @@ const Sidebar = (() => {
         sidebarBlock.style.width = '20em';
         sidebarToggleVisibilitySpan.innerHTML = '<—'
         fileBlock.style.width = 'calc(-20em + 100vw)';
-        for (const block of hideWithSidebarBlocks) {
-            block.style.opacity = '1';
+        for (const block of collapseWithSidebarBlocks) {
+            block.innerHTML = block.dataset.fullText;
         }
+        historyBlock.style.display = '';
         isSidebarVisible = true;
         localStorage['isSidebarVisible'] = JSON.stringify(true);
     };
@@ -114,9 +115,10 @@ const Sidebar = (() => {
         sidebarBlock.style.width = '3em';
         sidebarToggleVisibilitySpan.innerHTML = '—>'
         fileBlock.style.width = 'calc(-3em + 100vw)';
-        for (const block of hideWithSidebarBlocks) {
-            block.style.opacity = '0';
+        for (const block of collapseWithSidebarBlocks) {
+            block.innerHTML = block.dataset.collapsedText;
         }
+        historyBlock.style.display = 'none';
         isSidebarVisible = false;
         localStorage['isSidebarVisible'] = JSON.stringify(false);
     };
@@ -129,6 +131,8 @@ const Sidebar = (() => {
     };
     if (isSidebarVisible) {
         showSidebar();
+    } else {
+        hideSidebar();
     }
 
     return {
