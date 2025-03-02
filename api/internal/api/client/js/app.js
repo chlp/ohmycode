@@ -1,3 +1,24 @@
+const genUuid = () => { // Генерация случайного UUID без дефисов
+    return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
+
+const isUuid = (id) => {
+    return (new RegExp(`^[a-z0-9]{32}$`)).test(id);
+};
+
+const getFileIdFromUrl = () => {
+    const url = new URL(window.location.href);
+    let fileId = url.pathname.replace(/^\/|\/$/g, '');
+    if (!isUuid(fileId)) {
+        fileId = genUuid();
+        history.pushState({}, null, '/' + fileId);
+    }
+    return fileId;
+}
+
 let file = {
     id: getFileIdFromUrl(),
     name: "",
@@ -43,25 +64,4 @@ let app = {
 
 if (localStorage['user_id'] === undefined) {
     localStorage['user_id'] = app.userId;
-}
-
-const genUuid = () => { // Генерация случайного UUID без дефисов
-    return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-};
-
-const isUuid = (id) => {
-    return (new RegExp(`^[a-z0-9]{32}$`)).test(id);
-};
-
-const getFileIdFromUrl = () => {
-    const url = new URL(window.location.href);
-    let fileId = url.pathname.replace(/^\/|\/$/g, '');
-    if (!isUuid(fileId)) {
-        fileId = genUuid();
-        history.pushState({}, null, '/' + fileId);
-    }
-    return fileId;
 }

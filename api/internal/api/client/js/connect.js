@@ -52,7 +52,7 @@ const createWebSocket = (app) => {
             }
 
             if (file.persisted) {
-                FilesHistory.saveFileToDB(file.id, file.name, file.content_updated_at);
+                Sidebar.saveFileToDB(file.id, file.name, file.content_updated_at);
             }
             document.title = `OhMyCode – ${file.name}`;
 

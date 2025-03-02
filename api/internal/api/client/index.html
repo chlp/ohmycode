@@ -34,11 +34,14 @@
 <body style="opacity: 0; transition: opacity 0.3s;">
 <script>
     window.onload = () => {
-        document.body.style.opacity = "1";
+        document.body.style.opacity = '1';
     };
 </script>
 
-<div id="history" style="width: 0;"></div>
+<div id="sidebar" style="width: 3em;">
+    <span id="sidebar-toggle-visibility" onclick="Sidebar.toggleSidebarVisibility()">—></span>
+    <div id="history" style="opacity: 0;"></div>
+</div>
 <div id="file" style="width: calc(-3em + 100vw);">
     <div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
         <a href="#" id="file-name" contenteditable="true" spellcheck="false"
@@ -64,7 +67,6 @@
         <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
         <button onclick="copyToClipboard(window.location.href)">Copy URL</button>
         <button onclick="saveContentToFile(file.content, file.name)">Download</button>
-        <button onclick="FilesHistory.toggleHistoryVisibility()">History</button>
         <a href="/" class="button" target="_blank">New file</a>
     </div>
 
@@ -87,7 +89,7 @@
 <script>let apiUrl = '';</script>
 <script src="js/utils.js?v=4" defer></script>
 <script src="js/app.js?v=4" defer></script>
-<script src="js/history.js?v=4" defer></script>
+<script src="js/sidebar.js?v=4" defer></script>
 <script src="js/users.js?v=4" defer></script>
 <script src="js/editor.js?v=4" defer></script>
 <script src="js/lang.js?v=4" defer></script>

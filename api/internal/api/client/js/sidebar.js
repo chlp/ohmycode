@@ -1,4 +1,4 @@
-const FilesHistory = (() => {
+const Sidebar = (() => {
     let dbInstance = null;
     const openDB = () => {
         if (dbInstance) {
@@ -52,7 +52,7 @@ const FilesHistory = (() => {
         getSortedFilesFromDB().then(historyFiles => {
             let htmlLines = historyFiles.map(historyFile =>
                 `<span class="history-item">` +
-                `<a class="history-delete" onclick="FilesHistory.deleteFileInDB('${historyFile.id}')">x</a> ` +
+                `<a class="history-delete" onclick="Sidebar.deleteFileInDB('${historyFile.id}')">x</a> ` +
                 `<a href="/${historyFile.id}">${historyFile.name}</a>` +
                 `</span>`
             );
@@ -88,42 +88,46 @@ const FilesHistory = (() => {
         return tx.complete;
     };
 
-    // toggle history button
+    const sidebarBlock = document.getElementById('sidebar');
+    const sidebarToggleVisibilitySpan = document.getElementById('sidebar-toggle-visibility');
     const historyBlock = document.getElementById('history');
     const fileBlock = document.getElementById('file');
 
-    let isHistoryVisible = false;
-    if (localStorage['isHistoryVisible'] === undefined) {
-        localStorage['isHistoryVisible'] = JSON.stringify(isHistoryVisible);
+    let isSidebarVisible = false;
+    if (localStorage['isSidebarVisible'] === undefined) {
+        localStorage['isSidebarVisible'] = JSON.stringify(isSidebarVisible);
     } else {
-        isHistoryVisible = JSON.parse(localStorage['isHistoryVisible']);
+        isSidebarVisible = JSON.parse(localStorage['isSidebarVisible']);
     }
-    const showHistory = () => {
-        historyBlock.style.width = '20em';
-        fileBlock.style.width = 'calc(-23em + 100vw)';
-        isHistoryVisible = true;
-        localStorage['isHistoryVisible'] = JSON.stringify(true);
+    const showSidebar = () => {
+        sidebarBlock.style.width = '20em';
+        sidebarToggleVisibilitySpan.innerHTML = '<—'
+        fileBlock.style.width = 'calc(-20em + 100vw)';
+        historyBlock.style.opacity = '1';
+        isSidebarVisible = true;
+        localStorage['isSidebarVisible'] = JSON.stringify(true);
     };
-    const hideHistory = () => {
-        historyBlock.style.width = '0';
+    const hideSidebar = () => {
+        sidebarBlock.style.width = '3em';
+        sidebarToggleVisibilitySpan.innerHTML = '—>'
         fileBlock.style.width = 'calc(-3em + 100vw)';
-        isHistoryVisible = false;
-        localStorage['isHistoryVisible'] = JSON.stringify(false);
+        historyBlock.style.opacity = '0';
+        isSidebarVisible = false;
+        localStorage['isSidebarVisible'] = JSON.stringify(false);
     };
-    const toggleHistoryVisibility = () => {
-        if (isHistoryVisible) {
-            hideHistory();
+    sidebarToggleVisibilitySpan.onclick = () => {
+        if (isSidebarVisible) {
+            hideSidebar();
         } else {
-            showHistory();
+            showSidebar();
         }
     };
-    if (isHistoryVisible) {
-        showHistory();
+    if (isSidebarVisible) {
+        showSidebar();
     }
 
     return {
         saveFileToDB,
         deleteFileInDB,
-        toggleHistoryVisibility
     };
 })();
