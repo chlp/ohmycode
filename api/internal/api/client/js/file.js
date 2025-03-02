@@ -1,24 +1,3 @@
-let file = {
-    "id": getFileIdFromUrl(),
-    "name": "",
-    "content": "",
-    "lang": 'markdown',
-    "runner": "",
-    "is_runner_online": false,
-    "updated_at": null,
-    "content_updated_at": null,
-    "writer_id": "",
-    "users": [],
-    "is_waiting_for_result": false,
-    "result": "",
-    "persisted": false,
-};
-
-let app = {
-    isOnline: false,
-    id: genUuid(),
-};
-
 const currentWriterInfo = document.getElementById('current-writer-info');
 const runButton = document.getElementById('run-button');
 const cleanResultButton = document.getElementById('clean-result-button');
@@ -32,17 +11,6 @@ const controlsContainerBlock = document.getElementById('controls-container');
 const langSelect = document.getElementById('lang-select');
 
 const contentMarkdownBlock = document.getElementById('content-markdown');
-
-let userId = localStorage['userId'];
-if (userId === undefined) {
-    userId = genUuid();
-    localStorage['userId'] = userId;
-}
-
-let userName = localStorage['user_name'];
-if (userName === undefined) {
-    userName = '';
-}
 
 let contentCodeMirror = CodeMirror.fromTextArea(document.getElementById('content'), {
     lineNumbers: true,
@@ -222,8 +190,8 @@ let createWebSocket = () => {
             action: 'init',
             file_id: file.id,
             app_id: app.id,
-            user_id: userId,
-            user_name: userName,
+            user_id: app.userId,
+            user_name: app.userName,
             lang: currentLang
         }));
     };

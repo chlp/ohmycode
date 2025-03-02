@@ -58,17 +58,17 @@ let updateUsers = () => {
     Object.keys(file.users).forEach((key) => {
         let user = file.users[key];
         user.own = false;
-        if (user.id === userId) {
+        if (user.id === app.userId) {
             user.own = true;
-            userName = user.name;
+            app.userName = user.name;
             isOwnUserFound = true;
         }
         users.push(user);
     });
     if (!isOwnUserFound) {
         users.push({
-            id: userId,
-            name: userName,
+            id: app.userId,
+            name: app.userName,
             own: true,
         });
     }
