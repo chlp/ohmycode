@@ -28,7 +28,6 @@ contentCodeMirror.on('keydown', function (codemirror, event) {
         return;
     }
     if (file.writer_id !== '' && file.writer_id !== app.id) {
-        // todo: show hint
         console.log('someone else is changing content now. wait please:', file.writer_id, app.id);
         return;
     }
@@ -37,22 +36,22 @@ contentCodeMirror.on('keydown', function (codemirror, event) {
     }
 });
 
-const currentWriterInfo = document.getElementById('current-writer-info');
+const statusBarBlock = document.getElementById('status-bar');
 let updateEditorLockStatus = () => {
     if (!app.isOnline) {
         contentCodeMirror.setOption('readOnly', true);
-        currentWriterInfo.style.removeProperty('display');
-        currentWriterInfo.innerHTML = 'Offline';
+        statusBarBlock.style.removeProperty('display');
+        statusBarBlock.innerHTML = 'Offline';
         return;
     }
 
     contentCodeMirror.setOption('readOnly', file.writer_id !== '' && file.writer_id !== app.id);
     if (file.writer_id === '' || file.writer_id === app.id) {
-        currentWriterInfo.style.display = 'none';
-        currentWriterInfo.innerHTML = '';
+        statusBarBlock.style.display = 'none';
+        statusBarBlock.innerHTML = '';
     } else {
-        currentWriterInfo.style.removeProperty('display');
-        currentWriterInfo.innerHTML = 'Editing is blocked by someone else';
+        statusBarBlock.style.removeProperty('display');
+        statusBarBlock.innerHTML = 'Editing is blocked by someone else';
     }
 };
 
