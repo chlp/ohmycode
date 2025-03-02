@@ -39,8 +39,11 @@
 </script>
 
 <div id="sidebar" style="width: 3em;">
-    <span id="sidebar-toggle-visibility" onclick="Sidebar.toggleSidebarVisibility()">—></span>
-    <div id="history" style="opacity: 0;"></div>
+    <span id="sidebar-toggle-visibility">—></span>
+    <span class="hide-with-sidebar" style="opacity: 0;" onclick="saveContentToFile(file.content, file.name)">Download</span>
+    <span class="hide-with-sidebar" style="opacity: 0;" onclick="copyToClipboard(window.location.href)">Copy URL</span>
+    <span class="hide-with-sidebar" style="opacity: 0;" onclick="window.open('/', '_blank'")>New file</span>
+    <div id="history" class="hide-with-sidebar" style="opacity: 0;"></div>
 </div>
 <div id="file" style="width: calc(-3em + 100vw);">
     <div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
@@ -65,9 +68,6 @@
         <button id="run-button" title="Cmd/Ctrl + Enter" disabled>Run code</button>
         <button id="clean-result-button" disabled>Clean result</button>
         <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
-        <button onclick="copyToClipboard(window.location.href)">Copy URL</button>
-        <button onclick="saveContentToFile(file.content, file.name)">Download</button>
-        <a href="/" class="button" target="_blank">New file</a>
     </div>
 
     <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">

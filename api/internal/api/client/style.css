@@ -674,6 +674,9 @@ button.transparent:hover {
 #history {
     float: left;
     clear: both;
+    border-top: 1px solid var(--color-bg-transparent);
+    margin-top: 0.5em;
+    padding-top: 0.5em;
 }
 
 #history > a {
