@@ -1,3 +1,32 @@
+const runnerSaveButton = document.getElementById('runner-save-button');
+
+let runnerBlocksUpdate = () => {
+    if (file.is_runner_online) {
+        runnerContainerBlock.style.display = 'none';
+    }
+    runnerEditButton.style.display = file.is_runner_online ? 'none' : 'block';
+};
+
+let runnerEditButtonOnclick = () => {
+    if (runnerContainerBlock.style.display === 'block') {
+        runnerContainerBlock.style.display = 'none';
+    } else {
+        runnerContainerBlock.style.display = 'block';
+        runnerInput.focus();
+    }
+};
+runnerSaveButton.onclick = () => {
+    actions.setRunner();
+};
+runnerInput.onkeydown = (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        actions.setRunner();
+    } else if (event.key === 'Escape') {
+        runnerEditButtonOnclick();
+    }
+};
+
 let resultCodeMirror = CodeMirror.fromTextArea(document.getElementById('result'), {
     lineNumbers: true,
     readOnly: true,

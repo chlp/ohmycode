@@ -75,19 +75,6 @@ let ohMySimpleHash = (str) => {
     return hash;
 };
 
-let postRequest = (action, data, callback) => {
-    try {
-        socket.send(JSON.stringify({
-            ...data,
-            action: action,
-        }));
-    } finally {
-        if (typeof callback === 'function') {
-            callback();
-        }
-    }
-};
-
 let copyToClipboard = (text) => {
     if (navigator.clipboard && window.isSecureContext) {
         return navigator.clipboard.writeText(text).then(() => {

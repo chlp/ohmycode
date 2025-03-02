@@ -1,10 +1,7 @@
-
-
-let socket = null;
-let createWebSocket = () => {
-    socket = new WebSocket(`${apiUrl}/file`);
-    socket.onopen = () => {
-        socket.send(JSON.stringify({
+let createWebSocket = (app) => {
+    app.socket = new WebSocket(`${apiUrl}/file`);
+    app.socket.onopen = () => {
+        app.socket.send(JSON.stringify({
             action: 'init',
             file_id: file.id,
             app_id: app.id,
@@ -13,7 +10,7 @@ let createWebSocket = () => {
             lang: app.lang,
         }));
     };
-    socket.onclose = (event) => {
+    app.socket.onclose = (event) => {
         if (event.wasClean) {
             console.log(`Connection closed, code=${event.code}, reason=${event.reason}`);
         } else {
@@ -21,12 +18,12 @@ let createWebSocket = () => {
         }
         app.isOnline = false;
         writerBlocksUpdate();
-        socket = null;
+        app.socket = null;
     };
-    socket.onerror = (error) => {
+    app.socket.onerror = (error) => {
         console.log('WebSocket error: ', error);
     };
-    socket.onmessage = (event) => {
+    app.socket.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
             if (data.error !== undefined) {
@@ -96,13 +93,26 @@ let createWebSocket = () => {
         }
     };
 };
-createWebSocket();
+createWebSocket(app);
 let reconnectAttempts = 0;
 setInterval(() => {
-    if (socket === null) {
+    if (app.socket === null) {
         reconnectAttempts++;
-        createWebSocket();
+        createWebSocket(app);
     } else {
         reconnectAttempts = 0;
     }
 }, 1000 * Math.min(2 ** reconnectAttempts, 30) + Math.random() * 3000);
+
+let postRequest = (action, data, callback) => {
+    try {
+        app.socket.send(JSON.stringify({
+            ...data,
+            action: action,
+        }));
+    } finally {
+        if (typeof callback === 'function') {
+            callback();
+        }
+    }
+};
