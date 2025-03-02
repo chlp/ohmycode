@@ -97,8 +97,6 @@ document.addEventListener('drop', (event) => {
     reader.readAsText(droppedFile);
 });
 
-let currentLang, currentRenderer;
-
 for (const key in languages) {
     if (languages.hasOwnProperty(key)) {
         const option = document.createElement('option');
@@ -109,21 +107,21 @@ for (const key in languages) {
 }
 langSelect.onchange = () => {
     setLang(langSelect.value);
-    actions.setLang(currentLang);
+    actions.setLang(app.lang);
     contentCodeMirror.focus();
 };
 
-const setLang = (newLang) => {
-    if (currentLang === newLang) {
+const setLang = (lang) => {
+    if (app.lang === lang) {
         return;
     }
-    if (languages[newLang] === undefined) {
-        newLang = 'markdown';
+    if (languages[lang] === undefined) {
+        lang = 'markdown';
     }
-    currentLang = newLang;
-    contentCodeMirror.setOption('mode', languages[currentLang].highlighter);
-    if (currentRenderer !== languages[currentLang].renderer) {
-        if (languages[currentLang].renderer === 'markdown') {
+    app.lang = lang;
+    contentCodeMirror.setOption('mode', languages[app.lang].highlighter);
+    if (app.renderer !== languages[app.lang].renderer) {
+        if (languages[app.lang].renderer === 'markdown') {
             contentCodeMirrorBlock.style.display = 'none';
             contentMarkdownBlock.style.display = '';
         } else { // codemirror for else
@@ -131,9 +129,9 @@ const setLang = (newLang) => {
             contentMarkdownBlock.style.display = 'none';
             contentCodeMirror.refresh()
         }
-        currentRenderer = languages[currentLang].renderer;
+        app.renderer = languages[app.lang].renderer;
     }
-    langSelect.value = currentLang;
+    langSelect.value = app.lang;
 };
 setLang(localStorage['initialLang']);
 
@@ -192,7 +190,7 @@ let createWebSocket = () => {
             app_id: app.id,
             user_id: app.userId,
             user_name: app.userName,
-            lang: currentLang
+            lang: app.lang,
         }));
     };
     socket.onclose = (event) => {

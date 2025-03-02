@@ -19,6 +19,8 @@ let app = {
     id: genUuid(),
     userId: localStorage['user_id'] === undefined ? genUuid() : localStorage['user_id'],
     userName: localStorage['user_name'] === undefined ? '' : localStorage['user_name'],
+    lang: undefined,
+    renderer: undefined,
 };
 
 if (localStorage['user_id'] === undefined) {
