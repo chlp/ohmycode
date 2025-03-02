@@ -49,11 +49,11 @@ const FilesHistory = (() => {
 
     // monitor changes in the db
     const updateHistoryBlock = () => {
-        getSortedFilesFromDB().then(files => {
-            let htmlLines = files.map(file =>
+        getSortedFilesFromDB().then(historyFiles => {
+            let htmlLines = historyFiles.map(historyFile =>
                 `<span class="history-item">` +
-                `<a class="history-delete" onclick="FilesHistory.deleteFileInDB('${file.id}')">x</a> ` +
-                `<a href="/${file.id}">${file.name}</a>` +
+                `<a class="history-delete" onclick="FilesHistory.deleteFileInDB('${historyFile.id}')">x</a> ` +
+                `<a href="/${historyFile.id}">${historyFile.name}</a>` +
                 `</span>`
             );
             historyBlock.innerHTML = htmlLines.join("<br>");

@@ -1,6 +1,8 @@
+const controlsContainerBlock = document.getElementById('controls-container');
 let createWebSocket = (app) => {
     app.socket = new WebSocket(`${apiUrl}/file`);
     app.socket.onopen = () => {
+        console.log(`Connection opened`);
         app.socket.send(JSON.stringify({
             action: 'init',
             file_id: file.id,
@@ -17,7 +19,6 @@ let createWebSocket = (app) => {
             console.log('Connection closed with error');
         }
         app.isOnline = false;
-        writerBlocksUpdate();
         app.socket = null;
     };
     app.socket.onerror = (error) => {
@@ -31,12 +32,24 @@ let createWebSocket = (app) => {
                 return;
             }
 
+            // todo: prepare to change file.id and load brand new file
+
             let previousWriterId = file.writer_id;
 
-            if (typeof data.content === 'undefined') {
-                data.content = file.content;
+            file.name = data.name;
+            file.lang = data.lang;
+            file.runner = data.runner;
+            file.is_runner_online = data.is_runner_online;
+            file.updated_at = data.updated_at;
+            file.content_updated_at = data.content_updated_at;
+            file.users = data.users;
+            file.is_waiting_for_result = data.is_waiting_for_result;
+            file.result = data.result;
+            file.persisted = data.persisted;
+            file._writer_id = data.writer_id;
+            if (typeof data.content === 'string') {
+                file.content = data.content;
             }
-            file = data;
 
             if (file.persisted) {
                 FilesHistory.saveFileToDB(file.id, file.name, file.content_updated_at);
@@ -45,9 +58,6 @@ let createWebSocket = (app) => {
 
             // update users
             updateUsers();
-
-            // update "Code is writing now by" block
-            writerBlocksUpdate();
 
             // update runner ui
             runnerBlocksUpdate();
@@ -86,7 +96,6 @@ let createWebSocket = (app) => {
             if (!app.isOnline) {
                 app.isOnline = true;
                 contentSender();
-                writerBlocksUpdate();
             }
         } catch (error) {
             console.error('Wrong message:', error);

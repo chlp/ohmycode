@@ -1,5 +1,24 @@
-const runnerSaveButton = document.getElementById('runner-save-button');
+const runnerInput = document.getElementById('runner-input');
+const runButton = document.getElementById('run-button');
+const runnerContainerBlock = document.getElementById('runner-container');
+const resultContainerBlock = document.getElementById('result-container');
 
+const runnerSaveButton = document.getElementById('runner-save-button');
+runnerSaveButton.onclick = () => {
+    actions.setRunner();
+};
+
+
+const cleanResultButton = document.getElementById('clean-result-button');
+cleanResultButton.onclick = () => {
+    file.result = '';
+    resultCodeMirror.setValue('');
+    actions.cleanResult(() => {
+        resultBlockUpdate();
+    });
+};
+
+const runnerEditButton = document.getElementById('runner-edit-button');
 let runnerBlocksUpdate = () => {
     if (file.is_runner_online) {
         runnerContainerBlock.style.display = 'none';
@@ -14,9 +33,6 @@ let runnerEditButtonOnclick = () => {
         runnerContainerBlock.style.display = 'block';
         runnerInput.focus();
     }
-};
-runnerSaveButton.onclick = () => {
-    actions.setRunner();
 };
 runnerInput.onkeydown = (event) => {
     if (event.key === 'Enter') {
@@ -95,12 +111,4 @@ contentContainerBlock.onkeydown = (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
         runTask();
     }
-};
-
-cleanResultButton.onclick = () => {
-    file.result = '';
-    resultCodeMirror.setValue('');
-    actions.cleanResult(() => {
-        resultBlockUpdate();
-    });
 };

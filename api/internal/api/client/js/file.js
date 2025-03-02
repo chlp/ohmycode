@@ -1,13 +1,4 @@
-const currentWriterInfo = document.getElementById('current-writer-info');
-const runButton = document.getElementById('run-button');
-const cleanResultButton = document.getElementById('clean-result-button');
-const runnerContainerBlock = document.getElementById('runner-container');
-const runnerEditButton = document.getElementById('runner-edit-button');
-const runnerInput = document.getElementById('runner-input');
 const contentContainerBlock = document.getElementById('content-container');
-const resultContainerBlock = document.getElementById('result-container');
-const controlsContainerBlock = document.getElementById('controls-container');
-
 const contentMarkdownBlock = document.getElementById('content-markdown');
 
 let contentCodeMirror = CodeMirror.fromTextArea(document.getElementById('content'), {
@@ -46,7 +37,8 @@ contentCodeMirror.on('keydown', function (codemirror, event) {
     }
 });
 
-let writerBlocksUpdate = () => {
+const currentWriterInfo = document.getElementById('current-writer-info');
+let updateEditorLockStatus = () => {
     if (!app.isOnline) {
         contentCodeMirror.setOption('readOnly', true);
         currentWriterInfo.style.removeProperty('display');
