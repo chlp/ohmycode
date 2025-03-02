@@ -14,6 +14,11 @@ let file = {
     "persisted": false,
 };
 
+let app = {
+    isOnline: false,
+    id: genUuid(),
+};
+
 const currentWriterInfo = document.getElementById('current-writer-info');
 const runButton = document.getElementById('run-button');
 const cleanResultButton = document.getElementById('clean-result-button');
@@ -28,9 +33,6 @@ const langSelect = document.getElementById('lang-select');
 
 const contentMarkdownBlock = document.getElementById('content-markdown');
 
-let isOnline = false;
-
-let appId = genUuid();
 let userId = localStorage['userId'];
 if (userId === undefined) {
     userId = genUuid();
@@ -68,13 +70,13 @@ contentCodeMirror.on('keydown', function (codemirror, event) {
     if (nonTextKeys.includes(event.key)) {
         return;
     }
-    if (file.writer_id !== '' && file.writer_id !== appId) {
+    if (file.writer_id !== '' && file.writer_id !== app.id) {
         // todo: show hint
-        console.log('someone else is changing content now. wait please:', file.writer_id, appId);
+        console.log('someone else is changing content now. wait please:', file.writer_id, app.id);
         return;
     }
     if (file.writer_id === '') {
-        file.writer_id = appId;
+        file.writer_id = app.id;
     }
 });
 
@@ -103,7 +105,7 @@ document.addEventListener('drop', (event) => {
             console.warn("Wrong file (binary)", droppedFile);
             return;
         }
-        if (file.writer_id !== '' && file.writer_id !== appId) {
+        if (file.writer_id !== '' && file.writer_id !== app.id) {
             return;
         }
 
@@ -168,15 +170,15 @@ const setLang = (newLang) => {
 setLang(localStorage['initialLang']);
 
 let writerBlocksUpdate = () => {
-    if (!isOnline) {
+    if (!app.isOnline) {
         contentCodeMirror.setOption('readOnly', true);
         currentWriterInfo.style.removeProperty('display');
         currentWriterInfo.innerHTML = 'Offline';
         return;
     }
 
-    contentCodeMirror.setOption('readOnly', file.writer_id !== '' && file.writer_id !== appId);
-    if (file.writer_id === '' || file.writer_id === appId) {
+    contentCodeMirror.setOption('readOnly', file.writer_id !== '' && file.writer_id !== app.id);
+    if (file.writer_id === '' || file.writer_id === app.id) {
         currentWriterInfo.style.display = 'none';
         currentWriterInfo.innerHTML = '';
     } else {
@@ -219,7 +221,7 @@ let createWebSocket = () => {
         socket.send(JSON.stringify({
             action: 'init',
             file_id: file.id,
-            app_id: appId,
+            app_id: app.id,
             user_id: userId,
             user_name: userName,
             lang: currentLang
@@ -231,7 +233,7 @@ let createWebSocket = () => {
         } else {
             console.log('Connection closed with error');
         }
-        isOnline = false;
+        app.isOnline = false;
         writerBlocksUpdate();
         socket = null;
     };
@@ -277,9 +279,9 @@ let createWebSocket = () => {
 
             // update code
             if (
-                !isOnline || // first load
+                !app.isOnline || // first load
                 (
-                    file.writer_id !== appId && previousWriterId !== appId && // do not update if current user is writer
+                    file.writer_id !== app.id && previousWriterId !== app.id && // do not update if current user is writer
                     ohMySimpleHash(file.content) !== ohMySimpleHash(contentCodeMirror.getValue()) // do not update if code is the same already
                 )
             ) {
@@ -298,8 +300,8 @@ let createWebSocket = () => {
                 controlsContainerBlock.style.display = 'block';
             }
 
-            if (!isOnline) {
-                isOnline = true;
+            if (!app.isOnline) {
+                app.isOnline = true;
                 contentSender();
                 writerBlocksUpdate();
             }
@@ -321,7 +323,7 @@ setInterval(() => {
 
 let contentSenderTimer = 0;
 let contentSender = () => {
-    if (!isOnline) {
+    if (!app.isOnline) {
         return;
     }
     let getNextUpdateFunc = (timeout) => {

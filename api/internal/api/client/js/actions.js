@@ -26,15 +26,15 @@ let actions = {
         });
     },
     setContent: (content, callback) => {
-        if (!isOnline) {
+        if (!app.isOnline) {
             callback();
             return;
         }
-        if (file.writer_id !== '' && file.writer_id !== appId) {
+        if (file.writer_id !== '' && file.writer_id !== app.id) {
             callback();
             return;
         }
-        file.writer_id = appId;
+        file.writer_id = app.id;
         file.content = content;
         postRequest('set_content', {
             content: content,
