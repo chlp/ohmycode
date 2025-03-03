@@ -46,7 +46,7 @@ const createWebSocket = (app) => {
             file.is_waiting_for_result = data.is_waiting_for_result;
             file.result = data.result;
             file.persisted = data.persisted;
-            file._writer_id = data.writer_id;
+            file.writer_id = data.writer_id;
             if (typeof data.content === 'string') {
                 file.content = data.content;
             }
@@ -64,11 +64,6 @@ const createWebSocket = (app) => {
 
             // update result ui
             resultBlockUpdate();
-
-            // update file name
-            if (fileNameBlock.innerHTML !== file.name && !fileNameEditing) {
-                fileNameBlock.innerHTML = file.name;
-            }
 
             // update code
             if (

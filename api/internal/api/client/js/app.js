@@ -21,7 +21,6 @@ const getFileIdFromUrl = () => {
 
 let file = {
     id: getFileIdFromUrl(),
-    name: "",
     content: "",
     lang: 'markdown',
     runner: "",
@@ -32,6 +31,18 @@ let file = {
     is_waiting_for_result: false,
     result: "",
     persisted: false,
+
+    _name: "",
+    get name() {
+        return this._name;
+    },
+    set name(value) {
+        if (fileNameBlock.innerHTML !== value && !fileNameEditing) {
+            fileNameBlock.innerHTML = value;
+        }
+        this._name = value;
+    },
+
     _writer_id: "",
     get writer_id() {
         return this._writer_id;
