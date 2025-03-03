@@ -118,7 +118,9 @@ const Sidebar = (() => {
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.collapsedText;
         }
-        historyBlock.style.display = 'none';
+        setTimeout(() => {
+            historyBlock.style.display = 'none';
+        }, 500); // 500 - the same as the CSS style #sidebar transition: width 0.5s ease;
         isSidebarVisible = false;
         localStorage['isSidebarVisible'] = JSON.stringify(false);
     };
