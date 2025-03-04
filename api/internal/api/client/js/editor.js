@@ -97,3 +97,26 @@ document.addEventListener('keydown', function (event) {
         saveContentToFile();
     }
 });
+
+document.onkeydown = (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        if (app.actions === 'run') {
+            runTask();
+        } else if (app.actions === 'view') {
+            setLang('markdown_view'); // todo: not only markdown
+        } else if (app.actions === 'edit') {
+            setLang('markdown');
+        }
+    }
+};
+
+const editButton = document.getElementById('edit-button');
+const viewButton = document.getElementById('view-button');
+
+viewButton.onclick = () => {
+    setLang('markdown_view'); // todo: not only markdown
+};
+
+editButton.onclick = () => {
+    setLang('markdown');
+};

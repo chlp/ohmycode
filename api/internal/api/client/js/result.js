@@ -80,7 +80,7 @@ let resultBlockUpdate = () => {
         runButton.removeAttribute('disabled');
     }
 
-    if (file.is_waiting_for_result || file.result.length > 0) {
+    if (app.actions === 'run' && (file.is_waiting_for_result || file.result.length > 0)) {
         resultContainerBlock.style.display = 'block';
         contentContainerBlock.style.height = 'calc(68vh - 90px)';
         cleanResultButton.removeAttribute('disabled');
@@ -104,9 +104,4 @@ let runTask = () => {
 };
 runButton.onclick = () => {
     runTask();
-};
-contentContainerBlock.onkeydown = (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        runTask();
-    }
 };

@@ -71,6 +71,7 @@ let app = {
     userName: localStorage['user_name'] === undefined ? '' : localStorage['user_name'],
     lang: undefined,
     renderer: undefined,
+    actions: undefined,
 };
 
 if (localStorage['user_id'] === undefined) {

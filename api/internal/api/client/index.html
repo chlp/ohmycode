@@ -65,8 +65,10 @@
 
     <div class="blocks-container" id="controls-container" style="float: left; clear: left; display: none;">
         <select id="lang-select" style="width: 150px; height: 30px;"></select>
-        <button id="run-button" title="Cmd/Ctrl + Enter" disabled>Run code</button>
-        <button id="clean-result-button" disabled>Clean result</button>
+        <button id="edit-button" title="Cmd/Ctrl + Enter" style="display: none;">Edit</button>
+        <button id="view-button" title="Cmd/Ctrl + Enter" style="display: none;">View</button>
+        <button id="run-button" title="Cmd/Ctrl + Enter" disabled style="display: none;">Run</button>
+        <button id="clean-result-button" disabled style="display: none;">Clean result</button>
         <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
     </div>
 
@@ -93,10 +95,10 @@
 <script src="js/sidebar.js?v=4" defer></script>
 <script src="js/users.js?v=4" defer></script>
 <script src="js/editor.js?v=4" defer></script>
+<script src="js/result.js?v=4" defer></script>
 <script src="js/lang.js?v=4" defer></script>
 <script src="js/connect.js?v=4" defer></script>
 <script src="js/open_file.js?v=4" defer></script>
-<script src="js/result.js?v=4" defer></script>
 
 </body>
 </html>
