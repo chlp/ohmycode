@@ -72,7 +72,7 @@ body {
     line-height: var(--line-height);
     margin: 0;
     overflow-x: hidden;
-    padding: 4px 0 0 0;
+    padding: 1em;
 }
 
 footer,
@@ -641,7 +641,7 @@ button.transparent:hover {
 }
 
 #file, #sidebar {
-    transition: width 0.5s ease;
+    transition: all 0.5s ease;
 }
 
 #file {
@@ -654,7 +654,6 @@ button.transparent:hover {
     float: left;
     clear: left;
     height: 98vh;
-    padding-left: 1em;
     overflow-x: hidden;
     overflow-y: scroll;
     text-overflow: ellipsis;
@@ -669,6 +668,8 @@ button.transparent:hover {
     float: right;
     clear: both;
     margin-right: 0.5em;
+    width: calc(100% - 1em);
+    text-align: center;
 }
 
 #sidebar > span:hover {
@@ -681,6 +682,7 @@ button.transparent:hover {
     border-top: 1px solid var(--color-bg-transparent);
     margin-top: 0.5em;
     padding-top: 0.5em;
+    transition: all 0.5s ease;
 }
 
 #history > a {

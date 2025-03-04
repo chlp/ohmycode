@@ -101,23 +101,27 @@ const Sidebar = (() => {
         isSidebarVisible = JSON.parse(localStorage['isSidebarVisible']);
     }
     const showSidebar = () => {
-        sidebarBlock.style.width = '20em';
+        sidebarBlock.style.width = '18em';
         sidebarToggleVisibilitySpan.innerHTML = '<—'
         fileBlock.style.width = 'calc(-20em + 100vw)';
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.fullText;
         }
         historyBlock.style.display = '';
+        setTimeout(() => {
+            historyBlock.style.opacity = '1';
+        }, 1);
         isSidebarVisible = true;
         localStorage['isSidebarVisible'] = JSON.stringify(true);
     };
     const hideSidebar = () => {
         sidebarBlock.style.width = '3em';
         sidebarToggleVisibilitySpan.innerHTML = '—>'
-        fileBlock.style.width = 'calc(-3em + 100vw)';
+        fileBlock.style.width = 'calc(-5em + 100vw)';
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.collapsedText;
         }
+        historyBlock.style.opacity = '0';
         setTimeout(() => {
             historyBlock.style.display = 'none';
         }, 500); // 500 - the same as the CSS style #sidebar transition: width 0.5s ease;
