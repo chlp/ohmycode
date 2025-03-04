@@ -61,9 +61,6 @@ for (const key in languages) {
 }
 langSelect.onchange = () => {
     setLang(langSelect.value);
-    actions.setLang(app.lang);
-    localStorage['initialLang'] = app.lang;
-    contentCodeMirror.focus();
 };
 
 const setLang = (lang) => {
@@ -116,5 +113,11 @@ const setLang = (lang) => {
     }
 
     langSelect.value = app.lang;
+
+    if (typeof actions !== 'undefined') {
+        actions.setLang(app.lang);
+    }
+    localStorage['initialLang'] = app.lang;
+    contentCodeMirror.focus();
 };
 setLang(localStorage['initialLang']);
