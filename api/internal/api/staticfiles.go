@@ -43,7 +43,7 @@ func serveStaticFiles(mux *http.ServeMux) {
 			indexHtmlFound = true
 		case "style.css":
 			styleCssFound = true
-		case "js/file.js":
+		case "js/app.js":
 			fileJsFound = true
 		}
 		return nil
