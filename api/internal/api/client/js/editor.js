@@ -128,9 +128,15 @@ helloWorldButton.onclick = () => {
         return;
     }
 
+    let content = contentCodeMirror.getValue();
     switch (helloWorld) {
         case 'go':
-            console.log('hello world go');
+            if (file.writer_id === '' || file.writer_id === app.id) {
+                content = 'hello world go ' + content;
+                contentMarkdownBlock.innerHTML = marked.parse(content);
+                contentCodeMirror.setValue(content);
+                console.log('hello world go');
+            }
             break;
         case 'java':
             console.log('hello world java');
