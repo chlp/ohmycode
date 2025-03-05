@@ -4,48 +4,56 @@ const languages = {
         highlighter: 'go',
         renderer: 'codemirror',
         actions: 'run',
+        helloWorld: 'go',
     },
     java: {
         name: 'Java',
         highlighter: 'text/x-java',
         renderer: 'codemirror',
         actions: 'run',
+        helloWorld: 'java',
     },
     json: {
         name: 'JSON',
         highlighter: 'application/json',
         renderer: 'codemirror',
         actions: 'none',
+        helloWorld: 'json',
     },
     markdown: {
         name: 'Markdown Edit',
         highlighter: 'text/x-markdown',
         renderer: 'codemirror',
         actions: 'view',
+        helloWorld: 'markdown',
     },
     markdown_view: {
         name: 'Markdown View',
         highlighter: null,
         renderer: 'markdown',
         actions: 'edit',
+        helloWorld: undefined,
     },
     mysql8: {
         name: 'MySQL 8',
         highlighter: 'sql',
         renderer: 'codemirror',
         actions: 'run',
+        helloWorld: 'mysql',
     },
     php82: {
         name: 'PHP 8.2',
         highlighter: 'php',
         renderer: 'codemirror',
         actions: 'run',
+        helloWorld: 'php',
     },
     postgres13: {
         name: 'PostgreSQL 13',
         highlighter: 'sql',
         renderer: 'codemirror',
         actions: 'run',
+        helloWorld: 'postgres',
     },
 };
 
@@ -110,6 +118,12 @@ const setLang = (lang) => {
             cleanResultButton.style.display = 'none';
         }
         app.actions = languages[app.lang].actions;
+    }
+
+    if (typeof languages[app.lang].helloWorld === 'undefined') {
+        helloWorldButton.style.display = 'none';
+    } else {
+        helloWorldButton.style.display = '';
     }
 
     langSelect.value = app.lang;

@@ -120,3 +120,37 @@ viewButton.onclick = () => {
 editButton.onclick = () => {
     setLang('markdown');
 };
+
+const helloWorldButton = document.getElementById('hello-world-button');
+helloWorldButton.onclick = () => {
+    const helloWorld = languages[app.lang].helloWorld;
+    if (typeof helloWorld === 'undefined') {
+        return;
+    }
+
+    switch (helloWorld) {
+        case 'go':
+            console.log('hello world go');
+            break;
+        case 'java':
+            console.log('hello world java');
+            break;
+        case 'json':
+            console.log('hello world json');
+            break;
+        case 'markdown':
+            console.log('hello world markdown');
+            break;
+        case 'mysql':
+            console.log('hello world mysql');
+            break;
+        case 'php':
+            console.log('hello world php');
+            break;
+        case 'postgres':
+            console.log('hello world postgres');
+            break;
+        default:
+            console.error('no helloWorld code');
+    }
+}
