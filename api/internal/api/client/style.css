@@ -650,7 +650,7 @@ button.transparent:hover {
 }
 
 #sidebar {
-    float: left;
+    float: right;
     clear: left;
     height: 98vh;
     overflow-x: hidden;

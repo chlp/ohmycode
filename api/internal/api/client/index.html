@@ -38,13 +38,6 @@
     };
 </script>
 
-<div id="sidebar" style="width: 18em;">
-    <span id="sidebar-toggle-visibility"><—</span>
-    <span class="collapse-with-sidebar" data-full-text="Download" data-collapsed-text="D" onclick="saveContentToFile(file.content, file.name)">Download</span>
-    <span class="collapse-with-sidebar" data-full-text="Copy URL" data-collapsed-text="U" onclick="copyToClipboard(window.location.href)">Copy URL</span>
-    <span class="collapse-with-sidebar" data-full-text="New file" data-collapsed-text="N" onclick="window.open('/', '_blank')">New file</span>
-    <div id="history"></div>
-</div>
 <div id="file" style="width: calc(-21em + 100vw);">
     <div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
         <a href="#" id="file-name" contenteditable="true" spellcheck="false"
@@ -87,6 +80,14 @@
     <div class="result textarea" id="result-container">
         <textarea id="result"></textarea>
     </div>
+</div>
+
+<div id="sidebar" style="width: 18em;">
+    <span id="sidebar-toggle-visibility"><—</span>
+    <span class="collapse-with-sidebar" data-full-text="Download" data-collapsed-text="D" onclick="saveContentToFile(file.content, file.name)">Download</span>
+    <span class="collapse-with-sidebar" data-full-text="Copy URL" data-collapsed-text="U" onclick="copyToClipboard(window.location.href)">Copy URL</span>
+    <span class="collapse-with-sidebar" data-full-text="New file" data-collapsed-text="N" onclick="window.open('/', '_blank')">New file</span>
+    <div id="history"></div>
 </div>
 
 <script>let apiUrl = '';</script>
