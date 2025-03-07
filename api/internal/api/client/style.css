@@ -711,6 +711,8 @@ button.transparent:hover {
 
 #content-markdown {
     padding: 1em;
+    overflow: auto;
+    height: calc(100% - 2em);
 }
 
 #content-markdown h1, #content-markdown h2, #content-markdown h3 {
