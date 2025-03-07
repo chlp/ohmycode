@@ -103,7 +103,7 @@ const Sidebar = (() => {
     const showSidebar = () => {
         sidebarBlock.style.width = '18em';
         sidebarToggleVisibilitySpan.innerHTML = '<—'
-        fileBlock.style.width = 'calc(-20em + 100vw)';
+        fileBlock.style.width = 'calc(-21em + 100vw)';
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.fullText;
         }
@@ -117,7 +117,7 @@ const Sidebar = (() => {
     const hideSidebar = () => {
         sidebarBlock.style.width = '3em';
         sidebarToggleVisibilitySpan.innerHTML = '—>'
-        fileBlock.style.width = 'calc(-5em + 100vw)';
+        fileBlock.style.width = 'calc(-6em + 100vw)';
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.collapsedText;
         }
