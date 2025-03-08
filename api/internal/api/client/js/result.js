@@ -1,6 +1,7 @@
 const runnerInput = document.getElementById('runner-input');
 const runButton = document.getElementById('run-button');
 const runnerContainerBlock = document.getElementById('runner-container');
+const fileResultBlock = document.getElementById('file-result');
 const resultContainerBlock = document.getElementById('result-container');
 
 const runnerSaveButton = document.getElementById('runner-save-button');
@@ -82,11 +83,11 @@ let resultBlockUpdate = () => {
 
     if (app.actions === 'run' && (file.is_waiting_for_result || file.result.length > 0)) {
         resultContainerBlock.style.display = 'block';
-        contentContainerBlock.style.height = 'calc(68vh - 90px)';
+        fileResultBlock.style.display = 'flex';
         cleanResultButton.removeAttribute('disabled');
     } else {
         resultContainerBlock.style.display = 'none';
-        contentContainerBlock.style.height = 'calc(98vh - 90px)';
+        fileResultBlock.style.display = 'none';
         cleanResultButton.setAttribute('disabled', 'true');
     }
 };

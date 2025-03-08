@@ -72,7 +72,7 @@ body {
     line-height: var(--line-height);
     margin: 0;
     overflow-x: hidden;
-    padding: 1em 1em 0 1em;
+    padding: 0;
 }
 
 footer,
@@ -564,8 +564,6 @@ blockquote footer {
 #file-name-container > a, #users-container > a, #users-container > span {
     padding: 3px 5px;
     border-radius: var(--border-radius);
-    margin-bottom: .5em;
-    margin-left: .5em;
     display: inline-block;
 }
 
@@ -589,10 +587,9 @@ blockquote footer {
 
 .textarea {
     float: left;
-    margin-bottom: .5em;
     border: 1px solid #666;
     cursor: text;
-    width: 100%;
+    width: calc(100% - 2px);
 }
 
 .textarea > div.CodeMirror {
@@ -605,13 +602,11 @@ blockquote footer {
 }
 
 .textarea.content {
-    height: calc(98vh - 90px);
-    min-height: 300px;
+    height: calc(100% - 2px);
 }
 
 .textarea.result {
-    height: 30vh;
-    min-height: 200px;
+    height: calc(100% - 2px);
 }
 
 .textarea > textarea {
@@ -639,12 +634,12 @@ button.transparent:hover {
     background: rgba(0,0,0,.7);
 }
 
-#file, #sidebar {
-    transition: all 0.5s ease;
+#big-fat-boss-block {
+    display: flex;
 }
 
-#file {
-    flex: 1;
+#file, #sidebar {
+    transition: all 0.5s ease;
 }
 
 #sidebar {
@@ -652,7 +647,6 @@ button.transparent:hover {
     flex-shrink: 0;
     flex-basis: 18em;
 
-    height: 98vh;
     overflow-x: hidden;
     text-overflow: ellipsis;
     box-sizing: border-box;
@@ -672,6 +666,48 @@ button.transparent:hover {
 
 #sidebar > span:hover {
     border: 1px solid var(--color-bg-transparent);
+}
+
+#file {
+    flex: 1;
+    height: calc(100vh - 2em);
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 400px;
+    padding-right: 5px;
+}
+
+#file-header {
+    height: 2.5em;
+    flex: 0 0 2.5em;
+    padding-top: 0.5em;
+}
+
+#file-content {
+    flex: 1;
+    min-height: 300px;
+    overflow: hidden;
+}
+
+#file-controls {
+    height: 4em;
+    flex: 0 0 4em;
+    display: flex;
+    align-items: end;
+}
+
+@media (max-width: 600px) {
+    #file-controls {
+        height: 7em;
+        flex: 0 0 7em;
+    }
+}
+
+
+#file-result {
+    flex: 0 0 300px;
 }
 
 #history {

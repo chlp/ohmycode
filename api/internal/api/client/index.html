@@ -38,7 +38,7 @@
     };
 </script>
 
-<div style="display: flex;">
+<div id="big-fat-boss-block">
     <div id="sidebar">
         <span id="sidebar-toggle-visibility"><—</span>
         <span class="collapse-with-sidebar" data-full-text="Download" data-collapsed-text="D" onclick="saveContentToFile(file.content, file.name)">Download</span>
@@ -48,46 +48,54 @@
     </div>
 
     <div id="file">
-        <div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
-            <a href="#" id="file-name" contenteditable="true" spellcheck="false"
-               title="Rename file"></a>
+        <div id="file-header">
+            <div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
+                <a href="#" id="file-name" contenteditable="true" spellcheck="false"
+                   title="Rename file"></a>
+            </div>
+
+            <div class="blocks-container" style="float: right; clear: right;">
+                <span id="users-container"></span>
+                <a href="https://github.com/chlp/ohmycode" target="_blank">
+                    <img src="github-mark.svg" style="height: 28px; vertical-align: middle; margin-left: 1em;">
+                </a>
+            </div>
         </div>
 
-        <div class="blocks-container" style="float: right; clear: right;">
-            <span id="users-container"></span>
-            <a href="https://github.com/chlp/ohmycode" target="_blank">
-                <img src="github-mark.svg" style="height: 28px; vertical-align: middle; margin-left: 1em;">
-            </a>
+        <div id="file-content">
+            <div class="content textarea" id="content-container" style="clear: both;">
+                <textarea id="content"></textarea>
+                <div id="content-markdown" class="markdown-body" style="display: none;"></div>
+            </div>
         </div>
 
-        <div class="content textarea" id="content-container" style="clear: both;">
-            <textarea id="content"></textarea>
-            <div id="content-markdown" class="markdown-body" style="display: none;"></div>
+        <div id="file-controls">
+            <div class="blocks-container" id="controls-container" style="display: none;">
+                <select id="lang-select" style="width: 150px; height: 30px;"></select>
+                <button id="edit-button" title="Cmd/Ctrl + Enter" style="display: none;">Edit</button>
+                <button id="view-button" title="Cmd/Ctrl + Enter" style="display: none;">View</button>
+                <button id="run-button" title="Cmd/Ctrl + Enter" disabled style="display: none;">Run</button>
+                <button id="clean-result-button" disabled style="display: none;">Clean result</button>
+                <button id="hello-world-button" title="Insert Hello World! code" style="display: none;">Hello World!</button>
+                <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
+            </div>
+
+            <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
+                <span id="status-bar" style="padding: 0.4rem 0.8rem; display: none;"></span>
+            </div>
+
+            <div class="blocks-container" id="runner-container" style="float: left; margin-top: 1em; display: none;">
+                <button id="runner-save-button">save</button>
+                <input type="text" id="runner-input" style="width: 20em;" maxlength="32" minlength="32"
+                       pattern="[0-9a-zA-Z]{32}" value="">
+                <label for="runner-input"><- runner id</label>
+            </div>
         </div>
 
-        <div class="blocks-container" id="controls-container" style="float: left; clear: left; display: none;">
-            <select id="lang-select" style="width: 150px; height: 30px;"></select>
-            <button id="edit-button" title="Cmd/Ctrl + Enter" style="display: none;">Edit</button>
-            <button id="view-button" title="Cmd/Ctrl + Enter" style="display: none;">View</button>
-            <button id="run-button" title="Cmd/Ctrl + Enter" disabled style="display: none;">Run</button>
-            <button id="clean-result-button" disabled style="display: none;">Clean result</button>
-            <button id="hello-world-button" title="Insert Hello World! code" style="display: none;">Hello World!</button>
-            <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
-        </div>
-
-        <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
-            <span id="status-bar" style="padding: 0.4rem 0.8rem; display: none;"></span>
-        </div>
-
-        <div class="blocks-container" id="runner-container" style="float: left; margin-top: 1em; display: none;">
-            <button id="runner-save-button">save</button>
-            <input type="text" id="runner-input" style="width: 20em;" maxlength="32" minlength="32"
-                   pattern="[0-9a-zA-Z]{32}" value="">
-            <label for="runner-input"><- runner id</label>
-        </div>
-
-        <div class="result textarea" id="result-container">
-            <textarea id="result"></textarea>
+        <div id="file-result" style="display: none;">
+            <div class="result textarea" id="result-container">
+                <textarea id="result"></textarea>
+            </div>
         </div>
     </div>
 </div>
