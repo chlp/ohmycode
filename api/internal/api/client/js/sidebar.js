@@ -101,9 +101,8 @@ const Sidebar = (() => {
         isSidebarVisible = JSON.parse(localStorage['isSidebarVisible']);
     }
     const showSidebar = () => {
-        sidebarBlock.style.width = '18em';
+        sidebarBlock.style.flexBasis = '18em';
         sidebarToggleVisibilitySpan.innerHTML = '<—'
-        fileBlock.style.width = 'calc(-21em + 100vw)';
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.fullText;
         }
@@ -115,9 +114,8 @@ const Sidebar = (() => {
         localStorage['isSidebarVisible'] = JSON.stringify(true);
     };
     const hideSidebar = () => {
-        sidebarBlock.style.width = '3em';
+        sidebarBlock.style.flexBasis = '3em';
         sidebarToggleVisibilitySpan.innerHTML = '—>'
-        fileBlock.style.width = 'calc(-6em + 100vw)';
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.collapsedText;
         }

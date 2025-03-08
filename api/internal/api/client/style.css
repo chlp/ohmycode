@@ -644,14 +644,14 @@ button.transparent:hover {
 }
 
 #file {
-    float: right;
-    clear: right;
-    box-sizing: border-box;
+    flex: 1;
 }
 
 #sidebar {
-    float: right;
-    clear: left;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 18em;
+
     height: 98vh;
     overflow-x: hidden;
     text-overflow: ellipsis;
