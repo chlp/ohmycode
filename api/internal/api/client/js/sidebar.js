@@ -91,10 +91,9 @@ const Sidebar = (() => {
     const sidebarBlock = document.getElementById('sidebar');
     const sidebarToggleVisibilitySpan = document.getElementById('sidebar-toggle-visibility');
     const historyBlock = document.getElementById('history');
-    const fileBlock = document.getElementById('file');
     const collapseWithSidebarBlocks = document.getElementsByClassName('collapse-with-sidebar');
 
-    let isSidebarVisible = false;
+    let isSidebarVisible = true;
     if (localStorage['isSidebarVisible'] === undefined) {
         localStorage['isSidebarVisible'] = JSON.stringify(isSidebarVisible);
     } else {
