@@ -728,3 +728,7 @@ button.transparent:hover {
     padding: 0.2em 0.4em;
     border-radius: 3px;
 }
+
+#content-markdown a {
+    text-decoration: underline;
+}
