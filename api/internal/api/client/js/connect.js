@@ -60,10 +60,14 @@ const createWebSocket = (app) => {
             updateUsers();
 
             // update runner ui
-            runnerBlocksUpdate();
+            if (typeof runnerBlocksUpdate === 'function') {
+                runnerBlocksUpdate();
+            }
 
             // update result ui
-            resultBlockUpdate();
+            if (typeof resultBlockUpdate === 'function') {
+                resultBlockUpdate();
+            }
 
             // update code
             if (
@@ -97,7 +101,9 @@ const createWebSocket = (app) => {
         }
     };
 };
-createWebSocket(app);
+window.addEventListener("load", () => {
+    createWebSocket(app);
+});
 
 let reconnectAttempts = 0;
 setInterval(() => {
