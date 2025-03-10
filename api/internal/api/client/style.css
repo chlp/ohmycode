@@ -644,10 +644,6 @@ button.transparent:hover {
     display: flex;
 }
 
-#file, #sidebar {
-    transition: all 0.5s ease;
-}
-
 #sidebar {
     flex-grow: 0;
     flex-shrink: 0;
