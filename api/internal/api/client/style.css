@@ -649,6 +649,7 @@ button.transparent:hover {
     flex-shrink: 0;
     flex-basis: 18em;
 
+    padding-top: 0.5em;
     overflow-x: hidden;
     text-overflow: ellipsis;
     box-sizing: border-box;
@@ -661,7 +662,7 @@ button.transparent:hover {
     border: 1px solid transparent;
     float: right;
     clear: both;
-    margin-right: 0.5em;
+    margin-right: 0.25em;
     width: calc(100% - 1em);
     text-align: center;
 }

@@ -89,7 +89,6 @@ const Sidebar = (() => {
     };
 
     const sidebarBlock = document.getElementById('sidebar');
-    const sidebarToggleVisibilitySpan = document.getElementById('sidebar-toggle-visibility');
     const historyBlock = document.getElementById('history');
     const collapseWithSidebarBlocks = document.getElementsByClassName('collapse-with-sidebar');
 
@@ -101,7 +100,6 @@ const Sidebar = (() => {
     }
     const showSidebar = () => {
         sidebarBlock.style.flexBasis = '18em';
-        sidebarToggleVisibilitySpan.innerHTML = '<—'
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.fullText;
         }
@@ -114,7 +112,6 @@ const Sidebar = (() => {
     };
     const hideSidebar = () => {
         sidebarBlock.style.flexBasis = '3em';
-        sidebarToggleVisibilitySpan.innerHTML = '—>'
         for (const block of collapseWithSidebarBlocks) {
             block.innerHTML = block.dataset.collapsedText;
         }
@@ -125,6 +122,7 @@ const Sidebar = (() => {
         isSidebarVisible = false;
         localStorage['isSidebarVisible'] = JSON.stringify(false);
     };
+    const sidebarToggleVisibilitySpan = document.getElementById('sidebar-toggle-visibility');
     sidebarToggleVisibilitySpan.onclick = () => {
         if (isSidebarVisible) {
             hideSidebar();
