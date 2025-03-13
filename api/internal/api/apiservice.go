@@ -44,7 +44,7 @@ func (s *Service) Run() {
 		}
 	}
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.httpPort), corsMiddleware(timerMiddleware(mux))))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.httpPort), headersMiddleware(timerMiddleware(mux))))
 }
 
 func timerMiddleware(next http.Handler) http.Handler {
@@ -54,11 +54,12 @@ func timerMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func corsMiddleware(next http.Handler) http.Handler {
+func headersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800, stale-if-error=604800")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
