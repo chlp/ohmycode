@@ -19,43 +19,56 @@ const getFileIdFromUrl = () => {
     return fileId;
 }
 
-let file = {
-    id: getFileIdFromUrl(),
-    content: "",
-    lang: 'markdown',
-    runner: "",
-    is_runner_online: false,
-    updated_at: null,
-    content_updated_at: null,
-    users: [],
-    is_waiting_for_result: false,
-    result: "",
-    persisted: false,
+const initFile = () => {
+    return {
+        id: getFileIdFromUrl(),
+        content: "",
+        lang: 'markdown',
+        runner: "",
+        is_runner_online: false,
+        updated_at: null,
+        content_updated_at: null,
+        users: [],
+        is_waiting_for_result: false,
+        result: "",
+        persisted: false,
 
-    _name: "",
-    get name() {
-        return this._name;
-    },
-    set name(value) {
-        if (fileNameBlock.innerHTML !== value && !fileNameEditing) {
-            fileNameBlock.innerHTML = value;
-        }
-        this._name = value;
-    },
+        _name: "",
+        get name() {
+            return this._name;
+        },
+        set name(value) {
+            if (fileNameBlock.innerHTML !== value && !fileNameEditing) {
+                fileNameBlock.innerHTML = value;
+            }
+            this._name = value;
+        },
 
-    _writer_id: "",
-    get writer_id() {
-        return this._writer_id;
-    },
-    set writer_id(value) {
-        if (this._writer_id !== value) {
-            this._writer_id = value;
-            updateEditorLockStatus();
-        }
-    },
+        _writer_id: "",
+        get writer_id() {
+            return this._writer_id;
+        },
+        set writer_id(value) {
+            if (this._writer_id !== value) {
+                this._writer_id = value;
+                updateEditorLockStatus();
+            }
+        },
+    };
+};
+let file = initFile();
+
+const createNewFile = () => {
+    file.id = genUuid();
+    file.content = "";
+    contentCodeMirror.setValue("");
+    contentMarkdownBlock.innerHTML = "";
+    history.pushState({}, null, '/' + file.id);
+    file = initFile();
+    actions.openFile();
 };
 
-let app = {
+const app = {
     _isOnline: false,
     get isOnline() {
         return this._isOnline;

@@ -44,7 +44,7 @@ const (
 
 func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 	if fileName == "" {
-		fileName = "File " + time.Now().Format("2006-01-02")
+		fileName = "File " + time.Now().Format("2006-01-02 15:04:05")
 	}
 	file := &File{
 		ID:                 fileId,

@@ -12,7 +12,7 @@
     <link rel="shortcut icon" href="favicon.ico"/>
     <link rel="apple-touch-icon" sizes="180x180" href="favicon-apple-touch.png"/>
 
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
 
     <link rel="stylesheet" href="codemirror/codemirror.css">
     <link rel="stylesheet" href="codemirror/themes/base16-light.css">
@@ -46,7 +46,7 @@
         <span class="collapse-with-sidebar" data-full-text="Hide ⬅️" data-collapsed-text="➡️" id="sidebar-toggle-visibility"></span>
         <span class="collapse-with-sidebar" data-full-text="Download 📥" data-collapsed-text="📥" onclick="saveContentToFile(file.content, file.name)"></span>
         <span class="collapse-with-sidebar" data-full-text="Copy URL 🔗" data-collapsed-text="🔗" onclick="copyToClipboard(window.location.href)"></span>
-        <span class="collapse-with-sidebar" data-full-text="New file 📄" data-collapsed-text="📄" onclick="window.open('/', '_blank')"></span>
+        <span class="collapse-with-sidebar" data-full-text="New file 📄" data-collapsed-text="📄" onclick="createNewFile()"></span>
         <div id="history"></div>
     </div>
 
@@ -104,17 +104,17 @@
 </div>
 
 <script>let apiUrl = '';</script>
-<script src="js/utils.js?v=5" defer></script>
-<script src="js/file_name.js?v=5" defer></script>
-<script src="js/app.js?v=5" defer></script>
-<script src="js/sidebar.js?v=5" defer></script>
-<script src="js/users.js?v=5" defer></script>
-<script src="js/editor.js?v=5" defer></script>
-<script src="js/hello_world.js?v=5" defer></script>
-<script src="js/result.js?v=5" defer></script>
-<script src="js/lang.js?v=5" defer></script>
-<script src="js/connect.js?v=5" defer></script>
-<script src="js/open_file.js?v=5" defer></script>
+<script src="js/utils.js?v=6" defer></script>
+<script src="js/file_name.js?v=6" defer></script>
+<script src="js/app.js?v=6" defer></script>
+<script src="js/sidebar.js?v=6" defer></script>
+<script src="js/users.js?v=6" defer></script>
+<script src="js/editor.js?v=6" defer></script>
+<script src="js/hello_world.js?v=6" defer></script>
+<script src="js/result.js?v=6" defer></script>
+<script src="js/lang.js?v=6" defer></script>
+<script src="js/connect.js?v=6" defer></script>
+<script src="js/open_file.js?v=6" defer></script>
 
 </body>
 </html>

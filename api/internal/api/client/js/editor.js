@@ -101,7 +101,7 @@ document.addEventListener('keydown', function (event) {
 document.onkeydown = (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
         if (app.actions === 'run') {
-            runTask();
+            actions.runTask();
         } else if (app.actions === 'view') {
             setLang('markdown_view'); // todo: not only markdown
         } else if (app.actions === 'edit') {

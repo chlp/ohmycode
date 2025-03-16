@@ -1,16 +1,74 @@
+const postRequest = (action, data, callback) => {
+    try {
+        app.socket.send(JSON.stringify({
+            ...data,
+            action: action,
+        }));
+    } finally {
+        if (typeof callback === 'function') {
+            callback();
+        }
+    }
+};
+
+const actions = {
+    openFile: () => {
+        postRequest('init', {
+            file_id: file.id,
+            file_name: getLocalDateTimeString(),
+            app_id: app.id,
+            user_id: app.userId,
+            user_name: app.userName,
+            lang: app.lang,
+        });
+    },
+    setFileName: (newFileName) => {
+        postRequest('set_name', {
+            file_name: newFileName,
+        });
+    },
+    setUserName: (newUserName) => {
+        postRequest('set_user_name', {
+            user_name: newUserName,
+        });
+    },
+    setLang: (lang) => {
+        postRequest('set_lang', {
+            lang: lang,
+        });
+    },
+    setRunner: (runnerId) => {
+        postRequest('set_runner', {
+            runner_id: runnerId,
+        });
+    },
+    setContent: (content) => {
+        if (!app.isOnline) {
+            return;
+        }
+        if (file.writer_id !== '' && file.writer_id !== app.id) {
+            return;
+        }
+        file.writer_id = app.id;
+        file.content = content;
+        postRequest('set_content', {
+            content: content,
+        });
+    },
+    cleanResult: () => {
+        postRequest('clean_result', {});
+    },
+    runTask: () => {
+        postRequest('run_task', {});
+    },
+};
+
 const controlsContainerBlock = document.getElementById('controls-container');
 const createWebSocket = (app) => {
     app.socket = new WebSocket(`${apiUrl}/file`);
     app.socket.onopen = () => {
         console.log(`Connection opened`);
-        app.socket.send(JSON.stringify({
-            action: 'init',
-            file_id: file.id,
-            app_id: app.id,
-            user_id: app.userId,
-            user_name: app.userName,
-            lang: app.lang,
-        }));
+        actions.openFile();
     };
     app.socket.onclose = (event) => {
         if (event.wasClean) {
@@ -28,11 +86,15 @@ const createWebSocket = (app) => {
         try {
             const data = JSON.parse(event.data);
             if (data.error !== undefined) {
-                console.log('file::pageUpdater: getUpdate error', data);
+                console.log('onmessage: wrong data', data);
                 return;
             }
 
             // todo: prepare to change file.id and load brand new file
+
+            if (file.id !== data.id) {
+                console.log('onmessage: new file.id', data.id, file.id);
+            }
 
             let previousWriterId = file.writer_id;
 
@@ -114,58 +176,3 @@ setInterval(() => {
         reconnectAttempts = 0;
     }
 }, 1000 * Math.min(2 ** reconnectAttempts, 30) + Math.random() * 3000);
-
-const postRequest = (action, data, callback) => {
-    try {
-        app.socket.send(JSON.stringify({
-            ...data,
-            action: action,
-        }));
-    } finally {
-        if (typeof callback === 'function') {
-            callback();
-        }
-    }
-};
-
-const actions = {
-    setFileName: (newFileName) => {
-        postRequest('set_name', {
-            file_name: newFileName,
-        });
-    },
-    setUserName: (newUserName) => {
-        postRequest('set_user_name', {
-            user_name: newUserName,
-        });
-    },
-    setLang: (lang) => {
-        postRequest('set_lang', {
-            lang: lang,
-        });
-    },
-    setRunner: (runnerId) => {
-        postRequest('set_runner', {
-            runner_id: runnerId,
-        });
-    },
-    setContent: (content) => {
-        if (!app.isOnline) {
-            return;
-        }
-        if (file.writer_id !== '' && file.writer_id !== app.id) {
-            return;
-        }
-        file.writer_id = app.id;
-        file.content = content;
-        postRequest('set_content', {
-            content: content,
-        });
-    },
-    cleanResult: () => {
-        postRequest('clean_result', {});
-    },
-    runTask: () => {
-        postRequest('run_task', {});
-    },
-};
