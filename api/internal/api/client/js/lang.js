@@ -4,6 +4,7 @@ import {contentCodeMirror, contentCodeMirrorBlock, contentMarkdownBlock} from ".
 
 const languages = {
     go: {
+        key: 'go',
         name: 'GoLang',
         highlighter: 'go',
         renderer: 'codemirror',
@@ -11,6 +12,7 @@ const languages = {
         helloWorld: 'go',
     },
     java: {
+        key: 'java',
         name: 'Java',
         highlighter: 'text/x-java',
         renderer: 'codemirror',
@@ -18,6 +20,7 @@ const languages = {
         helloWorld: 'java',
     },
     json: {
+        key: 'json',
         name: 'JSON',
         highlighter: 'application/json',
         renderer: 'codemirror',
@@ -25,6 +28,7 @@ const languages = {
         helloWorld: 'json',
     },
     markdown: {
+        key: 'markdown',
         name: 'Markdown Edit',
         highlighter: 'text/x-markdown',
         renderer: 'codemirror',
@@ -32,6 +36,7 @@ const languages = {
         helloWorld: 'markdown',
     },
     markdown_view: {
+        key: 'markdown_view',
         name: 'Markdown View',
         highlighter: null,
         renderer: 'markdown',
@@ -39,6 +44,7 @@ const languages = {
         helloWorld: undefined,
     },
     mysql8: {
+        key: 'mysql8',
         name: 'MySQL 8',
         highlighter: 'sql',
         renderer: 'codemirror',
@@ -46,6 +52,7 @@ const languages = {
         helloWorld: 'mysql',
     },
     php82: {
+        key: 'php82',
         name: 'PHP 8.2',
         highlighter: 'php',
         renderer: 'codemirror',
@@ -53,6 +60,7 @@ const languages = {
         helloWorld: 'php',
     },
     postgres13: {
+        key: 'postgres13',
         name: 'PostgreSQL 13',
         highlighter: 'sql',
         renderer: 'codemirror',
@@ -71,9 +79,6 @@ for (const key in languages) {
         langSelect.appendChild(option);
     }
 }
-langSelect.onchange = () => {
-    setLang(langSelect.value);
-};
 
 const langChangeHandlers = [];
 const onLangChange = (callback) => {
@@ -82,22 +87,25 @@ const onLangChange = (callback) => {
     }
 };
 
-let currentAction = undefined;
+let currentLang = undefined;
 
-const setLang = (lang) => {
-    if (app.lang === lang) {
+const setLang = (langName) => {
+    if (typeof currentLang !== 'undefined' && currentLang.lang === langName) {
         return;
     }
 
-    if (languages[lang] === undefined) {
-        lang = 'markdown';
+    if (languages[langName] === undefined) {
+        langName = 'markdown';
     }
-    app.lang = lang;
 
-    contentCodeMirror.setOption('mode', languages[app.lang].highlighter);
+    const langObj = languages[langName];
+    const previousLang = currentLang;
+    currentLang = langObj;
 
-    if (app.renderer !== languages[app.lang].renderer) {
-        if (languages[app.lang].renderer === 'markdown') {
+    contentCodeMirror.setOption('mode', langObj.highlighter);
+
+    if (app.renderer !== langObj.renderer) {
+        if (langObj.renderer === 'markdown') {
             contentCodeMirrorBlock.style.display = 'none';
             contentMarkdownBlock.style.display = '';
         } else { // codemirror for else
@@ -105,32 +113,35 @@ const setLang = (lang) => {
             contentMarkdownBlock.style.display = 'none';
             contentCodeMirror.refresh()
         }
-        app.renderer = languages[app.lang].renderer;
+        app.renderer = langObj.renderer;
     }
 
-    currentAction = languages[app.lang].action;
+    langSelect.onchange = () => {};
+    langSelect.value = langName;
+    langSelect.onchange = (ev) => {
+        const changeToLangName = ev.target.value;
+        localStorage['initialLang'] = changeToLangName;
+        contentCodeMirror.focus();
+        setLang(langSelect.value);
+        if (typeof actions !== 'undefined') {
+            actions.setLang(changeToLangName);
+        }
+    };
 
-    langChangeHandlers.forEach(fn => fn(languages[app.lang]));
-
-    langSelect.value = app.lang;
-
-    if (typeof actions !== 'undefined') {
-        actions.setLang(app.lang);
-    }
-    localStorage['initialLang'] = app.lang;
-    contentCodeMirror.focus();
+    langChangeHandlers.forEach(fn => fn(langObj));
 };
 
-onFileChange((file) => {
-    setLang(file.lang);
+window.addEventListener("DOMContentLoaded", () => {
+    onFileChange((file) => {
+        setLang(file.lang);
+    });
 });
 
-const getLang = (langName) => {
-    return languages[langName];
+const getCurrentLang = () => {
+    if (typeof currentLang === 'undefined') {
+        return languages['markdown'];
+    }
+    return currentLang;
 };
 
-const getLangAction = () => {
-    return currentAction;
-};
-
-export {getLang, setLang, onLangChange, getLangAction};
+export {getCurrentLang, setLang, onLangChange};

@@ -1,7 +1,7 @@
 import {ohMySimpleHash} from "./utils.js";
 import {app, file} from "./app.js";
 import {actions} from "./connect.js";
-import {getLangAction, onLangChange, setLang} from "./lang.js";
+import {getCurrentLang, onLangChange, setLang} from "./lang.js";
 
 const contentContainerBlock = document.getElementById('content-container');
 const contentMarkdownBlock = document.getElementById('content-markdown');
@@ -79,7 +79,7 @@ let contentSender = () => {
 };
 setTimeout(() => {
     contentSender();
-}, 100);
+}, 500);
 
 let saveContentToFile = (text, fileName) => {
     const blob = new Blob([text], {type: 'text/plain'});
@@ -96,21 +96,20 @@ let saveContentToFile = (text, fileName) => {
     URL.revokeObjectURL(a.href);
 };
 
-const sidebarSaveContentSpan = document.getElementById('sidebar-save-content');
-sidebarSaveContentSpan.onclick = () => {
+document.getElementById('sidebar-save-content').onclick = () => {
     saveContentToFile(file.content, file.name);
 };
 
 document.addEventListener('keydown', function (event) {
     if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
-        saveContentToFile();
+        saveContentToFile(file.content, file.name);
     }
 });
 
 document.onkeydown = (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        const action = getLangAction();
+        const action = getCurrentLang().action;
         switch (action) {
             case 'run':
                 action.runTask();

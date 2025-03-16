@@ -1,10 +1,10 @@
 import {app, file} from "./app.js";
-import {getLang, onLangChange} from "./lang.js";
+import {getCurrentLang, onLangChange} from "./lang.js";
 
 const helloWorldButton = document.getElementById('hello-world-button');
 
 onLangChange(() => {
-    if (typeof getLang(app.lang).helloWorld === 'undefined') {
+    if (typeof getCurrentLang().helloWorld === 'undefined') {
         helloWorldButton.style.display = 'none';
     } else {
         helloWorldButton.style.display = '';
@@ -12,7 +12,7 @@ onLangChange(() => {
 });
 
 helloWorldButton.onclick = () => {
-    const helloWorldType = getLang(app.lang).helloWorld;
+    const helloWorldType = getCurrentLang().helloWorld;
     if (typeof helloWorldType === 'undefined') {
         return;
     }

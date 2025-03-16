@@ -2,6 +2,7 @@ import {ohMySimpleHash} from "./utils.js";
 import {app, file} from "./app.js";
 import {saveFileToDB} from "./sidebar.js";
 import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
+import {getCurrentLang} from "./lang.js";
 
 const postRequest = (action, data, callback) => {
     try {
@@ -36,7 +37,7 @@ const actions = {
             app_id: app.id,
             user_id: app.userId,
             user_name: app.userName,
-            lang: app.lang,
+            lang: getCurrentLang().key,
         });
     },
     setFileName: (newFileName) => {
@@ -176,7 +177,9 @@ const createWebSocket = (app) => {
     };
 };
 window.addEventListener("DOMContentLoaded", () => {
-    createWebSocket(app);
+    setTimeout(()=> {
+        createWebSocket(app);
+    }, 100);
 });
 
 let reconnectAttempts = 0;
