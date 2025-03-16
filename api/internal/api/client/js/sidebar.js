@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await deleteFileInDB(fileId);
         } else if (event.target.classList.contains("history-go")) {
             const fileId = event.target.dataset.fileId;
-            openFile(fileId);
+            openFile(fileId, true);
         }
     });
 });

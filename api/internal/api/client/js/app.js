@@ -14,19 +14,24 @@ const isUuid = (id) => {
     return (new RegExp(`^[a-z0-9]{32}$`)).test(id);
 };
 
-const getFileIdFromUrl = () => {
+const getFileIdFromWindowLocation = () => {
     const url = new URL(window.location.href);
-    let fileId = url.pathname.replace(/^\/|\/$/g, '');
+    const fileId = url.pathname.replace(/^\/|\/$/g, '');
     if (!isUuid(fileId)) {
+        return undefined;
+    }
+    return fileId;
+};
+
+const initFile = () => {
+    let fileId = getFileIdFromWindowLocation();
+    if (fileId === undefined) {
         fileId = genUuid();
         history.pushState({}, null, '/' + fileId);
     }
-    return fileId;
-}
 
-const initFile = () => {
     return {
-        id: getFileIdFromUrl(),
+        id: fileId,
         content: "",
         lang: 'markdown',
         runner: "",
@@ -63,20 +68,29 @@ const initFile = () => {
 };
 let file = initFile();
 
-const openFile = (id) => {
+const openFile = (id, pushHistory) => {
     app.isOnline = false;
     file.id = id;
     file.content = "";
     contentCodeMirror.setValue("");
     contentMarkdownBlock.innerHTML = "";
-    history.pushState({}, null, '/' + file.id);
+    if (pushHistory) {
+        history.pushState({}, null, '/' + file.id);
+    }
     file = initFile();
     actions.openFile();
 };
 
 document.getElementById('sidebar-create-new-file').onclick = () => {
-    openFile(genUuid());
+    openFile(genUuid(), true);
 };
+
+window.addEventListener("popstate", (event) => {
+    const fileId = getFileIdFromWindowLocation();
+    if (fileId !== undefined) {
+        openFile(fileId, false);
+    }
+});
 
 const app = {
     _isOnline: false,

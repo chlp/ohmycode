@@ -119,7 +119,7 @@ const createWebSocket = (app) => {
             }
 
             if (file.id !== data.id) {
-                openFile(file.id);
+                openFile(file.id, false);
                 console.log('onmessage: new file.id', data.id, file.id);
                 return;
             }
