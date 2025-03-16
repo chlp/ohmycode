@@ -23,11 +23,15 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 		if client.file.ContentUpdatedAt.Before(client.lastUpdate) {
 			fileToSend.Content = nil
 		}
-		client.lastUpdate = time.Now()
+		if client.file.ID != fileToSend.ID {
+			util.Log("fileWork: new file, will not send now")
+			return true
+		}
 		if err := client.send(fileToSend); err != nil {
 			util.Log("fileWork: send file error: " + err.Error())
 			return false
 		}
+		client.lastUpdate = time.Now()
 		time.Sleep(timeToSleepUntilNextFileUpdateSending)
 	}
 	return true

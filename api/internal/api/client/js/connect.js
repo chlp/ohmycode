@@ -1,5 +1,5 @@
 import {ohMySimpleHash} from "./utils.js";
-import {app, file} from "./app.js";
+import {app, file, openFile} from "./app.js";
 import {saveFileToDB} from "./sidebar.js";
 import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
 import {getCurrentLang} from "./lang.js";
@@ -119,6 +119,7 @@ const createWebSocket = (app) => {
             }
 
             if (file.id !== data.id) {
+                openFile(file.id);
                 console.log('onmessage: new file.id', data.id, file.id);
                 return;
             }
