@@ -1,3 +1,4 @@
+import {ohMySimpleHash} from "./utils.js";
 import {app, file} from "./app.js";
 import {actions} from "./connect.js";
 import {getAction, onLangChange, setLang} from "./lang.js";
@@ -68,7 +69,7 @@ let contentSender = () => {
         }, timeout);
     };
     const newContent = contentCodeMirror.getValue();
-    if (typeof app !== 'undefined' && app.isOnline && ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
+    if (app.isOnline && ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
         getNextUpdateFunc(1000);
         contentMarkdownBlock.innerHTML = marked.parse(newContent);
         actions.setContent(newContent);

@@ -1,3 +1,4 @@
+import {ohMySimpleHash} from "./utils.js";
 import {file} from "./app.js";
 import {actions, onFileChange} from "./connect.js";
 import {getAction, onLangChange} from "./lang.js";
@@ -45,6 +46,9 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     const runnerEditButton = document.getElementById('runner-edit-button');
+    runnerEditButton.onclick = () => {
+        runnerEditButtonOnclick();
+    };
     const runnerBlocksUpdate = () => {
         if (file.is_runner_online) {
             runnerContainerBlock.style.display = 'none';

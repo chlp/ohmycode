@@ -1,3 +1,4 @@
+import {ohMySimpleHash} from "./utils.js";
 import {actions, onFileChange} from "./connect.js";
 
 let userOwnNameBlock = document.getElementById('own-name');

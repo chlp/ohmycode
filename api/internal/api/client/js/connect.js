@@ -1,3 +1,4 @@
+import {ohMySimpleHash} from "./utils.js";
 import {app, file} from "./app.js";
 import {saveFileToDB} from "./sidebar.js";
 import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";

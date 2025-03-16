@@ -45,7 +45,7 @@
     <div id="sidebar">
         <span class="collapse-with-sidebar" data-full-text="Hide ⬅️" data-collapsed-text="➡️" id="sidebar-toggle-visibility"></span>
         <span class="collapse-with-sidebar" data-full-text="Download 📥" data-collapsed-text="📥" id="sidebar-save-content"></span>
-        <span class="collapse-with-sidebar" data-full-text="Copy URL 🔗" data-collapsed-text="🔗" onclick="copyToClipboard(window.location.href)"></span>
+        <span class="collapse-with-sidebar" data-full-text="Copy URL 🔗" data-collapsed-text="🔗" id="sidebar-copy-url"></span>
         <span class="collapse-with-sidebar" data-full-text="New file 📄" data-collapsed-text="📄" id="sidebar-create-new-file"></span>
         <div id="history"></div>
     </div>
@@ -80,7 +80,7 @@
                 <button id="run-button" title="Cmd/Ctrl + Enter" disabled style="display: none;">Run</button>
                 <button id="clean-result-button" disabled style="display: none;">Clean result</button>
                 <button id="hello-world-button" title="Insert Hello World! code" style="display: none;">Hello World!</button>
-                <button onclick="runnerEditButtonOnclick()" id="runner-edit-button" style="display: none;">Runner</button>
+                <button id="runner-edit-button" style="display: none;">Runner</button>
             </div>
 
             <div class="blocks-container" style="float: right; clear: right; padding: 2px 0;">
@@ -104,7 +104,6 @@
 </div>
 
 <script>let apiUrl = '';</script>
-<script src="js/utils.js?v=6"></script>
 <script type="module" src="js/main.js?v=6"></script>
 
 </body>
