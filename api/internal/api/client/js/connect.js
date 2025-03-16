@@ -118,10 +118,9 @@ const createWebSocket = (app) => {
                 return;
             }
 
-            // todo: prepare to change file.id and load brand new file
-
             if (file.id !== data.id) {
                 console.log('onmessage: new file.id', data.id, file.id);
+                return;
             }
 
             let previousWriterId = file.writer_id;
