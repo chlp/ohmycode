@@ -1,3 +1,7 @@
+import {app, file} from "./app.js";
+import {saveFileToDB} from "./sidebar.js";
+import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
+
 const postRequest = (action, data, callback) => {
     try {
         app.socket.send(JSON.stringify({
@@ -9,6 +13,18 @@ const postRequest = (action, data, callback) => {
             callback();
         }
     }
+};
+
+const getLocalDateTimeString = () => {
+    return new Intl.DateTimeFormat('sv-SE', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    }).format(new Date()).replace(',', '');
 };
 
 const actions = {
@@ -33,6 +49,9 @@ const actions = {
         });
     },
     setLang: (lang) => {
+        if (!app.isOnline) {
+            return;
+        }
         postRequest('set_lang', {
             lang: lang,
         });
@@ -61,6 +80,13 @@ const actions = {
     runTask: () => {
         postRequest('run_task', {});
     },
+};
+
+const fileChangeHandlers = [];
+const onFileChange = (callback) => {
+    if (typeof callback === "function") {
+        fileChangeHandlers.push(callback);
+    }
 };
 
 const controlsContainerBlock = document.getElementById('controls-container');
@@ -114,22 +140,11 @@ const createWebSocket = (app) => {
             }
 
             if (file.persisted) {
-                Sidebar.saveFileToDB(file.id, file.name, file.content_updated_at);
+                saveFileToDB(file.id, file.name, file.content_updated_at);
             }
             document.title = `OhMyCode – ${file.name}`;
 
-            // update users
-            updateUsers();
-
-            // update runner ui
-            if (typeof runnerBlocksUpdate === 'function') {
-                runnerBlocksUpdate();
-            }
-
-            // update result ui
-            if (typeof resultBlockUpdate === 'function') {
-                resultBlockUpdate();
-            }
+            fileChangeHandlers.forEach(fn => fn());
 
             // update code
             if (
@@ -147,23 +162,19 @@ const createWebSocket = (app) => {
                 contentCodeMirror.setCursor({line: line, ch: ch});
             }
 
-            // update lang
-            setLang(file.lang);
-
             if (controlsContainerBlock.style.display !== 'block') {
                 controlsContainerBlock.style.display = 'block';
             }
 
             if (!app.isOnline) {
                 app.isOnline = true;
-                contentSender();
             }
         } catch (error) {
             console.error('Wrong message:', error);
         }
     };
 };
-window.addEventListener("load", () => {
+window.addEventListener("DOMContentLoaded", () => {
     createWebSocket(app);
 });
 
@@ -176,3 +187,5 @@ setInterval(() => {
         reconnectAttempts = 0;
     }
 }, 1000 * Math.min(2 ** reconnectAttempts, 30) + Math.random() * 3000);
+
+export {actions, onFileChange};

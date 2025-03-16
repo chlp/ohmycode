@@ -1,10 +1,27 @@
+import {file} from "./app.js";
+import {actions, onFileChange} from "./connect.js";
+import {getAction, onLangChange} from "./lang.js";
+
 const runButton = document.getElementById('run-button');
 const cleanResultButton = document.getElementById('clean-result-button');
 
-let runnerBlocksUpdate = undefined;
-let resultBlockUpdate = undefined;
+onLangChange((lang) => {
+    switch (lang.actions) {
+        case 'run':
+            runButton.style.display = '';
+            cleanResultButton.style.display = '';
+            break;
+        case 'view':
+        case 'edit':
+        case 'none':
+        default:
+            runButton.style.display = 'none';
+            cleanResultButton.style.display = 'none';
+            break;
+    }
+});
 
-window.addEventListener("load", () => {
+window.addEventListener("DOMContentLoaded", () => {
     let resultCodeMirror = CodeMirror.fromTextArea(document.getElementById('result'), {
         lineNumbers: true,
         readOnly: true,
@@ -28,12 +45,13 @@ window.addEventListener("load", () => {
     };
 
     const runnerEditButton = document.getElementById('runner-edit-button');
-    runnerBlocksUpdate = () => {
+    const runnerBlocksUpdate = () => {
         if (file.is_runner_online) {
             runnerContainerBlock.style.display = 'none';
         }
         runnerEditButton.style.display = file.is_runner_online ? 'none' : 'block';
     };
+    onFileChange(runnerBlocksUpdate);
 
     let runnerEditButtonOnclick = () => {
         if (runnerContainerBlock.style.display === 'block') {
@@ -53,7 +71,7 @@ window.addEventListener("load", () => {
     };
 
     let isResultFilledWithInProgress = false;
-    resultBlockUpdate = () => {
+    const resultBlockUpdate = () => {
         let isRunBtnShouldBeDisabled = false;
         if (file.is_waiting_for_result) {
             isRunBtnShouldBeDisabled = true;
@@ -86,7 +104,7 @@ window.addEventListener("load", () => {
             runButton.removeAttribute('disabled');
         }
 
-        if (app.actions === 'run' && (file.is_waiting_for_result || file.result.length > 0)) {
+        if (getAction() === 'run' && (file.is_waiting_for_result || file.result.length > 0)) {
             resultContainerBlock.style.display = 'block';
             fileResultBlock.style.display = 'flex';
             cleanResultButton.removeAttribute('disabled');
@@ -98,6 +116,7 @@ window.addEventListener("load", () => {
 
         resultCodeMirror.refresh();
     };
+    onFileChange(resultBlockUpdate);
 
     let runTask = () => {
         if (!file.is_runner_online) {

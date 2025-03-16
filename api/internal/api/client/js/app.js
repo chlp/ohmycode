@@ -1,3 +1,8 @@
+import {contentCodeMirror, contentMarkdownBlock, updateEditorLockStatus} from "./editor.js";
+import {setLang} from "./lang.js";
+import {fileNameBlock, fileNameEditing} from "./file_name.js";
+import {actions} from "./connect.js";
+
 const genUuid = () => { // Генерация случайного UUID без дефисов
     return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -68,6 +73,12 @@ const createNewFile = () => {
     actions.openFile();
 };
 
+const sidebarCreateNewFileSpan = document.getElementById('sidebar-create-new-file');
+sidebarCreateNewFileSpan.onclick = () => {
+    createNewFile();
+};
+
+
 const app = {
     _isOnline: false,
     get isOnline() {
@@ -84,9 +95,12 @@ const app = {
     userName: localStorage['user_name'] === undefined ? '' : localStorage['user_name'],
     lang: undefined,
     renderer: undefined,
-    actions: undefined,
 };
 
 if (localStorage['user_id'] === undefined) {
     localStorage['user_id'] = app.userId;
 }
+
+setLang(localStorage['initialLang']);
+
+export {file, app, createNewFile};

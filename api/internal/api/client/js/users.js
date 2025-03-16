@@ -1,3 +1,5 @@
+import {actions, onFileChange} from "./connect.js";
+
 let userOwnNameBlock = document.getElementById('own-name');
 let userNameSavingTimeout = null;
 let userNameEditing = false;
@@ -91,3 +93,5 @@ let updateUsers = () => {
         userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
     }
 };
+
+onFileChange(updateUsers);

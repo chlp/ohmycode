@@ -1,3 +1,7 @@
+import {app} from "./app.js";
+import {actions, onFileChange} from "./connect.js";
+import {contentCodeMirror, contentCodeMirrorBlock, contentMarkdownBlock} from "./editor.js";
+
 const languages = {
     go: {
         name: 'GoLang',
@@ -71,6 +75,15 @@ langSelect.onchange = () => {
     setLang(langSelect.value);
 };
 
+const langChangeHandlers = [];
+const onLangChange = (callback) => {
+    if (typeof callback === "function") {
+        langChangeHandlers.push(callback);
+    }
+};
+
+let currentAction = undefined;
+
 const setLang = (lang) => {
     if (app.lang === lang) {
         return;
@@ -95,36 +108,9 @@ const setLang = (lang) => {
         app.renderer = languages[app.lang].renderer;
     }
 
-    if (app.actions !== languages[app.lang].actions) {
-        if (languages[app.lang].actions === 'run') {
-            editButton.style.display = 'none';
-            viewButton.style.display = 'none';
-            runButton.style.display = '';
-            cleanResultButton.style.display = '';
-        } else if (languages[app.lang].actions === 'view') {
-            editButton.style.display = 'none';
-            viewButton.style.display = '';
-            runButton.style.display = 'none';
-            cleanResultButton.style.display = 'none';
-        } else if (languages[app.lang].actions === 'edit') {
-            editButton.style.display = '';
-            viewButton.style.display = 'none';
-            runButton.style.display = 'none';
-            cleanResultButton.style.display = 'none';
-        } else { // none
-            editButton.style.display = 'none';
-            viewButton.style.display = 'none';
-            runButton.style.display = 'none';
-            cleanResultButton.style.display = 'none';
-        }
-        app.actions = languages[app.lang].actions;
-    }
+    currentAction = languages[app.lang];
 
-    if (typeof languages[app.lang].helloWorld === 'undefined') {
-        helloWorldButton.style.display = 'none';
-    } else {
-        helloWorldButton.style.display = '';
-    }
+    langChangeHandlers.forEach(fn => fn(languages[app.lang]));
 
     langSelect.value = app.lang;
 
@@ -134,4 +120,15 @@ const setLang = (lang) => {
     localStorage['initialLang'] = app.lang;
     contentCodeMirror.focus();
 };
-setLang(localStorage['initialLang']);
+
+onFileChange(setLang);
+
+const getLang = (langName) => {
+    return languages[langName];
+};
+
+const getAction = () => {
+    return currentAction;
+};
+
+export {getLang, setLang, onLangChange, getAction};

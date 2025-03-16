@@ -1,6 +1,18 @@
+import {app, file} from "./app.js";
+import {getLang, onLangChange} from "./lang.js";
+
 const helloWorldButton = document.getElementById('hello-world-button');
+
+onLangChange(() => {
+    if (typeof getLang(app.lang).helloWorld === 'undefined') {
+        helloWorldButton.style.display = 'none';
+    } else {
+        helloWorldButton.style.display = '';
+    }
+});
+
 helloWorldButton.onclick = () => {
-    const helloWorldType = languages[app.lang].helloWorld;
+    const helloWorldType = getLang(app.lang).helloWorld;
     if (typeof helloWorldType === 'undefined') {
         return;
     }
@@ -94,35 +106,45 @@ The project uses the following technologies:
             break;
         case 'mysql':
             helloWorldCode = `create table employees
-(
-    id            bigint       not null primary key,
-    first_name       varchar(255) null,
-    last_name       varchar(255) null,
-    salary int       null,
-    department_id int       null
-);
+                              (
+                                  id            bigint not null primary key,
+                                  first_name    varchar(255) null,
+                                  last_name     varchar(255) null,
+                                  salary        int null,
+                                  department_id int null
+                              );
 
-create table departments
-(
-    id         bigint       not null primary key,
-    name       varchar(255) null
-);
+            create table departments
+            (
+                id   bigint not null primary key,
+                name varchar(255) null
+            );
 
-#SELECT * FROM
+            #SELECT
+            * FROM
 
 INSERT INTO employees (id, first_name, last_name, salary, department_id) values (1, 'Aa', 'FamilyA', 1000, 1);
-INSERT INTO employees (id, first_name, last_name, salary, department_id) values (2, 'Ab', 'FamilyA', 100, 1);
-INSERT INTO employees (id, first_name, last_name, salary, department_id) values (3, 'Cc', 'Hello, OhMyCode!', 3000, 3);
+            INSERT INTO employees (id, first_name, last_name, salary, department_id)
+            values (2, 'Ab', 'FamilyA', 100, 1);
+            INSERT INTO employees (id, first_name, last_name, salary, department_id)
+            values (3, 'Cc', 'Hello, OhMyCode!', 3000, 3);
 
-INSERT INTO departments (id, name) values (1, 'D_A');
-INSERT INTO departments (id, name) values (2, 'D_B');
-INSERT INTO departments (id, name) values (3, 'D_C');
+            INSERT INTO departments (id, name)
+            values (1, 'D_A');
+            INSERT INTO departments (id, name)
+            values (2, 'D_B');
+            INSERT INTO departments (id, name)
+            values (3, 'D_C');
 
-EXPLAIN SELECT departments.* FROM departments
-LEFT JOIN employees ON departments.id = employees.department_id
-WHERE employees.id IS NOT NULL;
+            EXPLAIN
+            SELECT departments.*
+            FROM departments
+                     LEFT JOIN employees ON departments.id = employees.department_id
+            WHERE employees.id IS NOT NULL;
 
-select last_name from employees where first_name like 'C%';`;
+            select last_name
+            from employees
+            where first_name like 'C%';`;
             break;
         case 'php':
             helloWorldCode = `<?php
@@ -131,33 +153,43 @@ echo 'Hello, OhMyCode!';`;
             break;
         case 'postgres':
             helloWorldCode = `create table employees
-(
-    id            bigint       not null primary key,
-    first_name       varchar(255) null,
-    last_name       varchar(255) null,
-    salary int       null,
-    department_id int       null
-);
+                              (
+                                  id            bigint not null primary key,
+                                  first_name    varchar(255) null,
+                                  last_name     varchar(255) null,
+                                  salary        int null,
+                                  department_id int null
+                              );
 
-create table departments
-(
-    id         bigint       not null primary key,
-    name       varchar(255) null
-);
+            create table departments
+            (
+                id   bigint not null primary key,
+                name varchar(255) null
+            );
 
-INSERT INTO employees (id, first_name, last_name, salary, department_id) values (1, 'Aa', 'FamilyA', 1000, 1);
-INSERT INTO employees (id, first_name, last_name, salary, department_id) values (2, 'Ab', 'FamilyA', 100, 1);
-INSERT INTO employees (id, first_name, last_name, salary, department_id) values (3, 'Cc', 'Hello, OhMyCode!', 3000, 3);
+            INSERT INTO employees (id, first_name, last_name, salary, department_id)
+            values (1, 'Aa', 'FamilyA', 1000, 1);
+            INSERT INTO employees (id, first_name, last_name, salary, department_id)
+            values (2, 'Ab', 'FamilyA', 100, 1);
+            INSERT INTO employees (id, first_name, last_name, salary, department_id)
+            values (3, 'Cc', 'Hello, OhMyCode!', 3000, 3);
 
-INSERT INTO departments (id, name) values (1, 'D_A');
-INSERT INTO departments (id, name) values (2, 'D_B');
-INSERT INTO departments (id, name) values (3, 'D_C');
+            INSERT INTO departments (id, name)
+            values (1, 'D_A');
+            INSERT INTO departments (id, name)
+            values (2, 'D_B');
+            INSERT INTO departments (id, name)
+            values (3, 'D_C');
 
-EXPLAIN SELECT departments.* FROM departments
-LEFT JOIN employees ON departments.id = employees.department_id
-WHERE employees.id IS NOT NULL;
+            EXPLAIN
+            SELECT departments.*
+            FROM departments
+                     LEFT JOIN employees ON departments.id = employees.department_id
+            WHERE employees.id IS NOT NULL;
 
-select last_name from employees where first_name like 'C%';`;
+            select last_name
+            from employees
+            where first_name like 'C%';`;
             break;
         default:
             console.error('no helloWorld code');

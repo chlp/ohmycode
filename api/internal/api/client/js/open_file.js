@@ -1,3 +1,8 @@
+import {app, file} from "./app.js";
+import {actions} from "./connect.js";
+import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
+import {fileNameBlock} from "./file_name.js";
+
 contentCodeMirror.on('drop', (cm, event) => {
     event.preventDefault();
 });

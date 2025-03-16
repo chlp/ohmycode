@@ -1,3 +1,7 @@
+import {app, file} from "./app.js";
+import {actions} from "./connect.js";
+import {getAction, onLangChange, setLang} from "./lang.js";
+
 const contentContainerBlock = document.getElementById('content-container');
 const contentMarkdownBlock = document.getElementById('content-markdown');
 
@@ -57,9 +61,6 @@ let updateEditorLockStatus = () => {
 
 let contentSenderTimer = 0;
 let contentSender = () => {
-    if (!app.isOnline) {
-        return;
-    }
     let getNextUpdateFunc = (timeout) => {
         clearTimeout(contentSenderTimer);
         contentSenderTimer = setTimeout(() => {
@@ -67,14 +68,17 @@ let contentSender = () => {
         }, timeout);
     };
     const newContent = contentCodeMirror.getValue();
-    if (ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
+    if (typeof app !== 'undefined' && app.isOnline && ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
+        getNextUpdateFunc(1000);
         contentMarkdownBlock.innerHTML = marked.parse(newContent);
         actions.setContent(newContent);
-        getNextUpdateFunc(1000);
     } else {
         getNextUpdateFunc(500);
     }
 };
+setTimeout(() => {
+    contentSender();
+}, 100);
 
 let saveContentToFile = (text, fileName) => {
     const blob = new Blob([text], {type: 'text/plain'});
@@ -91,6 +95,11 @@ let saveContentToFile = (text, fileName) => {
     URL.revokeObjectURL(a.href);
 };
 
+const sidebarSaveContentSpan = document.getElementById('sidebar-save-content');
+sidebarSaveContentSpan.onclick = () => {
+    saveContentToFile(file.content, file.name);
+};
+
 document.addEventListener('keydown', function (event) {
     if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
@@ -100,12 +109,19 @@ document.addEventListener('keydown', function (event) {
 
 document.onkeydown = (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        if (app.actions === 'run') {
-            actions.runTask();
-        } else if (app.actions === 'view') {
-            setLang('markdown_view'); // todo: not only markdown
-        } else if (app.actions === 'edit') {
-            setLang('markdown');
+        const actions = getAction();
+        switch (actions) {
+            case 'run':
+                actions.runTask();
+                break;
+            case 'view':
+                setLang('markdown_view'); // todo: not only markdown
+                break;
+            case 'edit':
+                setLang('markdown');
+                break;
+            default:
+                console.log("wrong action: ", actions);
         }
     }
 };
@@ -120,3 +136,27 @@ viewButton.onclick = () => {
 editButton.onclick = () => {
     setLang('markdown');
 };
+
+onLangChange((lang) => {
+    switch (lang.actions) {
+        case 'run':
+            editButton.style.display = 'none';
+            viewButton.style.display = 'none';
+            break;
+        case 'view':
+            editButton.style.display = 'none';
+            viewButton.style.display = '';
+            break;
+        case 'edit':
+            editButton.style.display = '';
+            viewButton.style.display = 'none';
+            break;
+        case 'none':
+        default:
+            editButton.style.display = 'none';
+            viewButton.style.display = 'none';
+            break;
+    }
+});
+
+export {contentCodeMirror, contentCodeMirrorBlock, contentMarkdownBlock, updateEditorLockStatus};

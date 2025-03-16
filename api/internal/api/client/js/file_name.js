@@ -1,3 +1,7 @@
+import {file} from "./app.js";
+import {actions} from "./connect.js";
+import {contentCodeMirror} from "./editor.js";
+
 let fileNameBlock = document.getElementById('file-name');
 let fileNameSavingTimeout = null;
 let fileNameEditing = false;
@@ -37,3 +41,5 @@ fileNameBlock.onkeydown = (event) => {
         fileNameEditing = false;
     }, 5000);
 };
+
+export {fileNameBlock, fileNameEditing};
