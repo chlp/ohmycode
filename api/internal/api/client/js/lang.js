@@ -7,56 +7,56 @@ const languages = {
         name: 'GoLang',
         highlighter: 'go',
         renderer: 'codemirror',
-        actions: 'run',
+        action: 'run',
         helloWorld: 'go',
     },
     java: {
         name: 'Java',
         highlighter: 'text/x-java',
         renderer: 'codemirror',
-        actions: 'run',
+        action: 'run',
         helloWorld: 'java',
     },
     json: {
         name: 'JSON',
         highlighter: 'application/json',
         renderer: 'codemirror',
-        actions: 'none',
+        action: 'none',
         helloWorld: 'json',
     },
     markdown: {
         name: 'Markdown Edit',
         highlighter: 'text/x-markdown',
         renderer: 'codemirror',
-        actions: 'view',
+        action: 'view',
         helloWorld: 'markdown',
     },
     markdown_view: {
         name: 'Markdown View',
         highlighter: null,
         renderer: 'markdown',
-        actions: 'edit',
+        action: 'edit',
         helloWorld: undefined,
     },
     mysql8: {
         name: 'MySQL 8',
         highlighter: 'sql',
         renderer: 'codemirror',
-        actions: 'run',
+        action: 'run',
         helloWorld: 'mysql',
     },
     php82: {
         name: 'PHP 8.2',
         highlighter: 'php',
         renderer: 'codemirror',
-        actions: 'run',
+        action: 'run',
         helloWorld: 'php',
     },
     postgres13: {
         name: 'PostgreSQL 13',
         highlighter: 'sql',
         renderer: 'codemirror',
-        actions: 'run',
+        action: 'run',
         helloWorld: 'postgres',
     },
 };
@@ -108,7 +108,7 @@ const setLang = (lang) => {
         app.renderer = languages[app.lang].renderer;
     }
 
-    currentAction = languages[app.lang];
+    currentAction = languages[app.lang].action;
 
     langChangeHandlers.forEach(fn => fn(languages[app.lang]));
 
@@ -121,14 +121,16 @@ const setLang = (lang) => {
     contentCodeMirror.focus();
 };
 
-onFileChange(setLang);
+onFileChange((file) => {
+    setLang(file.lang);
+});
 
 const getLang = (langName) => {
     return languages[langName];
 };
 
-const getAction = () => {
+const getLangAction = () => {
     return currentAction;
 };
 
-export {getLang, setLang, onLangChange, getAction};
+export {getLang, setLang, onLangChange, getLangAction};

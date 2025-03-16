@@ -145,7 +145,7 @@ const createWebSocket = (app) => {
             }
             document.title = `OhMyCode – ${file.name}`;
 
-            fileChangeHandlers.forEach(fn => fn());
+            fileChangeHandlers.forEach(fn => fn(file));
 
             // update code
             if (

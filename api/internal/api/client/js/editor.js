@@ -1,7 +1,7 @@
 import {ohMySimpleHash} from "./utils.js";
 import {app, file} from "./app.js";
 import {actions} from "./connect.js";
-import {getAction, onLangChange, setLang} from "./lang.js";
+import {getLangAction, onLangChange, setLang} from "./lang.js";
 
 const contentContainerBlock = document.getElementById('content-container');
 const contentMarkdownBlock = document.getElementById('content-markdown');
@@ -110,10 +110,10 @@ document.addEventListener('keydown', function (event) {
 
 document.onkeydown = (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        const actions = getAction();
-        switch (actions) {
+        const action = getLangAction();
+        switch (action) {
             case 'run':
-                actions.runTask();
+                action.runTask();
                 break;
             case 'view':
                 setLang('markdown_view'); // todo: not only markdown
@@ -122,7 +122,7 @@ document.onkeydown = (event) => {
                 setLang('markdown');
                 break;
             default:
-                console.log("wrong action: ", actions);
+                console.warn("wrong action: ", action);
         }
     }
 };
@@ -139,7 +139,7 @@ editButton.onclick = () => {
 };
 
 onLangChange((lang) => {
-    switch (lang.actions) {
+    switch (lang.action) {
         case 'run':
             editButton.style.display = 'none';
             viewButton.style.display = 'none';

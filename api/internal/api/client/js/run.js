@@ -1,13 +1,13 @@
 import {ohMySimpleHash} from "./utils.js";
 import {file} from "./app.js";
 import {actions, onFileChange} from "./connect.js";
-import {getAction, onLangChange} from "./lang.js";
+import {getLangAction, onLangChange} from "./lang.js";
 
 const runButton = document.getElementById('run-button');
 const cleanResultButton = document.getElementById('clean-result-button');
 
 onLangChange((lang) => {
-    switch (lang.actions) {
+    switch (lang.action) {
         case 'run':
             runButton.style.display = '';
             cleanResultButton.style.display = '';
@@ -108,7 +108,7 @@ window.addEventListener("DOMContentLoaded", () => {
             runButton.removeAttribute('disabled');
         }
 
-        if (getAction() === 'run' && (file.is_waiting_for_result || file.result.length > 0)) {
+        if (getLangAction() === 'run' && (file.is_waiting_for_result || file.result.length > 0)) {
             resultContainerBlock.style.display = 'block';
             fileResultBlock.style.display = 'flex';
             cleanResultButton.removeAttribute('disabled');
