@@ -1,3 +1,5 @@
+import {openFile} from "./app.js";
+
 let dbInstance = null;
 const openDB = () => {
     if (dbInstance) {
@@ -52,7 +54,7 @@ const updateHistoryBlock = () => {
         let htmlLines = historyFiles.map(historyFile =>
             `<span class="history-item">` +
             `<a class="history-delete" data-file-id="${historyFile.id}">x</a> ` +
-            `<a href="/${historyFile.id}">${historyFile.name}</a>` +
+            `<a class="history-go" data-file-id="${historyFile.id}">${historyFile.name}</a>` +
             `</span>`
         );
         historyBlock.innerHTML = htmlLines.join("<br>");
@@ -138,8 +140,11 @@ if (isSidebarVisible) {
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("history").addEventListener("click", async (event) => {
         if (event.target.classList.contains("history-delete")) {
-            const fileId = event.target.dataset.fileId; // Получаем ID из data-атрибута
+            const fileId = event.target.dataset.fileId;
             await deleteFileInDB(fileId);
+        } else if (event.target.classList.contains("history-go")) {
+            const fileId = event.target.dataset.fileId;
+            openFile(fileId);
         }
     });
 });

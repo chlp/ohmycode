@@ -2,6 +2,7 @@ import {ohMySimpleHash} from "./utils.js";
 import {file} from "./app.js";
 import {actions, onFileChange} from "./connect.js";
 import {getCurrentLang, onLangChange} from "./lang.js";
+import {contentCodeMirror} from "./editor.js";
 
 const runButton = document.getElementById('run-button');
 const cleanResultButton = document.getElementById('clean-result-button');

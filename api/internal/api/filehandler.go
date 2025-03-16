@@ -48,6 +48,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		}
 		client.appId = i.AppId
 		client.userId = i.UserId
+		client.lastUpdate = time.Time{}
 		client.file, err = s.fileStore.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 		if err != nil {
 			util.Log("fileMessageHandler: GetFile error: " + err.Error())

@@ -112,7 +112,7 @@ document.onkeydown = (event) => {
         const action = getCurrentLang().action;
         switch (action) {
             case 'run':
-                action.runTask();
+                actions.runTask();
                 break;
             case 'view':
                 setLang('markdown_view'); // todo: not only markdown

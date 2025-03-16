@@ -63,8 +63,9 @@ const initFile = () => {
 };
 let file = initFile();
 
-const createNewFile = () => {
-    file.id = genUuid();
+const openFile = (id) => {
+    app.isOnline = false;
+    file.id = id;
     file.content = "";
     contentCodeMirror.setValue("");
     contentMarkdownBlock.innerHTML = "";
@@ -73,11 +74,9 @@ const createNewFile = () => {
     actions.openFile();
 };
 
-const sidebarCreateNewFileSpan = document.getElementById('sidebar-create-new-file');
-sidebarCreateNewFileSpan.onclick = () => {
-    createNewFile();
+document.getElementById('sidebar-create-new-file').onclick = () => {
+    openFile(genUuid());
 };
-
 
 const app = {
     _isOnline: false,
@@ -102,4 +101,4 @@ if (localStorage['user_id'] === undefined) {
 
 setLang(localStorage['initialLang']);
 
-export {file, app, createNewFile};
+export {file, app, openFile};
