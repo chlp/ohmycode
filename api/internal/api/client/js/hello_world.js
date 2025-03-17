@@ -1,5 +1,6 @@
 import {app, file} from "./app.js";
 import {getCurrentLang, onLangChange} from "./lang.js";
+import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
 
 const helloWorldButton = document.getElementById('hello-world-button');
 
