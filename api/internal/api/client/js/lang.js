@@ -94,6 +94,10 @@ const setLang = (langName) => {
         return;
     }
 
+    if (typeof actions !== 'undefined') {
+        actions.setLang(langName);
+    }
+
     if (languages[langName] === undefined) {
         langName = 'markdown';
     }
@@ -122,10 +126,7 @@ const setLang = (langName) => {
         const changeToLangName = ev.target.value;
         localStorage['initialLang'] = changeToLangName;
         contentCodeMirror.focus();
-        setLang(langSelect.value);
-        if (typeof actions !== 'undefined') {
-            actions.setLang(changeToLangName);
-        }
+        setLang(changeToLangName);
     };
 
     langChangeHandlers.forEach(fn => fn(langObj));
