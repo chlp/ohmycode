@@ -31,6 +31,17 @@ const saveFileToDB = async (id, fileName, updatedAt) => {
     return tx.complete;
 };
 
+const getFileFromDB = async (id) => {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("files", "readonly");
+        const store = tx.objectStore("files");
+        const request = store.get(id);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject("Error fetching file by id: " + id);
+    });
+};
+
 const getSortedFilesFromDB = async () => {
     const db = await openDB();
     return new Promise((resolve, reject) => {
@@ -53,4 +64,4 @@ const deleteFileInDB = async (id) => {
     return tx.complete;
 };
 
-export {saveFileToDB, getSortedFilesFromDB, deleteFileInDB};
+export {saveFileToDB, getFileFromDB, getSortedFilesFromDB, deleteFileInDB};
