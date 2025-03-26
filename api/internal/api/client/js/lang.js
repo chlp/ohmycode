@@ -103,7 +103,6 @@ const setLang = (langName) => {
     }
 
     const langObj = languages[langName];
-    const previousLang = currentLang;
     currentLang = langObj;
 
     contentCodeMirror.setOption('mode', langObj.highlighter);
