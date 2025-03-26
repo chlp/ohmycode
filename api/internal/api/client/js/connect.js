@@ -1,6 +1,6 @@
 import {ohMySimpleHash} from "./utils.js";
 import {app, file, openFile} from "./app.js";
-import {saveFileToDB} from "./sidebar.js";
+import {saveFileToDB} from "./db.js";
 import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
 import {getCurrentLang} from "./lang.js";
 
