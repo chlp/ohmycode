@@ -2,6 +2,7 @@ import {ohMySimpleHash} from "./utils.js";
 import {app, file} from "./app.js";
 import {actions} from "./connect.js";
 import {getCurrentLang, onLangChange, setLang} from "./lang.js";
+import {sidebarVisibilityToggle} from "./sidebar.js";
 
 const contentContainerBlock = document.getElementById('content-container');
 const contentMarkdownBlock = document.getElementById('content-markdown');
@@ -123,6 +124,8 @@ document.onkeydown = (event) => {
             default:
                 console.warn("wrong action: ", action);
         }
+    } else if (event.key === 'Escape') {
+        sidebarVisibilityToggle();
     }
 };
 

@@ -70,19 +70,23 @@ const hideSidebar = () => {
     isSidebarVisible = false;
     localStorage['isSidebarVisible'] = JSON.stringify(false);
 };
+if (isSidebarVisible) {
+    showSidebar();
+} else {
+    hideSidebar();
+}
+
 const sidebarToggleVisibilitySpan = document.getElementById('sidebar-toggle-visibility');
-sidebarToggleVisibilitySpan.onclick = () => {
+const sidebarVisibilityToggle = () => {
     if (isSidebarVisible) {
         hideSidebar();
     } else {
         showSidebar();
     }
 };
-if (isSidebarVisible) {
-    showSidebar();
-} else {
-    hideSidebar();
-}
+sidebarToggleVisibilitySpan.onclick = () => {
+    sidebarVisibilityToggle();
+};
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("history").addEventListener("click", async (event) => {
@@ -96,3 +100,5 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+export {sidebarVisibilityToggle};
