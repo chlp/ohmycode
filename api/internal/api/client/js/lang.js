@@ -89,20 +89,20 @@ const onLangChange = (callback) => {
 
 let currentLang = undefined;
 
-const setLang = (langName) => {
-    if (typeof currentLang !== 'undefined' && currentLang.lang === langName) {
+const setLang = (langKey) => {
+    if (typeof currentLang !== 'undefined' && currentLang.key === langKey) {
         return;
     }
 
     if (typeof actions !== 'undefined') {
-        actions.setLang(langName);
+        actions.setLang(langKey);
     }
 
-    if (languages[langName] === undefined) {
-        langName = 'markdown';
+    if (languages[langKey] === undefined) {
+        langKey = 'markdown';
     }
 
-    const langObj = languages[langName];
+    const langObj = languages[langKey];
     currentLang = langObj;
 
     contentCodeMirror.setOption('mode', langObj.highlighter);
@@ -120,7 +120,7 @@ const setLang = (langName) => {
     }
 
     langSelect.onchange = () => {};
-    langSelect.value = langName;
+    langSelect.value = langKey;
     langSelect.onchange = (ev) => {
         const changeToLangName = ev.target.value;
         localStorage['initialLang'] = changeToLangName;
