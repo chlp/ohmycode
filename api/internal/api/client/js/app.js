@@ -1,9 +1,9 @@
 import {contentCodeMirror, contentMarkdownBlock, updateEditorLockStatus} from "./editor.js";
 import {setLang} from "./lang.js";
 import {getFileFromDB} from "./db.js";
-import {loadNewFileVersion} from "./file.js";
+import {applyFile} from "./file.js";
 import {fileNameBlock, fileNameEditing} from "./file_name.js";
-import {actions} from "./connect.js";
+import {doConnect} from "./connect.js";
 
 const genUuid = () => { // Генерация случайного UUID без дефисов
     return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -25,11 +25,10 @@ const getFileIdFromWindowLocation = () => {
     return fileId;
 };
 
-const initFile = () => {
-    let fileId = getFileIdFromWindowLocation();
-    if (fileId === undefined) {
+const initFile = (fileId) => {
+    if (!isUuid(fileId)) {
+        console.error('initFile. Wrong fileId', fileId);
         fileId = genUuid();
-        history.pushState({}, null, '/' + fileId);
     }
 
     return {
@@ -68,29 +67,47 @@ const initFile = () => {
         },
     };
 };
-let file = initFile();
 
-const openFile = (id, pushHistory) => {
+let file;
+
+const openFile = async (id, pushHistory) => {
     app.isOnline = false;
-    file.id = id;
-    file.content = "";
-    contentCodeMirror.setValue("");
-    contentMarkdownBlock.innerHTML = "";
+
+    file = initFile(id);
+    contentCodeMirror.setValue('');
+    contentMarkdownBlock.innerHTML = '';
     if (pushHistory) {
         history.pushState({}, null, '/' + file.id);
     }
-    file = initFile();
-    actions.openFile();
+
+    let fileFromDb = await getFileFromDB(file.id);
+    if (typeof fileFromDb !== 'undefined') {
+        console.log('file from db');
+        applyFile(fileFromDb); // load really fast
+    }
+
+    doConnect(app); // could load longer
 };
 
+window.addEventListener("DOMContentLoaded", () => {
+    let fileId = getFileIdFromWindowLocation();
+    if (fileId === undefined) {
+        fileId = genUuid();
+    }
+    openFile(fileId, false).then(() => {
+    });
+});
+
 document.getElementById('sidebar-create-new-file').onclick = () => {
-    openFile(genUuid(), true);
+    openFile(genUuid(), true).then(() => {
+    });
 };
 
 window.addEventListener("popstate", () => {
     const fileId = getFileIdFromWindowLocation();
     if (fileId !== undefined) {
-        openFile(fileId, false);
+        openFile(fileId, false).then(() => {
+        });
     }
 });
 
@@ -116,13 +133,5 @@ if (localStorage['user_id'] === undefined) {
 }
 
 setLang(localStorage['initialLang']);
-
-window.addEventListener("DOMContentLoaded", async () => {
-    let loadedFile = await getFileFromDB(file.id);
-    if (typeof loadedFile === 'undefined') {
-        return;
-    }
-    loadNewFileVersion(loadedFile);
-});
 
 export {file, app, openFile};

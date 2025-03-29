@@ -1,5 +1,5 @@
 import {openFile} from "./app.js";
-import {getSortedFilesFromDB, deleteFileInDB} from "./db.js";
+import {deleteFileInDB, getSortedFilesFromDB} from "./db.js";
 
 // monitor changes in the db
 const updateHistoryBlock = () => {
@@ -96,7 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateHistoryBlock();
         } else if (event.target.classList.contains("history-go")) {
             const fileId = event.target.dataset.fileId;
-            openFile(fileId, true);
+            openFile(fileId, true).then(() => {
+            });
         }
     });
 });

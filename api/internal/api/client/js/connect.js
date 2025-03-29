@@ -1,15 +1,16 @@
 import {app, file, openFile} from "./app.js";
-import {loadNewFileVersion} from "./file.js";
+import {applyFile} from "./file.js";
 import {getCurrentLang} from "./lang.js";
 
+let socket = null;
 const postRequest = (action, data, callback) => {
     try {
-        if (typeof app.socket === 'undefined') {
+        if (socket === null) {
             if (typeof callback === 'function') {
                 callback();
             }
         } else {
-            app.socket.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 ...data,
                 action: action,
             }));
@@ -35,6 +36,7 @@ const getLocalDateTimeString = () => {
 
 const actions = {
     openFile: () => {
+        console.log('openFile');
         postRequest('init', {
             file_id: file.id,
             file_name: getLocalDateTimeString(),
@@ -88,39 +90,40 @@ const actions = {
     },
 };
 
-const createWebSocket = (app) => {
-    app.socket = new WebSocket(`${apiUrl}/file`);
-    app.socket.onopen = () => {
+const doConnect = (app) => {
+    if (socket !== null) {
+        actions.openFile();
+        return;
+    }
+
+    socket = new WebSocket(`${apiUrl}/file`);
+    socket.onopen = () => {
         console.log(`Connection opened`);
         actions.openFile();
     };
-    app.socket.onclose = (event) => {
+    socket.onclose = (event) => {
         if (event.wasClean) {
             console.log(`Connection closed, code=${event.code}, reason=${event.reason}`);
         } else {
             console.log('Connection closed with error');
         }
         app.isOnline = false;
-        app.socket = null;
+        socket = null;
     };
-    app.socket.onerror = (error) => {
+    socket.onerror = (error) => {
         console.log('WebSocket error: ', error);
     };
-    app.socket.onmessage = (event) => {
+    socket.onmessage = (event) => {
         try {
-            const data = JSON.parse(event.data);
-            if (data.error !== undefined) {
-                console.log('onmessage: wrong data', data);
+            const fileFromServer = JSON.parse(event.data);
+            if (fileFromServer.error !== undefined) {
+                console.log('onmessage: wrong data', fileFromServer);
                 return;
             }
 
-            if (file.id !== data.id) {
-                openFile(file.id, false);
-                console.log('onmessage: new file.id', data.id, file.id);
-                return;
-            }
+            console.log('file from server');
 
-            loadNewFileVersion(data);
+            applyFile(fileFromServer);
 
             app.isOnline = true;
         } catch (error) {
@@ -128,20 +131,15 @@ const createWebSocket = (app) => {
         }
     };
 };
-window.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-        createWebSocket(app);
-    }, 100);
-});
 
 let reconnectAttempts = 0;
 setInterval(() => {
-    if (app.socket === null) {
+    if (socket === null) {
         reconnectAttempts++;
-        createWebSocket(app);
+        doConnect(app);
     } else {
         reconnectAttempts = 0;
     }
 }, 1000 * Math.min(2 ** reconnectAttempts, 30) + 3000);
 
-export {actions};
+export {actions, doConnect};

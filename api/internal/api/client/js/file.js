@@ -1,5 +1,5 @@
 import {ohMySimpleHash} from "./utils.js";
-import {app, file} from "./app.js";
+import {app, file, openFile} from "./app.js";
 import {saveFileToDB} from "./db.js";
 import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
 
@@ -11,7 +11,14 @@ const onFileChange = (callback) => {
 };
 
 const controlsContainerBlock = document.getElementById('controls-container');
-const loadNewFileVersion = (newFile) => {
+const applyFile = (newFile) => {
+    if (file.id !== newFile.id) {
+        openFile(file.id, false).then(() => {
+        });
+        console.log('onmessage: new file.id', newFile.id, file.id);
+        return;
+    }
+
     let previousWriterId = file.writer_id;
 
     file.name = newFile.name;
@@ -37,7 +44,6 @@ const loadNewFileVersion = (newFile) => {
 
     fileChangeHandlers.forEach(fn => fn(file));
 
-// update code
     if (
         !app.isOnline || // first load
         (
@@ -58,4 +64,4 @@ const loadNewFileVersion = (newFile) => {
     }
 };
 
-export {loadNewFileVersion, onFileChange};
+export {applyFile, onFileChange};
