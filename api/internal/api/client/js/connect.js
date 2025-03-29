@@ -1,15 +1,19 @@
-import {ohMySimpleHash} from "./utils.js";
 import {app, file, openFile} from "./app.js";
-import {saveFileToDB} from "./db.js";
-import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
+import {loadNewFileVersion} from "./file.js";
 import {getCurrentLang} from "./lang.js";
 
 const postRequest = (action, data, callback) => {
     try {
-        app.socket.send(JSON.stringify({
-            ...data,
-            action: action,
-        }));
+        if (typeof app.socket === 'undefined') {
+            if (typeof callback === 'function') {
+                callback();
+            }
+        } else {
+            app.socket.send(JSON.stringify({
+                ...data,
+                action: action,
+            }));
+        }
     } finally {
         if (typeof callback === 'function') {
             callback();
@@ -84,14 +88,6 @@ const actions = {
     },
 };
 
-const fileChangeHandlers = [];
-const onFileChange = (callback) => {
-    if (typeof callback === "function") {
-        fileChangeHandlers.push(callback);
-    }
-};
-
-const controlsContainerBlock = document.getElementById('controls-container');
 const createWebSocket = (app) => {
     app.socket = new WebSocket(`${apiUrl}/file`);
     app.socket.onopen = () => {
@@ -124,60 +120,16 @@ const createWebSocket = (app) => {
                 return;
             }
 
-            let previousWriterId = file.writer_id;
+            loadNewFileVersion(data);
 
-            file.name = data.name;
-            file.lang = data.lang;
-            file.runner = data.runner;
-            file.is_runner_online = data.is_runner_online;
-            file.updated_at = data.updated_at;
-            file.content_updated_at = data.content_updated_at;
-            file.users = data.users;
-            file.is_waiting_for_result = data.is_waiting_for_result;
-            file.result = data.result;
-            file.persisted = data.persisted;
-            file.writer_id = data.writer_id;
-            if (typeof data.content === 'string') {
-                file.content = data.content;
-            }
-
-            if (file.persisted) {
-                saveFileToDB(file.id, file.name, file.content_updated_at);
-            }
-            document.title = `OhMyCode – ${file.name}`;
-
-            fileChangeHandlers.forEach(fn => fn(file));
-
-            // update code
-            if (
-                !app.isOnline || // first load
-                (
-                    file.writer_id !== app.id && previousWriterId !== app.id && // do not update if current user is writer
-                    ohMySimpleHash(file.content) !== ohMySimpleHash(contentCodeMirror.getValue()) // do not update if code is the same already
-                )
-            ) {
-                let {left, top} = contentCodeMirror.getScrollInfo();
-                let {line, ch} = contentCodeMirror.getCursor();
-                contentCodeMirror.setValue(file.content);
-                contentMarkdownBlock.innerHTML = marked.parse(file.content);
-                contentCodeMirror.scrollTo(left, top);
-                contentCodeMirror.setCursor({line: line, ch: ch});
-            }
-
-            if (controlsContainerBlock.style.display !== 'block') {
-                controlsContainerBlock.style.display = 'block';
-            }
-
-            if (!app.isOnline) {
-                app.isOnline = true;
-            }
+            app.isOnline = true;
         } catch (error) {
             console.error('Wrong message:', error);
         }
     };
 };
 window.addEventListener("DOMContentLoaded", () => {
-    setTimeout(()=> {
+    setTimeout(() => {
         createWebSocket(app);
     }, 100);
 });
@@ -190,6 +142,6 @@ setInterval(() => {
     } else {
         reconnectAttempts = 0;
     }
-}, 1000 * Math.min(2 ** reconnectAttempts, 30) + Math.random() * 3000);
+}, 1000 * Math.min(2 ** reconnectAttempts, 30) + 3000);
 
-export {actions, onFileChange};
+export {actions};

@@ -1,6 +1,7 @@
 import {ohMySimpleHash} from "./utils.js";
 import {file} from "./app.js";
-import {actions, onFileChange} from "./connect.js";
+import {actions} from "./connect.js";
+import {onFileChange} from "./file.js";
 import {getCurrentLang, onLangChange} from "./lang.js";
 import {contentCodeMirror} from "./editor.js";
 

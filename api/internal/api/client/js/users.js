@@ -1,5 +1,6 @@
 import {ohMySimpleHash} from "./utils.js";
-import {actions, onFileChange} from "./connect.js";
+import {actions} from "./connect.js";
+import {onFileChange} from "./file.js";
 
 let userOwnNameBlock = document.getElementById('own-name');
 let userNameSavingTimeout = null;

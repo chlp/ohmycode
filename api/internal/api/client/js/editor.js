@@ -72,7 +72,7 @@ let contentSender = () => {
     const newContent = contentCodeMirror.getValue();
     if (app.isOnline && ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
         getNextUpdateFunc(1000);
-        contentMarkdownBlock.innerHTML = marked.parse(newContent);
+        contentMarkdownBlock.innerHTML = marked.parse(newContent); // todo: should have function to update all editors/views or load data after changing mode
         actions.setContent(newContent);
     } else {
         getNextUpdateFunc(500);

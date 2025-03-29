@@ -1,5 +1,7 @@
 import {contentCodeMirror, contentMarkdownBlock, updateEditorLockStatus} from "./editor.js";
 import {setLang} from "./lang.js";
+import {getFileFromDB} from "./db.js";
+import {loadNewFileVersion} from "./file.js";
 import {fileNameBlock, fileNameEditing} from "./file_name.js";
 import {actions} from "./connect.js";
 
@@ -85,7 +87,7 @@ document.getElementById('sidebar-create-new-file').onclick = () => {
     openFile(genUuid(), true);
 };
 
-window.addEventListener("popstate", (event) => {
+window.addEventListener("popstate", () => {
     const fileId = getFileIdFromWindowLocation();
     if (fileId !== undefined) {
         openFile(fileId, false);
@@ -114,5 +116,13 @@ if (localStorage['user_id'] === undefined) {
 }
 
 setLang(localStorage['initialLang']);
+
+window.addEventListener("DOMContentLoaded", async () => {
+    let loadedFile = await getFileFromDB(file.id);
+    if (typeof loadedFile === 'undefined') {
+        return;
+    }
+    loadNewFileVersion(loadedFile);
+});
 
 export {file, app, openFile};

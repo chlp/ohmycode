@@ -5,13 +5,20 @@ const openDB = () => {
     }
 
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open("FilesDB", 1);
+        const request = indexedDB.open("FilesDB", 5);
 
         request.onupgradeneeded = (event) => {
             let db = event.target.result;
+
+            let store;
             if (!db.objectStoreNames.contains("files")) {
-                let store = db.createObjectStore("files", {keyPath: "id"});
-                store.createIndex("updated_at", "updated_at", {unique: false});
+                store = db.createObjectStore("files", {keyPath: "id"});
+            } else {
+                store = event.target.transaction.objectStore("files");
+            }
+
+            if (!store.indexNames.contains("content_updated_at")) {
+                store.createIndex("content_updated_at", "content_updated_at", {unique: false});
             }
         };
 
@@ -19,15 +26,30 @@ const openDB = () => {
             dbInstance = event.target.result;
             resolve(dbInstance);
         };
+
         request.onerror = () => reject("Error opening database");
     });
 };
 
-const saveFileToDB = async (id, fileName, updatedAt) => {
+const saveFileToDB = async (file) => {
     const db = await openDB();
     const tx = db.transaction("files", "readwrite");
     const store = tx.objectStore("files");
-    store.put({id: id, name: fileName, updated_at: updatedAt});
+    store.put({
+        id: file.id,
+        name: file.name,
+        lang: file.lang,
+        runner: file.runner,
+        is_runner_online: file.is_runner_online,
+        updated_at: file.updated_at,
+        content_updated_at: file.content_updated_at,
+        users: file.users,
+        is_waiting_for_result: file.is_waiting_for_result,
+        result: file.result,
+        persisted: file.persisted,
+        writer_id: file.writer_id,
+        content: file.content,
+    });
     return tx.complete;
 };
 
@@ -47,11 +69,11 @@ const getSortedFilesFromDB = async () => {
     return new Promise((resolve, reject) => {
         const tx = db.transaction("files", "readonly");
         const store = tx.objectStore("files");
-        const index = store.index("updated_at");
+        const index = store.index("content_updated_at");
         const request = index.getAll();
 
         request.onsuccess = () => {
-            resolve(request.result.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)));
+            resolve(request.result.sort((a, b) => new Date(b.content_updated_at) - new Date(a.content_updated_at)));
         };
         request.onerror = () => reject("Error fetching files");
     });

@@ -1,5 +1,6 @@
 import {app} from "./app.js";
-import {actions, onFileChange} from "./connect.js";
+import {actions} from "./connect.js";
+import {onFileChange} from "./file.js";
 import {contentCodeMirror, contentCodeMirrorBlock, contentMarkdownBlock} from "./editor.js";
 
 const languages = {
