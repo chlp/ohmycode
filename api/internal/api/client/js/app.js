@@ -91,10 +91,12 @@ const openFile = async (id, pushHistory) => {
 
 window.addEventListener("DOMContentLoaded", () => {
     let fileId = getFileIdFromWindowLocation();
+    let pushHistory = false;
     if (fileId === undefined) {
         fileId = genUuid();
+        pushHistory = true;
     }
-    openFile(fileId, false).then(() => {
+    openFile(fileId, pushHistory).then(() => {
     });
 });
 
