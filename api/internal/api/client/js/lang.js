@@ -81,14 +81,17 @@ for (const key in languages) {
     }
 }
 
+let currentLang = undefined;
+
 const langChangeHandlers = [];
 const onLangChange = (callback) => {
     if (typeof callback === "function") {
         langChangeHandlers.push(callback);
+        if (typeof currentLang !== 'undefined') {
+            callback(currentLang);
+        }
     }
 };
-
-let currentLang = undefined;
 
 const setLang = (langKey) => {
     if (typeof currentLang !== 'undefined' && currentLang.key === langKey) {
