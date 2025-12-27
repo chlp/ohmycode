@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"context"
 	"ohmycode_api/internal/model"
 	"sync"
 )
@@ -20,6 +21,13 @@ func NewFileStore(dbConfig DBConfig) *FileStore {
 		fileLocks: make(map[string]*sync.Mutex),
 		db:        newDb(dbConfig),
 	}
+}
+
+func (fs *FileStore) Close(ctx context.Context) error {
+	if fs.db == nil {
+		return nil
+	}
+	return fs.db.Close(ctx)
 }
 
 func (fs *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, userName string) (*model.File, error) {

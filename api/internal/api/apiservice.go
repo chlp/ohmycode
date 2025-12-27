@@ -1,11 +1,13 @@
 package api
 
 import (
-	"log"
+	"context"
+	"errors"
 	"net/http"
 	"ohmycode_api/internal/store"
 	"ohmycode_api/pkg/util"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -31,7 +33,7 @@ func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedO
 	}
 }
 
-func (s *Service) Run() {
+func (s *Service) Run(ctx context.Context) error {
 	util.Log("API Service started")
 	mux := http.NewServeMux()
 
@@ -45,7 +47,28 @@ func (s *Service) Run() {
 		}
 	}
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.httpPort), headersMiddleware(timerMiddleware(mux))))
+	srv := &http.Server{
+		Addr:    ":" + strconv.Itoa(s.httpPort),
+		Handler: headersMiddleware(timerMiddleware(mux)),
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- srv.ListenAndServe()
+	}()
+
+	select {
+	case <-ctx.Done():
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		_ = srv.Shutdown(shutdownCtx)
+		return nil
+	case err := <-errCh:
+		if err == nil || errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		return err
+	}
 }
 
 func timerMiddleware(next http.Handler) http.Handler {
@@ -55,12 +78,29 @@ func timerMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func isWebSocketUpgrade(r *http.Request) bool {
+	if !strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
+		return false
+	}
+	for _, v := range r.Header.Values("Connection") {
+		if strings.Contains(strings.ToLower(v), "upgrade") {
+			return true
+		}
+	}
+	return false
+}
+
 func headersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		w.Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800, stale-if-error=604800")
+		// Don't cache WS endpoints / upgrade requests.
+		if r.URL.Path == "/file" || r.URL.Path == "/runner" || isWebSocketUpgrade(r) {
+			w.Header().Set("Cache-Control", "no-store")
+		} else {
+			w.Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800, stale-if-error=604800")
+		}
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
