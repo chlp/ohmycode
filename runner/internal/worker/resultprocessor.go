@@ -17,7 +17,10 @@ type ResultProcessor struct {
 }
 
 func NewResultProcessor(apiClient *api.Client, runnerId, lang string) *ResultProcessor {
-	_ = os.MkdirAll(getDirForResults(lang), 0o755)
+	dir := getDirForResults(lang)
+	_ = os.MkdirAll(dir, 0o755)
+	// Ensure directories are listable/readable even if umask is restrictive.
+	_ = os.Chmod(dir, 0o755)
 	return &ResultProcessor{
 		apiClient: apiClient,
 		runnerId:  runnerId,

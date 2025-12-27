@@ -24,8 +24,10 @@ func NewTaskDistributor(apiClient *api.Client, runnerId string, languages []stri
 	}
 	for _, lang := range languages {
 		td.languages[lang] = nil
-		// Avoid world-writable permissions by default; containers run as root anyway.
-		_ = os.MkdirAll(getDirForRequests(lang), 0o755)
+		dir := getDirForRequests(lang)
+		// Ensure directories are listable/readable by language containers (umask can strip r bits).
+		_ = os.MkdirAll(dir, 0o755)
+		_ = os.Chmod(dir, 0o755)
 	}
 	return td
 }
@@ -64,10 +66,13 @@ func (td *TaskDistributor) moveTask(task *api.Task) error {
 	if err := os.WriteFile(tmpPath, []byte(task.Content), 0o644); err != nil {
 		return fmt.Errorf("can not move task: %v", err)
 	}
+	// Make sure the request is readable by non-root users inside language containers even if umask is restrictive.
+	_ = os.Chmod(tmpPath, 0o644)
 	if err := os.Rename(tmpPath, filePath); err != nil {
 		_ = os.Remove(tmpPath)
 		return fmt.Errorf("can not finalize task: %v", err)
 	}
+	_ = os.Chmod(filePath, 0o644)
 	return nil
 }
 
