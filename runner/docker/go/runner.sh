@@ -6,6 +6,7 @@ adduser --disabled-password restricted_user
 
 cd /app
 mkdir -p requests results
+chmod 755 requests results 2>/dev/null || true
 
 mkdir -p go
 chmod -R 755 go
@@ -26,6 +27,8 @@ while true; do
         OUT="tmp/$ID"
         touch -- "$OUT"
         chmod 744 -- "$OUT"
+        # Ensure restricted_user can read the source if the host/volume created it with restrictive permissions.
+        chmod 644 -- "$REQUEST" 2>/dev/null || true
         SRC="go/$ID.go"
         mv -- "$REQUEST" "$SRC"
         chmod 755 -- "$SRC"

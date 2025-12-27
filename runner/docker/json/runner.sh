@@ -6,6 +6,7 @@ adduser --disabled-password restricted_user
 
 cd /app
 mkdir -p requests results
+chmod 755 requests results 2>/dev/null || true
 
 mkdir -p tmp
 chmod -R 744 tmp
@@ -24,6 +25,7 @@ while true; do
         OUT="tmp/$ID"
         touch -- "$OUT"
         chmod 744 -- "$OUT"
+        chmod 644 -- "$REQUEST_FILEPATH" 2>/dev/null || true
         su -c "cd /app && timeout 5 sh -c 'cat \"${REQUEST_FILEPATH}\" | jq'" restricted_user 1>>"$OUT" 2>&1
         if [ $? -eq 124 ]; then
           echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> "$OUT"

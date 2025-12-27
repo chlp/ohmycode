@@ -4,6 +4,9 @@ shopt -s nullglob
 
 cd /app
 
+mkdir -p requests results
+chmod 755 requests results 2>/dev/null || true
+
 mkdir -p tmp
 
 export MYSQL_PWD="${MYSQL_ROOT_PASSWORD:-mysql8root}"
@@ -19,7 +22,9 @@ while true; do
 done
 
 while true; do
+    found=0
     for REQUEST in requests/*; do
+        found=1
         echo "$REQUEST"
         ID="$(basename -- "$REQUEST")"
         if ! [[ "$ID" =~ ^[0-9]+$ ]]; then
@@ -30,6 +35,7 @@ while true; do
         OUT="tmp/$ID"
         touch -- "$OUT"
         chmod 744 -- "$OUT"
+        chmod 644 -- "$REQUEST" 2>/dev/null || true
         mysql -u root -e "CREATE DATABASE tmp_${ID};"
         timeout 5 mysql -u root "tmp_${ID}" --table < "$REQUEST" 1>>"$OUT" 2>&1
         if [ $? -eq 124 ]; then
@@ -39,5 +45,7 @@ while true; do
         rm -f -- "$REQUEST"
         mv -- "$OUT" "results/$ID"
     done
-    sleep 0.01
+    if [ "$found" -eq 0 ]; then
+        inotifywait -qq -t 300 -e create -e moved_to requests >/dev/null 2>&1 || true
+    fi
 done

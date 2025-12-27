@@ -6,6 +6,7 @@ adduser --disabled-password --gecos "" restricted_user
 
 cd /app
 mkdir -p requests results
+chmod 755 requests results 2>/dev/null || true
 
 mkdir -p java
 chmod -R 755 java
@@ -26,6 +27,7 @@ while true; do
         OUT="tmp/$ID"
         touch -- "$OUT"
         chmod 744 -- "$OUT"
+        chmod 644 -- "$REQUEST" 2>/dev/null || true
         DIR="java/$ID"
         mkdir -p -- "$DIR"
         mv -- "$REQUEST" "$DIR/Main.java"
