@@ -4,13 +4,18 @@ shopt -s nullglob
 
 adduser --disabled-password --gecos "" restricted_user
 
+cd /app
+mkdir -p requests results
+
 mkdir -p java
 chmod -R 755 java
 mkdir -p tmp
 chmod -R 744 tmp
 
 while true; do
+    found=0
     for REQUEST in requests/*; do
+        found=1
         echo "$REQUEST"
         ID="$(basename -- "$REQUEST")"
         if ! [[ "$ID" =~ ^[0-9]+$ ]]; then
@@ -29,7 +34,7 @@ while true; do
         if [ $? -eq 0 ]; then
             (
                 cd "$DIR"
-                su -c "timeout 10 java Main" restricted_user 1>>"../../$OUT" 2>&1
+                su -c "cd \"$PWD\" && timeout 10 java Main" restricted_user 1>>"../../$OUT" 2>&1
                 if [ $? -eq 124 ]; then
                     echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> "../../$OUT"
                 fi
@@ -40,5 +45,7 @@ while true; do
         fi
         mv -- "$OUT" "results/$ID"
     done
-    sleep 0.01
+    if [ "$found" -eq 0 ]; then
+        inotifywait -qq -t 300 -e create -e moved_to requests >/dev/null 2>&1 || true
+    fi
 done
