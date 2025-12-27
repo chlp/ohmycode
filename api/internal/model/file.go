@@ -25,7 +25,7 @@ type File struct {
 	IsRunnerOnline     bool `json:"is_runner_online"`
 
 	PersistedAt time.Time `json:"-"`
-	mutex       *sync.Mutex
+	mutex       sync.Mutex
 }
 
 type User struct {
@@ -98,12 +98,13 @@ func (f *File) SetName(name string) bool {
 	if !util.IsValidName(name) {
 		return false
 	}
+	f.lock()
+	defer f.unlock()
 	if f.Name == name {
 		return true
 	}
 	f.Persisted = true
 	f.Name = name
-	f.ContentUpdatedAt = time.Now()
 	f.UpdatedAt = time.Now()
 	return true
 }
@@ -112,6 +113,8 @@ func (f *File) SetLang(lang string) bool {
 	if _, ok := Langs[lang]; !ok {
 		return false
 	}
+	f.lock()
+	defer f.unlock()
 	if f.Lang == lang {
 		return true
 	}
@@ -124,12 +127,11 @@ func (f *File) SetContent(content, appId string) error {
 	if len(content) > contentMaxLength {
 		return errors.New("content is too long")
 	}
+	f.lock()
+	defer f.unlock()
 	if f.Writer != "" && f.Writer != appId {
 		return errors.New("file is locked by another user")
 	}
-
-	f.lock()
-	defer f.unlock()
 
 	f.Persisted = true
 	f.Content = &content
@@ -196,13 +198,15 @@ func (f *File) SetRunnerId(runnerId string) bool {
 	if !util.IsUuid(runnerId) {
 		return false
 	}
+	f.lock()
+	defer f.unlock()
 	if f.RunnerId == runnerId {
 		return true
 	}
 	f.Persisted = true
 	f.RunnerId = runnerId
 	f.UpdatedAt = time.Now()
-	return false
+	return true
 }
 
 func (f *File) CleanupUsers() {
@@ -247,6 +251,8 @@ func (f *File) IsUnused() bool {
 }
 
 func (f *File) CleanupWriter() {
+	f.lock()
+	defer f.unlock()
 	if f.Writer == "" {
 		return
 	}
@@ -257,9 +263,6 @@ func (f *File) CleanupWriter() {
 }
 
 func (f *File) lock() {
-	if f.mutex == nil {
-		f.mutex = &sync.Mutex{}
-	}
 	f.mutex.Lock()
 }
 

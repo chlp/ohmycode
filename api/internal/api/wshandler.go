@@ -30,7 +30,10 @@ func (s *Service) HandleWs(w http.ResponseWriter, r *http.Request,
 	messageHandler func(client *wsClient, message []byte) (ok bool),
 	work func(client *wsClient) (ok bool)) {
 	client := createWsClient(w, r)
-	defer client.closeDone()
+	if client == nil {
+		return
+	}
+	defer client.close()
 
 	go func() {
 		for {
@@ -45,18 +48,18 @@ func (s *Service) HandleWs(w http.ResponseWriter, r *http.Request,
 					if !errors.As(err, &closeErr) && !(errors.As(err, &netErr) && netErr.Timeout()) {
 						util.Log("websocket conn.ReadMessage err: " + err.Error())
 					}
-					client.closeDone()
+					client.close()
 					return
 				}
 				if wsMessageType == websocket.CloseMessage {
-					client.closeDone()
+					client.close()
 					break
 				}
 				if wsMessageType != websocket.TextMessage {
 					continue
 				}
 				if !messageHandler(client, message) {
-					client.closeDone()
+					client.close()
 					return
 				}
 			}

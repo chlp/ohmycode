@@ -38,6 +38,7 @@ func (rs *RunnerStore) SetRunner(id string, isPublic bool) *model.Runner {
 		if runner.IsPublic != isPublic {
 			rs.mutex.Lock()
 			runner.IsPublic = isPublic
+			runner.CheckedAt = time.Now()
 			rs.mutex.Unlock()
 		}
 		return runner
@@ -55,6 +56,17 @@ func (rs *RunnerStore) SetRunner(id string, isPublic bool) *model.Runner {
 }
 
 const durationIsActiveFromLastUpdate = 5 * time.Second
+
+func (rs *RunnerStore) TouchRunner(id string) {
+	if !util.IsUuid(id) {
+		return
+	}
+	rs.mutex.Lock()
+	if runner, ok := rs.runners[id]; ok {
+		runner.CheckedAt = time.Now()
+	}
+	rs.mutex.Unlock()
+}
 
 func (rs *RunnerStore) IsOnline(isPublic bool, runnerId string) bool {
 	if isPublic {

@@ -16,6 +16,7 @@ func (s *Service) runnerWork(client *wsClient) (ok bool) {
 		return true
 	}
 
+	s.runnerStore.TouchRunner(client.runner.ID)
 	tasks := s.taskStore.GetTasksForRunner(client.runner)
 	if len(tasks) == 0 {
 		return true

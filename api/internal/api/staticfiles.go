@@ -59,9 +59,14 @@ func serveStaticFiles(mux *http.ServeMux) {
 		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsUuid(r.URL.Path[1:]) {
 			requestedFile := path.Clean(r.URL.Path)
 			fileToServe := fmt.Sprintf("client%s", requestedFile)
-			if _, err := staticFS.Open(requestedFile[1:]); err == nil {
+			if f, err := staticFS.Open(requestedFile[1:]); err == nil {
+				_ = f.Close()
 				w.Header().Set("Content-Type", getMimeType(requestedFile))
-				data, _ := staticFiles.ReadFile(fileToServe)
+				data, err := staticFiles.ReadFile(fileToServe)
+				if err != nil {
+					http.Error(w, "not found", http.StatusNotFound)
+					return
+				}
 				_, _ = w.Write(data)
 				return
 			}

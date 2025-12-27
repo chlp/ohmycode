@@ -19,7 +19,8 @@ type wsClient struct {
 	lastUpdate time.Time
 	conn       *websocket.Conn
 	done       chan struct{}
-	closeDone  func()
+	close      func()
+	writeMu    sync.Mutex
 }
 
 var wsUpgrader = websocket.Upgrader{
@@ -32,6 +33,11 @@ var wsUpgrader = websocket.Upgrader{
 }
 
 const wsMessageLimit = 4 * (1 << 20) // 4 Mb
+const (
+	wsPongWait   = 10 * time.Second
+	wsPingPeriod = 5 * time.Second
+	wsWriteWait  = 5 * time.Second
+)
 
 func createWsClient(w http.ResponseWriter, r *http.Request) *wsClient {
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
@@ -43,18 +49,19 @@ func createWsClient(w http.ResponseWriter, r *http.Request) *wsClient {
 
 	done := make(chan struct{})
 	var once sync.Once
-	closeDone := func() {
+	closeClient := func() {
 		once.Do(func() {
 			close(done)
+			_ = conn.Close()
 		})
 	}
 
-	conn.SetReadLimit(wsMessageLimit)
+	_ = conn.SetReadDeadline(time.Now().Add(wsPongWait))
 
 	client := wsClient{
 		conn:      conn,
 		done:      done,
-		closeDone: closeDone,
+		close:     closeClient,
 	}
 	go client.pingPongHandling()
 	return &client
@@ -62,22 +69,28 @@ func createWsClient(w http.ResponseWriter, r *http.Request) *wsClient {
 
 func (client *wsClient) pingPongHandling() {
 	client.conn.SetPongHandler(func(appData string) error {
-		if err := client.conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
+		if err := client.conn.SetReadDeadline(time.Now().Add(wsPongWait)); err != nil {
 			util.Log("pong handler err: ", err.Error())
-			client.closeDone()
+			client.close()
 		}
 		return nil
 	})
+	ticker := time.NewTicker(wsPingPeriod)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-client.done:
 			return
-		default:
-			if err := client.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+		case <-ticker.C:
+			client.writeMu.Lock()
+			_ = client.conn.SetWriteDeadline(time.Now().Add(wsWriteWait))
+			err := client.conn.WriteMessage(websocket.PingMessage, nil)
+			client.writeMu.Unlock()
+			if err != nil {
 				util.Log("Ping error: " + err.Error())
+				client.close()
 				return
 			}
-			time.Sleep(5 * time.Second)
 		}
 	}
 }
@@ -99,5 +112,8 @@ func (client *wsClient) send(v interface{}) error {
 		return nil
 	}
 
+	client.writeMu.Lock()
+	defer client.writeMu.Unlock()
+	_ = client.conn.SetWriteDeadline(time.Now().Add(wsWriteWait))
 	return client.conn.WriteMessage(websocket.TextMessage, jsonData)
 }

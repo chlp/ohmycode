@@ -26,13 +26,20 @@ type Db struct {
 }
 
 func newDb(config DBConfig) *Db {
+	connectTimeout := config.Timeout.Duration
+	if connectTimeout <= 0 {
+		connectTimeout = 5 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), connectTimeout)
+	defer cancel()
+
 	clientOptions := options.Client().ApplyURI(config.ConnectionString)
-	client, err := mongo.Connect(context.Background(), clientOptions)
+	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatalf("MongoDB connection failed: %v", err)
 	}
 
-	err = client.Ping(context.Background(), nil)
+	err = client.Ping(ctx, nil)
 	if err != nil {
 		log.Fatalf("MongoDB ping failed: %v", err)
 	}
@@ -40,7 +47,7 @@ func newDb(config DBConfig) *Db {
 	return &Db{
 		client:  client,
 		db:      client.Database(config.DBName),
-		timeout: config.Timeout.Duration,
+		timeout: connectTimeout,
 	}
 }
 

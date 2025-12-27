@@ -64,7 +64,6 @@ func (ts *TaskStore) DeleteTask(taskId string) {
 const durationToRetryTask = time.Second * 30
 
 func (ts *TaskStore) GetTasksForRunner(runner *model.Runner) []*model.Task {
-	runner.CheckedAt = time.Now()
 	tasks := make([]*model.Task, 0)
 	ts.mutex.Lock()
 	defer ts.mutex.Unlock()

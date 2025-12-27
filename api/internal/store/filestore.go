@@ -7,51 +7,78 @@ import (
 )
 
 type FileStore struct {
-	mutex      *sync.RWMutex
+	filesMu    sync.RWMutex
 	files      map[string]*model.File
-	filesMutex map[string]*sync.Mutex
+	fileLocksMu sync.Mutex
+	fileLocks  map[string]*sync.Mutex
 	db         *Db
 }
 
 func NewFileStore(dbConfig DBConfig) *FileStore {
 	return &FileStore{
-		mutex:      &sync.RWMutex{},
-		files:      make(map[string]*model.File),
-		filesMutex: make(map[string]*sync.Mutex),
-		db:         newDb(dbConfig),
+		files:     make(map[string]*model.File),
+		fileLocks: make(map[string]*sync.Mutex),
+		db:        newDb(dbConfig),
 	}
 }
 
 func (fs *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, userName string) (*model.File, error) {
-	file, err := fs.GetFile(fileId)
+	fileMu := fs.lockFileMutex(fileId)
+	defer fileMu.Unlock()
+
+	// fast path: in-memory
+	fs.filesMu.RLock()
+	if file, ok := fs.files[fileId]; ok {
+		fs.filesMu.RUnlock()
+		return file, nil
+	}
+	fs.filesMu.RUnlock()
+
+	// try DB
+	filesRaw, err := fs.db.Select("files", map[string]interface{}{"_id": fileId}, &model.File{})
 	if err != nil {
 		return nil, err
 	}
-	if file != nil {
-		return file, nil
+	files, ok := filesRaw.([]model.File)
+	if !ok {
+		return nil, errors.New("problem with type conversion")
+	}
+	if len(files) == 1 && files[0].ID == fileId {
+		files[0].Persisted = true
+		fs.filesMu.Lock()
+		fs.files[fileId] = &files[0]
+		fs.filesMu.Unlock()
+		return &files[0], nil
 	}
 
-	defer fs.lockFileMutex(fileId).Unlock()
-
-	file = model.NewFile(fileId, fileName, lang, content, userId, userName)
-
-	fs.mutex.Lock()
+	// create new
+	file := model.NewFile(fileId, fileName, lang, content, userId, userName)
+	fs.filesMu.Lock()
 	fs.files[fileId] = file
-	fs.mutex.Unlock()
-
+	fs.filesMu.Unlock()
 	return file, nil
 }
 
-func (fs *FileStore) GetAllFiles() map[string]*model.File {
-	return fs.files
+func (fs *FileStore) GetAllFiles() []*model.File {
+	fs.filesMu.RLock()
+	defer fs.filesMu.RUnlock()
+	result := make([]*model.File, 0, len(fs.files))
+	for _, f := range fs.files {
+		result = append(result, f)
+	}
+	return result
 }
 
 func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
-	defer fs.lockFileMutex(fileId).Unlock()
+	fileMu := fs.lockFileMutex(fileId)
+	defer fileMu.Unlock()
 
+	fs.filesMu.RLock()
 	if file, ok := fs.files[fileId]; ok {
+		fs.filesMu.RUnlock()
 		return file, nil
 	}
+	fs.filesMu.RUnlock()
 
 	filesRaw, err := fs.db.Select("files", map[string]interface{}{"_id": fileId}, &model.File{})
 	if err != nil {
@@ -73,14 +100,15 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 
 	files[0].Persisted = true
 
-	fs.mutex.Lock()
+	fs.filesMu.Lock()
 	fs.files[fileId] = &files[0]
-	fs.mutex.Unlock()
+	fs.filesMu.Unlock()
 	return &files[0], nil
 }
 
 func (fs *FileStore) PersistFile(file *model.File) error {
-	defer fs.lockFileMutex(file.ID).Unlock()
+	fileMu := fs.lockFileMutex(file.ID)
+	defer fileMu.Unlock()
 	if err := fs.db.Upsert("files", file); err != nil {
 		return err
 	}
@@ -89,21 +117,26 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 }
 
 func (fs *FileStore) DeleteFile(fileId string) {
-	defer fs.lockFileMutex(fileId).Unlock()
-	fs.mutex.Lock()
-	defer fs.mutex.Unlock()
+	fileMu := fs.lockFileMutex(fileId)
+	defer fileMu.Unlock()
+	fs.filesMu.Lock()
 	delete(fs.files, fileId)
+	fs.filesMu.Unlock()
+
+	// prevent unbounded growth
+	fs.fileLocksMu.Lock()
+	delete(fs.fileLocks, fileId)
+	fs.fileLocksMu.Unlock()
 }
 
 func (fs *FileStore) lockFileMutex(fileId string) *sync.Mutex {
-	fs.mutex.Lock()
-	defer fs.mutex.Unlock()
-
+	fs.fileLocksMu.Lock()
+	defer fs.fileLocksMu.Unlock()
 	var fileMutex *sync.Mutex
 	var ok bool
-	if fileMutex, ok = fs.filesMutex[fileId]; !ok {
+	if fileMutex, ok = fs.fileLocks[fileId]; !ok {
 		fileMutex = &sync.Mutex{}
-		fs.filesMutex[fileId] = fileMutex
+		fs.fileLocks[fileId] = fileMutex
 	}
 
 	fileMutex.Lock()

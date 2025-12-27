@@ -2,3 +2,6 @@
 .idea
 .php-cs-fixer.cache
 client/public/js/conf.js
+.gocache
+.gomodcache
+.gopath
