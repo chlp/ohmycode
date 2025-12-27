@@ -8,7 +8,11 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ../data:/app/data
+      - type: bind
+        source: ../data
+        target: /app/data
+        bind:
+          create_host_path: true
   ohmycode-runner-go:
     container_name: ohmycode-runner-go
     networks:
@@ -19,8 +23,16 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ../data/go/requests:/app/requests
-      - ../data/go/results:/app/results
+      - type: bind
+        source: ../data/go/requests
+        target: /app/requests
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ../data/go/results
+        target: /app/results
+        bind:
+          create_host_path: true
     tmpfs:
       - /app/go:mode=1777,uid=1000,gid=1000
       - /app/tmp:mode=1777,uid=1000,gid=1000
@@ -34,8 +46,16 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ../data/java/requests:/app/requests
-      - ../data/java/results:/app/results
+      - type: bind
+        source: ../data/java/requests
+        target: /app/requests
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ../data/java/results
+        target: /app/results
+        bind:
+          create_host_path: true
     tmpfs:
       - /app/java:mode=1777,uid=1000,gid=1000
       - /app/tmp:mode=1777,uid=1000,gid=1000
@@ -49,8 +69,16 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ../data/json/requests:/app/requests
-      - ../data/json/results:/app/results
+      - type: bind
+        source: ../data/json/requests
+        target: /app/requests
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ../data/json/results
+        target: /app/results
+        bind:
+          create_host_path: true
     tmpfs:
       - /app/tmp:mode=1777,uid=1000,gid=1000
   ohmycode-runner-markdown:
@@ -63,8 +91,16 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ../data/markdown/requests:/app/requests
-      - ../data/markdown/results:/app/results
+      - type: bind
+        source: ../data/markdown/requests
+        target: /app/requests
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ../data/markdown/results
+        target: /app/results
+        bind:
+          create_host_path: true
     tmpfs:
       - /app/tmp:mode=1777,uid=1000,gid=1000
   ohmycode-runner-mysql8:
@@ -79,8 +115,16 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ../data/mysql8/requests:/app/requests
-      - ../data/mysql8/results:/app/results
+      - type: bind
+        source: ../data/mysql8/requests
+        target: /app/requests
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ../data/mysql8/results
+        target: /app/results
+        bind:
+          create_host_path: true
       - ./mysql8/runner.sh:/docker-entrypoint-initdb.d/runner.sh
     tmpfs:
       - /var/lib/mysql:mode=1777,uid=1000,gid=1000
@@ -98,8 +142,16 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ../data/php82/requests:/app/requests
-      - ../data/php82/results:/app/results
+      - type: bind
+        source: ../data/php82/requests
+        target: /app/requests
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ../data/php82/results
+        target: /app/results
+        bind:
+          create_host_path: true
     tmpfs:
       - /app/tmp:mode=1777,uid=1000,gid=1000
   ohmycode-runner-postgres13:
@@ -114,8 +166,16 @@ services:
     stop_grace_period: 1s
     restart: always
     volumes:
-      - ../data/postgres13/requests:/app/requests
-      - ../data/postgres13/results:/app/results
+      - type: bind
+        source: ../data/postgres13/requests
+        target: /app/requests
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ../data/postgres13/results
+        target: /app/results
+        bind:
+          create_host_path: true
       - ./postgres13/runner.sh:/docker-entrypoint-initdb.d/runner.sh
     tmpfs:
       - /var/lib/postgresql/data:mode=1777,uid=1000,gid=1000
