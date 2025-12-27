@@ -10,22 +10,33 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 //go:embed client/*
 var staticFiles embed.FS
 
 func serveDynamicFiles(mux *http.ServeMux) {
+	const diskRoot = "./internal/api/client"
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsUuid(r.URL.Path[1:]) {
-			file := "./internal/api/client" + r.URL.Path
-			if _, err := os.Stat(file); err == nil {
+			cleaned := path.Clean("/" + strings.TrimPrefix(r.URL.Path, "/"))
+			// prevent traversal like /../../etc/passwd
+			if strings.HasPrefix(cleaned, "/..") {
+				http.NotFound(w, r)
+				return
+			}
+			rel := strings.TrimPrefix(cleaned, "/")
+			file := filepath.Join(diskRoot, filepath.FromSlash(rel))
+			if st, err := os.Stat(file); err == nil && !st.IsDir() {
+				util.Log("serveDynamicFiles: serving file: " + file)
 				http.ServeFile(w, r, file)
 				return
 			}
 		}
-		http.ServeFile(w, r, "./internal/api/client/index.html")
-		return
+		util.Log("serveDynamicFiles: serving index.html")
+		http.ServeFile(w, r, filepath.Join(diskRoot, "index.html"))
 	})
 }
 
@@ -72,7 +83,6 @@ func serveStaticFiles(mux *http.ServeMux) {
 			}
 		}
 		_, _ = w.Write(indexHtmlData)
-		return
 	})
 }
 
