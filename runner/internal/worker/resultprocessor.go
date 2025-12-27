@@ -25,22 +25,24 @@ func NewResultProcessor(apiClient *api.Client, runnerId, lang string) *ResultPro
 	}
 }
 
-func (rp *ResultProcessor) Process() error {
+func (rp *ResultProcessor) Process() (int, error) {
 	resultsDir := getDirForResults(rp.language)
 	resultFiles, err := os.ReadDir(resultsDir)
 	if err != nil {
 		util.Log(context.Background(), fmt.Sprintf("read results dir error: %v", err))
-		return err
+		return 0, err
 	}
 
+	processed := 0
 	for _, entry := range resultFiles {
 		if !isValidFile(entry) {
 			continue
 		}
+		processed++
 		err = rp.processOneFile(resultsDir, entry)
 	}
 
-	return err
+	return processed, err
 }
 
 func isValidFile(entry os.DirEntry) bool {

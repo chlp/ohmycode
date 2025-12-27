@@ -30,10 +30,12 @@ func NewTaskDistributor(apiClient *api.Client, runnerId string, languages []stri
 	return td
 }
 
-func (td *TaskDistributor) Process() error {
+func (td *TaskDistributor) Process() (int, error) {
 	var err error
+	processed := 0
 	tasks := td.apiClient.GetTasksRequest()
 	for _, task := range tasks {
+		processed++
 		err = td.moveTask(task)
 		if err != nil {
 			err = td.apiClient.SetResult(&api.Task{
@@ -47,7 +49,7 @@ func (td *TaskDistributor) Process() error {
 			}
 		}
 	}
-	return err
+	return processed, err
 }
 
 func (td *TaskDistributor) moveTask(task *api.Task) error {

@@ -40,7 +40,8 @@ func (w *Worker) Run() {
 			case <-w.appCtx.Done():
 				return
 			case <-timer.C:
-				if taskDistributor.Process() != nil {
+				processed, err := taskDistributor.Process()
+				if err != nil || processed == 0 {
 					delay = intervalBetweenTasksReceive * 10
 				} else {
 					delay = intervalBetweenTasksReceive
@@ -60,7 +61,8 @@ func (w *Worker) Run() {
 				case <-w.appCtx.Done():
 					return
 				case <-timer.C:
-					if resultProcessor.Process() != nil {
+					processed, err := resultProcessor.Process()
+					if err != nil || processed == 0 {
 						delay = intervalBetweenResultsSend * 10
 					} else {
 						delay = intervalBetweenResultsSend
