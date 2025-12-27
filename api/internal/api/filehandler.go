@@ -28,17 +28,31 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 
 	var nextSendAllowed time.Time
 	var updatesCh <-chan struct{}
+	var subFile interface {
+		SubscribeUpdates() chan struct{}
+		UnsubscribeUpdates(ch chan struct{})
+	}
+	var subCh chan struct{}
+	defer func() {
+		if subFile != nil && subCh != nil {
+			subFile.UnsubscribeUpdates(subCh)
+		}
+	}()
 
 	// Send initial snapshot eagerly
 	if f := client.getFile(); f != nil {
-		updatesCh = f.Updates()
-		if err := client.send(toFileDTO(f, true)); err != nil {
+		subFile = f
+		subCh = f.SubscribeUpdates()
+		updatesCh = subCh
+		dto := toFileDTO(f, true)
+		if err := client.send(dto); err != nil {
 			util.Log("fileWork: send file error: " + err.Error())
 			return false
 		}
-		now := time.Now()
-		client.setLastUpdate(now)
-		nextSendAllowed = now.Add(timeToSleepUntilNextFileUpdateSending)
+		// lastUpdate must track the file's UpdatedAt we have sent, not wall-clock send time.
+		// Otherwise we can drop updates that occurred while we were sending the previous message.
+		client.setLastUpdate(dto.UpdatedAt)
+		nextSendAllowed = time.Now().Add(timeToSleepUntilNextFileUpdateSending)
 	}
 
 	for {
@@ -48,14 +62,20 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 		case <-client.fileSetCh:
 			// File was changed (SPA navigation), send new snapshot immediately.
 			if f := client.getFile(); f != nil {
-				updatesCh = f.Updates()
-				if err := client.send(toFileDTO(f, true)); err != nil {
+				// re-subscribe to the new file updates
+				if subFile != nil && subCh != nil {
+					subFile.UnsubscribeUpdates(subCh)
+				}
+				subFile = f
+				subCh = f.SubscribeUpdates()
+				updatesCh = subCh
+				dto := toFileDTO(f, true)
+				if err := client.send(dto); err != nil {
 					util.Log("fileWork: send file error: " + err.Error())
 					return false
 				}
-				now := time.Now()
-				client.setLastUpdate(now)
-				nextSendAllowed = now.Add(timeToSleepUntilNextFileUpdateSending)
+				client.setLastUpdate(dto.UpdatedAt)
+				nextSendAllowed = time.Now().Add(timeToSleepUntilNextFileUpdateSending)
 			}
 		case <-touchTicker.C:
 			if f := client.getFile(); f != nil {
@@ -97,9 +117,8 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 				return false
 			}
 
-			now := time.Now()
-			client.setLastUpdate(now)
-			nextSendAllowed = now.Add(timeToSleepUntilNextFileUpdateSending)
+			client.setLastUpdate(dto.UpdatedAt)
+			nextSendAllowed = time.Now().Add(timeToSleepUntilNextFileUpdateSending)
 		}
 	}
 }

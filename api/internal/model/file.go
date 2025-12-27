@@ -26,7 +26,11 @@ type File struct {
 
 	PersistedAt time.Time `json:"-" bson:"-"`
 	mutex       sync.Mutex
-	updateCh    chan struct{}
+	// subs is a fan-out update notification mechanism.
+	// Each subscriber gets its own buffered channel so that multiple WS clients
+	// can independently observe updates (a single shared channel would "load-balance"
+	// updates across clients, causing missed updates).
+	subs map[chan struct{}]struct{}
 }
 
 type User struct {
@@ -138,28 +142,50 @@ func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 		IsWaitingForResult: false,
 		Persisted:          false,
 		IsRunnerOnline:     true, // todo: set correct
-		updateCh:           make(chan struct{}, 1),
+		subs:               make(map[chan struct{}]struct{}),
 	}
 	file.TouchByUser(userId, userName)
 	return file
 }
 
-func (f *File) Updates() <-chan struct{} {
+// SubscribeUpdates registers a new subscriber and returns its channel.
+// The channel is buffered and will receive a signal for each logical update
+// (signals may be coalesced).
+func (f *File) SubscribeUpdates() chan struct{} {
 	f.lock()
 	defer f.unlock()
-	if f.updateCh == nil {
-		f.updateCh = make(chan struct{}, 1)
+	if f.subs == nil {
+		f.subs = make(map[chan struct{}]struct{})
 	}
-	return f.updateCh
+	ch := make(chan struct{}, 1)
+	f.subs[ch] = struct{}{}
+	return ch
+}
+
+// UnsubscribeUpdates removes the subscriber and closes its channel.
+func (f *File) UnsubscribeUpdates(ch chan struct{}) {
+	if ch == nil {
+		return
+	}
+	f.lock()
+	if f.subs != nil {
+		if _, ok := f.subs[ch]; ok {
+			delete(f.subs, ch)
+			close(ch)
+		}
+	}
+	f.unlock()
 }
 
 func (f *File) signalUpdatedLocked() {
-	if f.updateCh == nil {
-		f.updateCh = make(chan struct{}, 1)
+	if f.subs == nil {
+		return
 	}
-	select {
-	case f.updateCh <- struct{}{}:
-	default:
+	for ch := range f.subs {
+		select {
+		case ch <- struct{}{}:
+		default:
+		}
 	}
 }
 

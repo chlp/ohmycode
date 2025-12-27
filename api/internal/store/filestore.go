@@ -1,8 +1,8 @@
 package store
 
 import (
-	"errors"
 	"context"
+	"errors"
 	"ohmycode_api/internal/model"
 	"sync"
 )
@@ -50,7 +50,6 @@ func (fs *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, us
 	}
 	if found && fromDb.ID == fileId {
 		fromDb.Persisted = true
-		_ = fromDb.Updates()
 		fs.filesMu.Lock()
 		fs.files[fileId] = &fromDb
 		fs.filesMu.Unlock()
@@ -99,7 +98,6 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 	}
 
 	fromDb.Persisted = true
-	_ = fromDb.Updates()
 
 	fs.filesMu.Lock()
 	fs.files[fileId] = &fromDb
