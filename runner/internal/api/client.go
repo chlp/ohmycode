@@ -30,6 +30,13 @@ type Client struct {
 
 const timeToSleepBetweenMessagesHandling = 100 * time.Millisecond
 
+const (
+	writeWait      = 10 * time.Second
+	pongWait       = 60 * time.Second
+	pingPeriod     = (pongWait * 9) / 10
+	maxMessageSize = 1 << 20 // 1 MiB
+)
+
 func NewApiClient(ctx context.Context, runnerId string, isPublic bool, apiUrl string) *Client {
 	apiClient := Client{
 		ctx:        ctx,
@@ -132,15 +139,55 @@ func (apiClient *Client) handleWebSocketMessages() {
 		return
 	}
 
+	socket.SetReadLimit(maxMessageSize)
+	_ = socket.SetReadDeadline(time.Now().Add(pongWait))
+	socket.SetPongHandler(func(string) error {
+		_ = socket.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
+
+	pingStop := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(pingPeriod)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-apiClient.ctx.Done():
+				return
+			case <-pingStop:
+				return
+			case <-ticker.C:
+				apiClient.writeMu.Lock()
+				_ = socket.SetWriteDeadline(time.Now().Add(writeWait))
+				err := socket.WriteMessage(websocket.PingMessage, nil)
+				apiClient.writeMu.Unlock()
+				if err != nil {
+					apiClient.writeMu.Lock()
+					_ = socket.Close()
+					apiClient.writeMu.Unlock()
+					apiClient.clearSocketIfCurrent(socket)
+					return
+				}
+			}
+		}
+	}()
+
 	defer func() {
+		close(pingStop)
 		// Close should not race with concurrent writes (SetResult).
 		apiClient.writeMu.Lock()
+		_ = socket.SetWriteDeadline(time.Now().Add(writeWait))
 		_ = socket.Close()
 		apiClient.writeMu.Unlock()
 		apiClient.clearSocketIfCurrent(socket)
 	}()
 
 	for {
+		select {
+		case <-apiClient.ctx.Done():
+			return
+		default:
+		}
 		wsMessageType, message, err := socket.ReadMessage()
 		if err != nil {
 			var closeErr *websocket.CloseError
@@ -187,6 +234,7 @@ func (apiClient *Client) SetResult(result *Task) error {
 		return errors.New("can not set result now")
 	}
 	result.Action = "set_result"
+	_ = socket.SetWriteDeadline(time.Now().Add(writeWait))
 	if err := socket.WriteJSON(result); err != nil {
 		util.Log("SetResult: json err: " + err.Error())
 		_ = socket.Close()
