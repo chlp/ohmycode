@@ -7,11 +7,11 @@ import (
 )
 
 type FileStore struct {
-	filesMu    sync.RWMutex
-	files      map[string]*model.File
+	filesMu     sync.RWMutex
+	files       map[string]*model.File
 	fileLocksMu sync.Mutex
-	fileLocks  map[string]*sync.Mutex
-	db         *Db
+	fileLocks   map[string]*sync.Mutex
+	db          *Db
 }
 
 func NewFileStore(dbConfig DBConfig) *FileStore {
@@ -35,20 +35,18 @@ func (fs *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, us
 	fs.filesMu.RUnlock()
 
 	// try DB
-	filesRaw, err := fs.db.Select("files", map[string]interface{}{"_id": fileId}, &model.File{})
+	var fromDb model.File
+	found, err := fs.db.FindOne("files", map[string]interface{}{"_id": fileId}, &fromDb)
 	if err != nil {
 		return nil, err
 	}
-	files, ok := filesRaw.([]model.File)
-	if !ok {
-		return nil, errors.New("problem with type conversion")
-	}
-	if len(files) == 1 && files[0].ID == fileId {
-		files[0].Persisted = true
+	if found && fromDb.ID == fileId {
+		fromDb.Persisted = true
+		_ = fromDb.Updates()
 		fs.filesMu.Lock()
-		fs.files[fileId] = &files[0]
+		fs.files[fileId] = &fromDb
 		fs.filesMu.Unlock()
-		return &files[0], nil
+		return &fromDb, nil
 	}
 
 	// create new
@@ -80,36 +78,31 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 	}
 	fs.filesMu.RUnlock()
 
-	filesRaw, err := fs.db.Select("files", map[string]interface{}{"_id": fileId}, &model.File{})
+	var fromDb model.File
+	found, err := fs.db.FindOne("files", map[string]interface{}{"_id": fileId}, &fromDb)
 	if err != nil {
 		return nil, err
 	}
-	files, ok := filesRaw.([]model.File)
-	if !ok {
-		return nil, errors.New("problem with type conversion")
-	}
-	if len(files) == 0 {
+	if !found {
 		return nil, nil
 	}
-	if len(files) != 1 {
-		return nil, errors.New("wrong count")
-	}
-	if files[0].ID != fileId {
+	if fromDb.ID != fileId {
 		return nil, errors.New("problem with fileId")
 	}
 
-	files[0].Persisted = true
+	fromDb.Persisted = true
+	_ = fromDb.Updates()
 
 	fs.filesMu.Lock()
-	fs.files[fileId] = &files[0]
+	fs.files[fileId] = &fromDb
 	fs.filesMu.Unlock()
-	return &files[0], nil
+	return &fromDb, nil
 }
 
 func (fs *FileStore) PersistFile(file *model.File) error {
 	fileMu := fs.lockFileMutex(file.ID)
 	defer fileMu.Unlock()
-	if err := fs.db.Upsert("files", file); err != nil {
+	if err := fs.db.ReplaceOneUpsert("files", map[string]interface{}{"_id": file.ID}, file); err != nil {
 		return err
 	}
 	file.PersistedAt = file.UpdatedAt

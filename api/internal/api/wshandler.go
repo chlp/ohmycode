@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"ohmycode_api/pkg/util"
-	"time"
 )
 
 type input struct {
@@ -23,8 +22,6 @@ type input struct {
 	Result   string `json:"result"`
 	IsPublic bool   `json:"is_public"`
 }
-
-const timeToSleepBetweenWork = 100 * time.Millisecond
 
 func (s *Service) HandleWs(w http.ResponseWriter, r *http.Request,
 	messageHandler func(client *wsClient, message []byte) (ok bool),
@@ -66,15 +63,7 @@ func (s *Service) HandleWs(w http.ResponseWriter, r *http.Request,
 		}
 	}()
 
-	for {
-		select {
-		case <-client.done:
-			return
-		default:
-			if !work(client) {
-				return
-			}
-			time.Sleep(timeToSleepBetweenWork)
-		}
+	if !work(client) {
+		client.close()
 	}
 }

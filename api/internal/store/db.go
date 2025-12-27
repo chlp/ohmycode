@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"ohmycode_api/pkg/util"
-	"reflect"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -51,61 +50,33 @@ func newDb(config DBConfig) *Db {
 	}
 }
 
-func (db *Db) Select(collection string, filter map[string]interface{}, resultType interface{}) (interface{}, error) {
+func (db *Db) FindOne(collection string, filter map[string]interface{}, out interface{}) (found bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
 	defer cancel()
 
 	coll := db.db.Collection(collection)
-	cursor, err := coll.Find(ctx, bson.M(filter))
-	if err != nil {
-		return nil, fmt.Errorf("failed to find document: %v", err)
-	}
-	defer cursor.Close(ctx)
-
-	sliceType := reflect.SliceOf(reflect.TypeOf(resultType).Elem())
-	sliceValue := reflect.MakeSlice(sliceType, 0, 0)
-	for cursor.Next(ctx) {
-		elem := reflect.New(reflect.TypeOf(resultType).Elem()).Interface()
-		if err = cursor.Decode(elem); err != nil {
-			return nil, err
+	if err := coll.FindOne(ctx, bson.M(filter)).Decode(out); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil
 		}
-		sliceValue = reflect.Append(sliceValue, reflect.ValueOf(elem).Elem())
+		return false, fmt.Errorf("failed to find one document: %w", err)
 	}
-	if err = cursor.Err(); err != nil {
-		return nil, fmt.Errorf("failed with cursor on select: %v", err)
-	}
-
-	return sliceValue.Interface(), nil
+	return true, nil
 }
 
-func (db *Db) Upsert(collection string, document interface{}) error {
+func (db *Db) ReplaceOneUpsert(collection string, filter map[string]interface{}, document interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
 	defer cancel()
 
 	coll := db.db.Collection(collection)
-	docBytes, err := bson.Marshal(document)
+	_, err := coll.ReplaceOne(ctx, bson.M(filter), document, options.Replace().SetUpsert(true))
 	if err != nil {
-		return fmt.Errorf("failed to marshal document: %v", err)
-	}
-
-	var docMap bson.M
-	err = bson.Unmarshal(docBytes, &docMap)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal document: %v", err)
-	}
-
-	id, ok := docMap["_id"]
-	if !ok {
-		return fmt.Errorf("document must have an _id field")
-	}
-
-	filter := bson.M{"_id": id}
-	update := bson.M{"$set": docMap}
-
-	_, err = coll.UpdateOne(ctx, filter, update, options.Update().SetUpsert(true))
-	if err != nil {
-		return fmt.Errorf("failed to upsert document: %v", err)
+		return fmt.Errorf("failed to replace(upsert) document: %w", err)
 	}
 
 	return nil
+}
+
+func (db *Db) Close(ctx context.Context) error {
+	return db.client.Disconnect(ctx)
 }

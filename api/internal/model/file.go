@@ -26,6 +26,7 @@ type File struct {
 
 	PersistedAt time.Time `json:"-"`
 	mutex       sync.Mutex
+	updateCh    chan struct{}
 }
 
 type User struct {
@@ -60,9 +61,29 @@ func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 		IsWaitingForResult: false,
 		Persisted:          false,
 		IsRunnerOnline:     true, // todo: set correct
+		updateCh:           make(chan struct{}, 1),
 	}
 	file.TouchByUser(userId, userName)
 	return file
+}
+
+func (f *File) Updates() <-chan struct{} {
+	f.lock()
+	defer f.unlock()
+	if f.updateCh == nil {
+		f.updateCh = make(chan struct{}, 1)
+	}
+	return f.updateCh
+}
+
+func (f *File) signalUpdatedLocked() {
+	if f.updateCh == nil {
+		f.updateCh = make(chan struct{}, 1)
+	}
+	select {
+	case f.updateCh <- struct{}{}:
+	default:
+	}
 }
 
 func (f *File) TouchByUser(userId, userName string) {
@@ -91,6 +112,7 @@ func (f *File) TouchByUser(userId, userName string) {
 			TouchedAt: time.Now(),
 		})
 		f.UpdatedAt = time.Now()
+		f.signalUpdatedLocked()
 	}
 }
 
@@ -106,6 +128,7 @@ func (f *File) SetName(name string) bool {
 	f.Persisted = true
 	f.Name = name
 	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
 	return true
 }
 
@@ -120,6 +143,7 @@ func (f *File) SetLang(lang string) bool {
 	}
 	f.Lang = lang
 	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
 	return true
 }
 
@@ -138,6 +162,7 @@ func (f *File) SetContent(content, appId string) error {
 	f.Writer = appId
 	f.ContentUpdatedAt = time.Now()
 	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
 	return nil
 }
 
@@ -153,6 +178,7 @@ func (f *File) SetWaitingForResult() {
 	f.IsWaitingForResult = true
 	f.Result = "Started execution at " + time.Now().UTC().Format("15:04:05") + " UTC"
 	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
 }
 
 func (f *File) SetResult(result string) error {
@@ -170,6 +196,7 @@ func (f *File) SetResult(result string) error {
 	f.IsWaitingForResult = false
 	f.Result = result
 	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
 	return nil
 }
 
@@ -186,6 +213,7 @@ func (f *File) SetUserName(userId, userName string) bool {
 			if f.Users[i].Name != userName {
 				f.Users[i].Name = userName
 				f.UpdatedAt = time.Now()
+				f.signalUpdatedLocked()
 			}
 			return true
 		}
@@ -206,6 +234,7 @@ func (f *File) SetRunnerId(runnerId string) bool {
 	f.Persisted = true
 	f.RunnerId = runnerId
 	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
 	return true
 }
 
@@ -222,6 +251,7 @@ func (f *File) CleanupUsers() {
 	}
 	if changed {
 		f.UpdatedAt = time.Now()
+		f.signalUpdatedLocked()
 	}
 }
 
@@ -232,6 +262,7 @@ func (f *File) CleanupWaitingForResult() {
 	if f.IsWaitingForResult && time.Since(f.UpdatedAt) > durationForWaitingForResultMax {
 		f.IsWaitingForResult = false
 		f.UpdatedAt = time.Now()
+		f.signalUpdatedLocked()
 	}
 }
 
@@ -259,6 +290,7 @@ func (f *File) CleanupWriter() {
 	if time.Since(f.ContentUpdatedAt) > durationIsWriterStillWriting {
 		f.Writer = ""
 		f.UpdatedAt = time.Now()
+		f.signalUpdatedLocked()
 	}
 }
 

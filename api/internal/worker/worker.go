@@ -22,43 +22,46 @@ func NewWorker(appCtx context.Context, fileStore *store.FileStore, runnerStore *
 }
 
 const (
-	timeToSleepBetweenCleanups          = 100 * time.Millisecond
+	timeToSleepBetweenCleanups          = 1 * time.Second
 	timeToSleepBetweenPersists          = 30 * time.Second
-	timeToSleepBetweenSetIsRunnerOnline = 500 * time.Millisecond
+	timeToSleepBetweenSetIsRunnerOnline = 1 * time.Second
 )
 
 func (w *Worker) Run() {
 	util.Log("Worker started")
 	go func() {
+		ticker := time.NewTicker(timeToSleepBetweenCleanups)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-w.appCtx.Done():
 				return
-			default:
+			case <-ticker.C:
 				w.filesCleanUp()
-				time.Sleep(timeToSleepBetweenCleanups)
 			}
 		}
 	}()
 	go func() {
+		ticker := time.NewTicker(timeToSleepBetweenPersists)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-w.appCtx.Done():
 				return
-			default:
+			case <-ticker.C:
 				w.filesPersisting()
-				time.Sleep(timeToSleepBetweenPersists)
 			}
 		}
 	}()
 	go func() {
+		ticker := time.NewTicker(timeToSleepBetweenSetIsRunnerOnline)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-w.appCtx.Done():
 				return
-			default:
+			case <-ticker.C:
 				w.filesSetIsRunnerOnline()
-				time.Sleep(timeToSleepBetweenSetIsRunnerOnline)
 			}
 		}
 	}()

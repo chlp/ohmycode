@@ -14,27 +14,90 @@ func (s *Service) handleWsFileConnection(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *Service) fileWork(client *wsClient) (ok bool) {
-	if client.file == nil {
-		return true
-	}
-	client.file.TouchByUser(client.userId, "")
-	if client.file.UpdatedAt.After(client.lastUpdate) {
-		fileToSend := *client.file
-		if client.file.ContentUpdatedAt.Before(client.lastUpdate) {
-			fileToSend.Content = nil
-		}
-		if client.file.ID != fileToSend.ID {
-			util.Log("fileWork: new file, will not send now")
+	// Wait for init
+	for client.getFile() == nil {
+		select {
+		case <-client.done:
 			return true
+		case <-client.fileSetCh:
 		}
-		if err := client.send(fileToSend); err != nil {
+	}
+
+	touchTicker := time.NewTicker(1 * time.Second)
+	defer touchTicker.Stop()
+
+	var nextSendAllowed time.Time
+
+	// Send initial snapshot eagerly
+	if f := client.getFile(); f != nil {
+		if err := client.send(toFileDTO(f, true)); err != nil {
 			util.Log("fileWork: send file error: " + err.Error())
 			return false
 		}
-		client.lastUpdate = time.Now()
-		time.Sleep(timeToSleepUntilNextFileUpdateSending)
+		now := time.Now()
+		client.setLastUpdate(now)
+		nextSendAllowed = now.Add(timeToSleepUntilNextFileUpdateSending)
 	}
-	return true
+
+	for {
+		select {
+		case <-client.done:
+			return true
+		case <-client.fileSetCh:
+			// File was changed (SPA navigation), send new snapshot immediately.
+			if f := client.getFile(); f != nil {
+				if err := client.send(toFileDTO(f, true)); err != nil {
+					util.Log("fileWork: send file error: " + err.Error())
+					return false
+				}
+				now := time.Now()
+				client.setLastUpdate(now)
+				nextSendAllowed = now.Add(timeToSleepUntilNextFileUpdateSending)
+			}
+		case <-touchTicker.C:
+			if f := client.getFile(); f != nil {
+				f.TouchByUser(client.getUserId(), "")
+			}
+		case <-client.getFile().Updates():
+			// throttle sends
+			if time.Now().Before(nextSendAllowed) {
+				timer := time.NewTimer(time.Until(nextSendAllowed))
+				select {
+				case <-client.done:
+					timer.Stop()
+					return true
+				case <-timer.C:
+				}
+			}
+
+			f := client.getFile()
+			if f == nil {
+				continue
+			}
+			lastUpdate := client.getLastUpdate()
+			if !f.UpdatedAt.After(lastUpdate) {
+				continue
+			}
+
+			includeContent := true
+			if f.ContentUpdatedAt.Before(lastUpdate) {
+				includeContent = false
+			}
+			dto := toFileDTO(f, includeContent)
+			if f.ID != dto.ID {
+				util.Log("fileWork: new file, will not send now")
+				continue
+			}
+			if err := client.send(dto); err != nil {
+				util.Log("fileWork: send file error: " + err.Error())
+				return false
+			}
+
+			now := time.Now()
+			client.setLastUpdate(now)
+			nextSendAllowed = now.Add(timeToSleepUntilNextFileUpdateSending)
+		}
+	}
 }
 
 func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool) {
@@ -50,59 +113,58 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			util.Log("fileMessageHandler: Wrong file_id or user_id: " + i.FileId + ", " + i.UserId)
 			return false
 		}
-		client.appId = i.AppId
-		client.userId = i.UserId
-		client.lastUpdate = time.Time{}
-		client.file, err = s.fileStore.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
+		file, err := s.fileStore.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 		if err != nil {
 			util.Log("fileMessageHandler: GetFile error: " + err.Error())
 			return false
 		}
-		if client.file == nil {
+		if file == nil {
 			util.Log("fileMessageHandler: GetFile not found")
 			return false
 		}
+		client.setFile(file, i.AppId, i.UserId)
 		return true
 	}
 
-	if client.file == nil {
+	if client.getFile() == nil {
 		util.Log("fileMessageHandler: nil file: " + i.RunnerId)
 		return true
 	}
 
+	file := client.getFile()
 	switch i.Action {
 	case "set_content":
-		if err := client.file.SetContent(i.Content, client.appId); err != nil {
+		if err := file.SetContent(i.Content, client.getAppId()); err != nil {
 			util.Log("fileMessageHandler: set_content error: " + err.Error())
 		}
 	case "set_name":
-		if !client.file.SetName(i.FileName) {
+		if !file.SetName(i.FileName) {
 			util.Log("fileMessageHandler: set_name error")
 		}
 	case "set_user_name":
-		if !client.file.SetUserName(client.userId, i.UserName) {
+		if !file.SetUserName(client.getUserId(), i.UserName) {
 			util.Log("fileMessageHandler: set_user_name error")
 		}
 	case "set_lang":
-		if !client.file.SetLang(i.Lang) {
+		if !file.SetLang(i.Lang) {
 			util.Log("fileMessageHandler: set_lang error")
 		}
 	case "set_runner":
-		if !client.file.SetRunnerId(i.RunnerId) {
+		if !file.SetRunnerId(i.RunnerId) {
 			util.Log("fileMessageHandler: set_runner error")
 		}
 	case "clean_result":
-		s.taskStore.DeleteTask(client.file.ID)
-		err = client.file.SetResult("")
+		s.taskStore.DeleteTask(file.ID)
+		err = file.SetResult("")
 		if err != nil {
 			util.Log("fileMessageHandler: set_runner error")
 		}
 	case "run_task":
-		if !s.runnerStore.IsOnline(client.file.UsePublicRunner, client.file.RunnerId) {
+		if !s.runnerStore.IsOnline(file.UsePublicRunner, file.RunnerId) {
 			return true
 		} else {
-			client.file.SetWaitingForResult()
-			s.taskStore.AddTask(client.file)
+			file.SetWaitingForResult()
+			s.taskStore.AddTask(file)
 		}
 	default:
 		util.Log("fileMessageHandler: Unknown message type: " + string(message))

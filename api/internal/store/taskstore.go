@@ -10,12 +10,36 @@ import (
 type TaskStore struct {
 	mutex *sync.Mutex
 	tasks map[string]*model.Task
+	subs  map[chan struct{}]struct{}
 }
 
 func NewTaskStore() *TaskStore {
 	return &TaskStore{
 		mutex: &sync.Mutex{},
 		tasks: make(map[string]*model.Task),
+		subs:  make(map[chan struct{}]struct{}),
+	}
+}
+
+func (ts *TaskStore) Subscribe() (ch <-chan struct{}, unsubscribe func()) {
+	c := make(chan struct{}, 1)
+	ts.mutex.Lock()
+	ts.subs[c] = struct{}{}
+	ts.mutex.Unlock()
+	return c, func() {
+		ts.mutex.Lock()
+		delete(ts.subs, c)
+		close(c)
+		ts.mutex.Unlock()
+	}
+}
+
+func (ts *TaskStore) signalLocked() {
+	for c := range ts.subs {
+		select {
+		case c <- struct{}{}:
+		default:
+		}
 	}
 }
 
@@ -30,6 +54,7 @@ func (ts *TaskStore) AddTask(file *model.File) {
 		IsPublic:        file.UsePublicRunner,
 		GivenToRunnerAt: time.Time{},
 	}
+	ts.signalLocked()
 	ts.mutex.Unlock()
 }
 
@@ -59,6 +84,7 @@ func (ts *TaskStore) DeleteTask(taskId string) {
 	ts.mutex.Lock()
 	defer ts.mutex.Unlock()
 	delete(ts.tasks, taskId)
+	ts.signalLocked()
 }
 
 const durationToRetryTask = time.Second * 30

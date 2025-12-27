@@ -12,6 +12,7 @@ import (
 )
 
 type wsClient struct {
+	stateMu sync.RWMutex
 	file       *model.File
 	userId     string
 	appId      string
@@ -21,6 +22,8 @@ type wsClient struct {
 	done       chan struct{}
 	close      func()
 	writeMu    sync.Mutex
+	fileSetCh  chan struct{}
+	runnerSetCh chan struct{}
 }
 
 var wsUpgrader = websocket.Upgrader{
@@ -62,6 +65,8 @@ func createWsClient(w http.ResponseWriter, r *http.Request) *wsClient {
 		conn:      conn,
 		done:      done,
 		close:     closeClient,
+		fileSetCh: make(chan struct{}, 1),
+		runnerSetCh: make(chan struct{}, 1),
 	}
 	go client.pingPongHandling()
 	return &client
@@ -116,4 +121,68 @@ func (client *wsClient) send(v interface{}) error {
 	defer client.writeMu.Unlock()
 	_ = client.conn.SetWriteDeadline(time.Now().Add(wsWriteWait))
 	return client.conn.WriteMessage(websocket.TextMessage, jsonData)
+}
+
+func (client *wsClient) setFile(file *model.File, appId, userId string) {
+	client.stateMu.Lock()
+	client.file = file
+	client.appId = appId
+	client.userId = userId
+	client.lastUpdate = time.Time{}
+	client.stateMu.Unlock()
+	select {
+	case client.fileSetCh <- struct{}{}:
+	default:
+	}
+}
+
+func (client *wsClient) getFile() *model.File {
+	client.stateMu.RLock()
+	f := client.file
+	client.stateMu.RUnlock()
+	return f
+}
+
+func (client *wsClient) getUserId() string {
+	client.stateMu.RLock()
+	u := client.userId
+	client.stateMu.RUnlock()
+	return u
+}
+
+func (client *wsClient) getAppId() string {
+	client.stateMu.RLock()
+	a := client.appId
+	client.stateMu.RUnlock()
+	return a
+}
+
+func (client *wsClient) getLastUpdate() time.Time {
+	client.stateMu.RLock()
+	t := client.lastUpdate
+	client.stateMu.RUnlock()
+	return t
+}
+
+func (client *wsClient) setLastUpdate(t time.Time) {
+	client.stateMu.Lock()
+	client.lastUpdate = t
+	client.stateMu.Unlock()
+}
+
+func (client *wsClient) setRunner(runner *model.Runner) {
+	client.stateMu.Lock()
+	client.runner = runner
+	client.stateMu.Unlock()
+	select {
+	case client.runnerSetCh <- struct{}{}:
+	default:
+	}
+}
+
+func (client *wsClient) getRunner() *model.Runner {
+	client.stateMu.RLock()
+	r := client.runner
+	client.stateMu.RUnlock()
+	return r
 }

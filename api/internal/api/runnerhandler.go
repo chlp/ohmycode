@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"ohmycode_api/pkg/util"
 	"strconv"
+	"time"
 )
 
 func (s *Service) handleWsRunnerConnection(w http.ResponseWriter, r *http.Request) {
@@ -12,21 +13,57 @@ func (s *Service) handleWsRunnerConnection(w http.ResponseWriter, r *http.Reques
 }
 
 func (s *Service) runnerWork(client *wsClient) (ok bool) {
-	if client.runner == nil {
-		return true
+	updatesCh, unsubscribe := s.taskStore.Subscribe()
+	defer unsubscribe()
+
+	// Wait for init
+	for client.getRunner() == nil {
+		select {
+		case <-client.done:
+			return true
+		case <-client.runnerSetCh:
+		}
 	}
 
-	s.runnerStore.TouchRunner(client.runner.ID)
-	tasks := s.taskStore.GetTasksForRunner(client.runner)
-	if len(tasks) == 0 {
-		return true
+	heartbeat := time.NewTicker(2 * time.Second)
+	defer heartbeat.Stop()
+
+	// Send initial tasks eagerly (in case tasks existed before runner connected)
+	if r := client.getRunner(); r != nil {
+		s.runnerStore.TouchRunner(r.ID)
+		tasks := s.taskStore.GetTasksForRunner(r)
+		if len(tasks) != 0 {
+			if err := client.send(tasks); err != nil {
+				util.Log("runnerWork: send tasks error: " + err.Error())
+				return false
+			}
+		}
 	}
 
-	if err := client.send(tasks); err != nil {
-		util.Log("runnerWork: send tasks error: " + err.Error())
-		return false
+	for {
+		select {
+		case <-client.done:
+			return true
+		case <-heartbeat.C:
+			if r := client.getRunner(); r != nil {
+				s.runnerStore.TouchRunner(r.ID)
+			}
+		case <-updatesCh:
+			r := client.getRunner()
+			if r == nil {
+				continue
+			}
+			s.runnerStore.TouchRunner(r.ID)
+			tasks := s.taskStore.GetTasksForRunner(r)
+			if len(tasks) == 0 {
+				continue
+			}
+			if err := client.send(tasks); err != nil {
+				util.Log("runnerWork: send tasks error: " + err.Error())
+				return false
+			}
+		}
 	}
-	return true
 }
 
 func (s *Service) runnerMessageHandler(client *wsClient, message []byte) (ok bool) {
@@ -42,18 +79,19 @@ func (s *Service) runnerMessageHandler(client *wsClient, message []byte) (ok boo
 			util.Log("runnerMessageHandler: Wrong runner_id: " + i.RunnerId)
 			return false
 		}
-		client.runner = s.runnerStore.SetRunner(i.RunnerId, i.IsPublic)
+		client.setRunner(s.runnerStore.SetRunner(i.RunnerId, i.IsPublic))
 		return true
 	}
 
-	if client.runner == nil {
+	if client.getRunner() == nil {
 		util.Log("runnerMessageHandler: nil runner: " + i.RunnerId)
 		return true
 	}
 
+	runner := client.getRunner()
 	switch i.Action {
 	case "set_result":
-		task := s.taskStore.GetTask(client.runner.ID, i.Lang, i.Hash)
+		task := s.taskStore.GetTask(runner.ID, i.Lang, i.Hash)
 		if task == nil {
 			util.Log("runnerMessageHandler: task not found: " + i.Lang + ", " + strconv.Itoa(int(i.Hash)))
 			return true
