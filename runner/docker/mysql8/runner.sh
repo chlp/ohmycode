@@ -1,10 +1,12 @@
 #!/bin/bash
+set -uo pipefail
+shopt -s nullglob
 
 cd /app
 
 mkdir -p tmp
 
-export MYSQL_PWD=mysql8root
+export MYSQL_PWD="${MYSQL_ROOT_PASSWORD:-mysql8root}"
 
 while true; do
     mysql -u root -e "SHOW DATABASES;" 1>/dev/null 2>&1
@@ -16,25 +18,26 @@ while true; do
     sleep 2
 done
 
-while [ True ]; do
-    if [ -n "$(ls tmp)" ]; then
-      rm tmp/*
-    fi
-    if [ -n "$(ls requests)" ]; then
-        for REQUEST in requests/*; do
-            echo $REQUEST
-            ID=$(basename $REQUEST)
-            touch tmp/$ID
-            chmod 744 tmp/$ID
-            mysql -u root -e "CREATE DATABASE tmp_$ID;"
-            timeout 5 mysql -u root tmp_$ID --table < $REQUEST 1>>tmp/$ID 2>&1
-            if [ $? -eq 124 ]; then
-              echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> tmp/$ID
-            fi
-            mysql -u root -e "DROP DATABASE tmp_$ID;"
-            rm $REQUEST
-            mv tmp/$ID results/$ID
-        done
-    fi
+while true; do
+    for REQUEST in requests/*; do
+        echo "$REQUEST"
+        ID="$(basename -- "$REQUEST")"
+        if ! [[ "$ID" =~ ^[0-9]+$ ]]; then
+            echo "Invalid request id: $ID" >&2
+            rm -f -- "$REQUEST"
+            continue
+        fi
+        OUT="tmp/$ID"
+        touch -- "$OUT"
+        chmod 744 -- "$OUT"
+        mysql -u root -e "CREATE DATABASE tmp_${ID};"
+        timeout 5 mysql -u root "tmp_${ID}" --table < "$REQUEST" 1>>"$OUT" 2>&1
+        if [ $? -eq 124 ]; then
+          echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> "$OUT"
+        fi
+        mysql -u root -e "DROP DATABASE tmp_${ID};"
+        rm -f -- "$REQUEST"
+        mv -- "$OUT" "results/$ID"
+    done
     sleep 0.01
 done

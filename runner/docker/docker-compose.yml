@@ -87,7 +87,7 @@ services:
       - /app/tmp:mode=1777,uid=1000,gid=1000
     command: --default-authentication-plugin=mysql_native_password --log_error_verbosity=1 --skip-log-bin
     environment:
-      MYSQL_ROOT_PASSWORD: mysql8root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mysql8root}
   ohmycode-runner-php82:
     container_name: ohmycode-runner-php82
     networks:
@@ -121,9 +121,9 @@ services:
       - /var/lib/postgresql/data:mode=1777,uid=1000,gid=1000
       - /app/tmp:mode=1777,uid=1000,gid=1000
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-mydatabase}
 networks:
   isolated-network-go:
     driver: bridge

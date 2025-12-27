@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"math"
@@ -13,6 +14,8 @@ import (
 )
 
 type Client struct {
+	ctx context.Context
+
 	RunnerId string
 	IsPublic bool
 	ApiUrl   string
@@ -20,22 +23,32 @@ type Client struct {
 	mutex      *sync.Mutex
 	tasksQueue []*Task
 
-	socket *websocket.Conn
+	socketMu *sync.RWMutex
+	writeMu  *sync.Mutex
+	socket   *websocket.Conn
 }
 
 const timeToSleepBetweenMessagesHandling = 100 * time.Millisecond
 
-func NewApiClient(runnerId string, isPublic bool, apiUrl string) *Client {
+func NewApiClient(ctx context.Context, runnerId string, isPublic bool, apiUrl string) *Client {
 	apiClient := Client{
+		ctx:        ctx,
 		RunnerId:   runnerId,
 		IsPublic:   isPublic,
 		ApiUrl:     apiUrl,
 		mutex:      &sync.Mutex{},
+		socketMu:   &sync.RWMutex{},
+		writeMu:    &sync.Mutex{},
 		tasksQueue: make([]*Task, 0),
 	}
 	go apiClient.handleReconnection()
 	go func() {
 		for {
+			select {
+			case <-apiClient.ctx.Done():
+				return
+			default:
+			}
 			apiClient.handleWebSocketMessages()
 			time.Sleep(timeToSleepBetweenMessagesHandling)
 		}
@@ -49,8 +62,32 @@ type InitMessage struct {
 	IsPublic bool   `json:"is_public"`
 }
 
+func (apiClient *Client) getSocket() *websocket.Conn {
+	apiClient.socketMu.RLock()
+	socket := apiClient.socket
+	apiClient.socketMu.RUnlock()
+	return socket
+}
+
+func (apiClient *Client) setSocket(socket *websocket.Conn) {
+	apiClient.socketMu.Lock()
+	apiClient.socket = socket
+	apiClient.socketMu.Unlock()
+}
+
+func (apiClient *Client) clearSocketIfCurrent(socket *websocket.Conn) {
+	apiClient.socketMu.Lock()
+	if apiClient.socket == socket {
+		apiClient.socket = nil
+	}
+	apiClient.socketMu.Unlock()
+}
+
 func (apiClient *Client) createWebSocket() {
-	socket, _, err := websocket.DefaultDialer.Dial(apiClient.ApiUrl+"/runner", nil)
+	dialer := websocket.Dialer{
+		HandshakeTimeout: 10 * time.Second,
+	}
+	socket, _, err := dialer.DialContext(apiClient.ctx, apiClient.ApiUrl+"/runner", nil)
 	if err != nil {
 		util.Log("createWebSocket: can not dial, err: " + err.Error())
 		return
@@ -62,16 +99,23 @@ func (apiClient *Client) createWebSocket() {
 	}
 	if err := socket.WriteJSON(initMessage); err != nil {
 		util.Log("createWebSocket: json err: " + err.Error())
+		_ = socket.Close()
 		return
 	}
-	apiClient.socket = socket
+	apiClient.setSocket(socket)
 	util.Log("createWebSocket: connected!")
 }
 
 func (apiClient *Client) handleReconnection() {
 	reconnectAttempts := 0
 	for {
-		if apiClient.socket == nil {
+		select {
+		case <-apiClient.ctx.Done():
+			return
+		default:
+		}
+
+		if apiClient.getSocket() == nil {
 			reconnectAttempts++
 			apiClient.createWebSocket()
 		} else {
@@ -83,17 +127,21 @@ func (apiClient *Client) handleReconnection() {
 }
 
 func (apiClient *Client) handleWebSocketMessages() {
-	if apiClient.socket == nil {
+	socket := apiClient.getSocket()
+	if socket == nil {
 		return
 	}
 
 	defer func() {
-		_ = apiClient.socket.Close()
-		apiClient.socket = nil
+		// Close should not race with concurrent writes (SetResult).
+		apiClient.writeMu.Lock()
+		_ = socket.Close()
+		apiClient.writeMu.Unlock()
+		apiClient.clearSocketIfCurrent(socket)
 	}()
 
 	for {
-		wsMessageType, message, err := apiClient.socket.ReadMessage()
+		wsMessageType, message, err := socket.ReadMessage()
 		if err != nil {
 			var closeErr *websocket.CloseError
 			if !errors.As(err, &closeErr) {
@@ -129,14 +177,20 @@ func (apiClient *Client) GetTasksRequest() []*Task {
 }
 
 func (apiClient *Client) SetResult(result *Task) error {
-	if apiClient.socket == nil {
+	apiClient.writeMu.Lock()
+	defer apiClient.writeMu.Unlock()
+
+	socket := apiClient.getSocket()
+	if socket == nil {
 		util.Log("SetResult: can not set result now")
 		time.Sleep(100 * time.Millisecond)
 		return errors.New("can not set result now")
 	}
 	result.Action = "set_result"
-	if err := apiClient.socket.WriteJSON(result); err != nil {
+	if err := socket.WriteJSON(result); err != nil {
 		util.Log("SetResult: json err: " + err.Error())
+		_ = socket.Close()
+		apiClient.clearSocketIfCurrent(socket)
 		return err
 	}
 	return nil

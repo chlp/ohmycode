@@ -17,8 +17,7 @@ type ResultProcessor struct {
 }
 
 func NewResultProcessor(apiClient *api.Client, runnerId, lang string) *ResultProcessor {
-	_ = os.MkdirAll(getDirForResults(lang), 0o777)
-	_ = os.Chmod(getDirForResults(lang), 0o777)
+	_ = os.MkdirAll(getDirForResults(lang), 0o755)
 	return &ResultProcessor{
 		apiClient: apiClient,
 		runnerId:  runnerId,
@@ -45,7 +44,8 @@ func (rp *ResultProcessor) Process() error {
 }
 
 func isValidFile(entry os.DirEntry) bool {
-	return !entry.IsDir() && entry.Name()[0] != '.'
+	name := entry.Name()
+	return !entry.IsDir() && name != "" && name[0] != '.'
 }
 
 func (rp *ResultProcessor) processOneFile(resultsDir string, entry os.DirEntry) error {

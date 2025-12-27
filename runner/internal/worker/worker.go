@@ -32,30 +32,40 @@ func (w *Worker) Run() {
 	util.Log(nil, "Worker started")
 	taskDistributor := NewTaskDistributor(w.apiClient, w.runnerId, w.languages)
 	go func() {
+		delay := intervalBetweenTasksReceive
+		timer := time.NewTimer(delay)
+		defer timer.Stop()
 		for {
 			select {
 			case <-w.appCtx.Done():
 				return
-			default:
+			case <-timer.C:
 				if taskDistributor.Process() != nil {
-					time.Sleep(intervalBetweenTasksReceive * 10)
+					delay = intervalBetweenTasksReceive * 10
+				} else {
+					delay = intervalBetweenTasksReceive
 				}
-				time.Sleep(intervalBetweenTasksReceive)
+				timer.Reset(delay)
 			}
 		}
 	}()
 	for _, language := range w.languages {
 		resultProcessor := NewResultProcessor(w.apiClient, w.runnerId, language)
 		go func(language string) {
+			delay := intervalBetweenResultsSend
+			timer := time.NewTimer(delay)
+			defer timer.Stop()
 			for {
 				select {
 				case <-w.appCtx.Done():
 					return
-				default:
+				case <-timer.C:
 					if resultProcessor.Process() != nil {
-						time.Sleep(intervalBetweenResultsSend * 10)
+						delay = intervalBetweenResultsSend * 10
+					} else {
+						delay = intervalBetweenResultsSend
 					}
-					time.Sleep(intervalBetweenResultsSend)
+					timer.Reset(delay)
 				}
 			}
 		}(language)

@@ -6,6 +6,8 @@ import (
 	"ohmycode_runner/internal/api"
 	"ohmycode_runner/pkg/util"
 	"os"
+	"path/filepath"
+	"strconv"
 )
 
 type TaskDistributor struct {
@@ -22,8 +24,8 @@ func NewTaskDistributor(apiClient *api.Client, runnerId string, languages []stri
 	}
 	for _, lang := range languages {
 		td.languages[lang] = nil
-		_ = os.MkdirAll(getDirForRequests(lang), 0o777)
-		_ = os.Chmod(getDirForRequests(lang), 0o777)
+		// Avoid world-writable permissions by default; containers run as root anyway.
+		_ = os.MkdirAll(getDirForRequests(lang), 0o755)
 	}
 	return td
 }
@@ -53,9 +55,16 @@ func (td *TaskDistributor) moveTask(task *api.Task) error {
 	if !ok {
 		return fmt.Errorf("no runner for %s", task.Lang)
 	}
-	filePath := fmt.Sprintf("%s/%d", getDirForRequests(task.Lang), task.Hash)
-	if err := os.WriteFile(filePath, []byte(task.Content), 0744); err != nil {
+	// Task files are data, not executables.
+	fileName := strconv.FormatUint(uint64(task.Hash), 10)
+	filePath := filepath.Join(getDirForRequests(task.Lang), fileName)
+	tmpPath := filePath + ".tmp"
+	if err := os.WriteFile(tmpPath, []byte(task.Content), 0o644); err != nil {
 		return fmt.Errorf("can not move task: %v", err)
+	}
+	if err := os.Rename(tmpPath, filePath); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("can not finalize task: %v", err)
 	}
 	return nil
 }
