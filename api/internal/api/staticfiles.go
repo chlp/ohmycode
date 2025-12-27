@@ -30,12 +30,10 @@ func serveDynamicFiles(mux *http.ServeMux) {
 			rel := strings.TrimPrefix(cleaned, "/")
 			file := filepath.Join(diskRoot, filepath.FromSlash(rel))
 			if st, err := os.Stat(file); err == nil && !st.IsDir() {
-				util.Log("serveDynamicFiles: serving file: " + file)
 				http.ServeFile(w, r, file)
 				return
 			}
 		}
-		util.Log("serveDynamicFiles: serving index.html")
 		http.ServeFile(w, r, filepath.Join(diskRoot, "index.html"))
 	})
 }
