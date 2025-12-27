@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"ohmycode_api/internal/store"
@@ -14,16 +13,18 @@ type Service struct {
 	httpPort         int
 	serveClientFiles bool
 	useDynamicFiles  bool
+	wsAllowedOrigins []string
 	fileStore        *store.FileStore
 	runnerStore      *store.RunnerStore
 	taskStore        *store.TaskStore
 }
 
-func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
+func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedOrigins []string, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
 	return &Service{
 		httpPort:         httpPort,
 		serveClientFiles: serveClientFiles,
 		useDynamicFiles:  useDynamicFiles,
+		wsAllowedOrigins: wsAllowedOrigins,
 		fileStore:        fileStore,
 		runnerStore:      runnerStore,
 		taskStore:        taskStore,
@@ -49,7 +50,7 @@ func (s *Service) Run() {
 
 func timerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), util.RequestStartTimeCtxKey, time.Now())
+		ctx := util.WithRequestStartTime(r.Context(), time.Now())
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

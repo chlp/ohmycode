@@ -3,36 +3,80 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gorilla/websocket"
 	"net/http"
+	"net/url"
 	"ohmycode_api/internal/model"
 	"ohmycode_api/pkg/util"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type wsClient struct {
-	stateMu sync.RWMutex
-	file       *model.File
-	userId     string
-	appId      string
-	runner     *model.Runner
-	lastUpdate time.Time
-	conn       *websocket.Conn
-	done       chan struct{}
-	close      func()
-	writeMu    sync.Mutex
-	fileSetCh  chan struct{}
+	stateMu     sync.RWMutex
+	file        *model.File
+	userId      string
+	appId       string
+	runner      *model.Runner
+	lastUpdate  time.Time
+	conn        *websocket.Conn
+	done        chan struct{}
+	close       func()
+	writeMu     sync.Mutex
+	fileSetCh   chan struct{}
 	runnerSetCh chan struct{}
 }
 
-var wsUpgrader = websocket.Upgrader{
-	ReadBufferSize:    1024,
-	WriteBufferSize:   1024,
-	EnableCompression: true,
-	CheckOrigin: func(r *http.Request) bool {
-		return true // could be return r.Host == "yourdomain.com"
-	},
+func isWsOriginAllowed(r *http.Request, allowed []string) bool {
+	// Non-browser clients may not send Origin.
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+
+	// Default: allow all (backwards-compatible).
+	if len(allowed) == 0 {
+		return true
+	}
+	for _, a := range allowed {
+		if a == "*" {
+			return true
+		}
+	}
+
+	u, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+	originHostPort := u.Host
+	originHost := u.Hostname()
+	originFull := ""
+	if u.Scheme != "" && u.Host != "" {
+		originFull = u.Scheme + "://" + u.Host
+	}
+
+	for _, a := range allowed {
+		a = strings.TrimSpace(a)
+		if a == "" {
+			continue
+		}
+		if a == "*" {
+			return true
+		}
+		if strings.HasPrefix(a, "http://") || strings.HasPrefix(a, "https://") {
+			if originFull != "" && a == originFull {
+				return true
+			}
+			continue
+		}
+		// Allow host[:port] or bare hostname.
+		if a == originHostPort || a == originHost {
+			return true
+		}
+	}
+	return false
 }
 
 const wsMessageLimit = 4 * (1 << 20) // 4 Mb
@@ -42,7 +86,15 @@ const (
 	wsWriteWait  = 5 * time.Second
 )
 
-func createWsClient(w http.ResponseWriter, r *http.Request) *wsClient {
+func createWsClient(w http.ResponseWriter, r *http.Request, allowedOrigins []string) *wsClient {
+	wsUpgrader := websocket.Upgrader{
+		ReadBufferSize:    1024,
+		WriteBufferSize:   1024,
+		EnableCompression: true,
+		CheckOrigin: func(r *http.Request) bool {
+			return isWsOriginAllowed(r, allowedOrigins)
+		},
+	}
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		util.Log("WebSocket Upgrade error: " + err.Error())
@@ -62,10 +114,10 @@ func createWsClient(w http.ResponseWriter, r *http.Request) *wsClient {
 	_ = conn.SetReadDeadline(time.Now().Add(wsPongWait))
 
 	client := wsClient{
-		conn:      conn,
-		done:      done,
-		close:     closeClient,
-		fileSetCh: make(chan struct{}, 1),
+		conn:        conn,
+		done:        done,
+		close:       closeClient,
+		fileSetCh:   make(chan struct{}, 1),
 		runnerSetCh: make(chan struct{}, 1),
 	}
 	go client.pingPongHandling()

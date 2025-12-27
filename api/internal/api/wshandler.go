@@ -26,7 +26,7 @@ type input struct {
 func (s *Service) HandleWs(w http.ResponseWriter, r *http.Request,
 	messageHandler func(client *wsClient, message []byte) (ok bool),
 	work func(client *wsClient) (ok bool)) {
-	client := createWsClient(w, r)
+	client := createWsClient(w, r, s.wsAllowedOrigins)
 	if client == nil {
 		return
 	}

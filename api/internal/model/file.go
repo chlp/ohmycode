@@ -24,7 +24,7 @@ type File struct {
 	IsWaitingForResult bool `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool `json:"is_runner_online"`
 
-	PersistedAt time.Time `json:"-"`
+	PersistedAt time.Time `json:"-" bson:"-"`
 	mutex       sync.Mutex
 	updateCh    chan struct{}
 }
@@ -42,6 +42,83 @@ const (
 	durationForWaitingForResultMax = 20 * time.Second
 	durationIsUnused               = 10 * time.Minute
 )
+
+// FileSnapshot is a concurrency-safe copy of File state used for DTOs, task creation and persistence.
+// It intentionally contains no sync primitives/channels.
+type FileSnapshot struct {
+	ID               string
+	Name             string
+	Lang             string
+	Content          *string
+	ContentUpdatedAt time.Time
+	Result           string
+	Writer           string
+	UsePublicRunner  bool
+	RunnerId         string
+	Users            []User
+	UpdatedAt        time.Time
+	Persisted        bool
+	IsWaitingForResult bool
+	IsRunnerOnline     bool
+
+	PersistedAt time.Time
+}
+
+// Snapshot returns a copy of the current file state under lock.
+// If includeContent=false, Content will be nil.
+func (f *File) Snapshot(includeContent bool) FileSnapshot {
+	f.lock()
+	defer f.unlock()
+
+	var content *string
+	if includeContent && f.Content != nil {
+		c := *f.Content
+		content = &c
+	}
+	users := append([]User(nil), f.Users...)
+
+	return FileSnapshot{
+		ID:                f.ID,
+		Name:              f.Name,
+		Lang:              f.Lang,
+		Content:           content,
+		ContentUpdatedAt:  f.ContentUpdatedAt,
+		Result:            f.Result,
+		Writer:            f.Writer,
+		UsePublicRunner:   f.UsePublicRunner,
+		RunnerId:          f.RunnerId,
+		Users:             users,
+		UpdatedAt:         f.UpdatedAt,
+		Persisted:         f.Persisted,
+		IsWaitingForResult: f.IsWaitingForResult,
+		IsRunnerOnline:     f.IsRunnerOnline,
+		PersistedAt:       f.PersistedAt,
+	}
+}
+
+func (f *File) PersistInfo() (persisted bool, updatedAt, persistedAt time.Time) {
+	f.lock()
+	defer f.unlock()
+	return f.Persisted, f.UpdatedAt, f.PersistedAt
+}
+
+func (f *File) SetPersistedAt(t time.Time) {
+	f.lock()
+	f.PersistedAt = t
+	f.unlock()
+}
+
+func (f *File) SetRunnerOnline(v bool) {
+	f.lock()
+	if f.IsRunnerOnline == v {
+		f.unlock()
+		return
+	}
+	f.IsRunnerOnline = v
+	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
+	f.unlock()
+}
 
 func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 	if fileName == "" {
@@ -167,12 +244,11 @@ func (f *File) SetContent(content, appId string) error {
 }
 
 func (f *File) SetWaitingForResult() {
+	f.lock()
+	defer f.unlock()
 	if f.IsWaitingForResult {
 		return
 	}
-
-	f.lock()
-	defer f.unlock()
 
 	f.Persisted = true
 	f.IsWaitingForResult = true
@@ -185,12 +261,12 @@ func (f *File) SetResult(result string) error {
 	if len(result) > contentMaxLength {
 		return errors.New("result is too long")
 	}
-	if f.IsWaitingForResult == false && f.Result == result {
-		return nil
-	}
 
 	f.lock()
 	defer f.unlock()
+	if f.IsWaitingForResult == false && f.Result == result {
+		return nil
+	}
 
 	f.Persisted = true
 	f.IsWaitingForResult = false

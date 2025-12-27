@@ -3,32 +3,47 @@ package util
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 )
 
-const RequestStartTimeCtxKey string = "RequestStartTime"
+// ctxKey is a private context key type to avoid collisions with other packages.
+type ctxKey int
+
+const requestStartTimeCtxKey ctxKey = iota
+
+func WithRequestStartTime(ctx context.Context, t time.Time) context.Context {
+	return context.WithValue(ctx, requestStartTimeCtxKey, t)
+}
+
+func RequestStartTime(ctx context.Context) (time.Time, bool) {
+	if ctx == nil {
+		return time.Time{}, false
+	}
+	startTime, ok := ctx.Value(requestStartTimeCtxKey).(time.Time)
+	return startTime, ok
+}
 
 func Log(args ...interface{}) {
-	var ctx context.Context = nil
+	if len(args) == 0 {
+		return
+	}
+
+	var ctx context.Context
 	var msg string
 
-	switch len(args) {
-	case 1:
-		msg, _ = args[0].(string)
-	case 2:
-		ctx, _ = args[0].(context.Context)
-		msg, _ = args[1].(string)
-	default:
-		log.Fatal("wrong Log usage")
-		return
+	// Optional leading context.Context; everything else becomes the message.
+	if c, ok := args[0].(context.Context); ok {
+		ctx = c
+		msg = fmt.Sprint(args[1:]...)
+	} else {
+		msg = fmt.Sprint(args...)
 	}
 
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	elapsedTimeStr := ""
-	if startTime, ok := ctx.Value(RequestStartTimeCtxKey).(time.Time); ok {
+	if startTime, ok := RequestStartTime(ctx); ok {
 		elapsedTime := time.Since(startTime)
 		elapsedTimeStr = fmt.Sprintf(" (%0.3f)", elapsedTime.Seconds())
 	}

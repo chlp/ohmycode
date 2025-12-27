@@ -19,5 +19,5 @@ func main() {
 
 	worker.NewWorker(appCtx, fileStore, runnerStore).Run()
 
-	api.NewService(apiConfig.HttpPort, apiConfig.ServeClientFiles, apiConfig.UseDynamicFiles, fileStore, runnerStore, taskStore).Run()
+	api.NewService(apiConfig.HttpPort, apiConfig.ServeClientFiles, apiConfig.UseDynamicFiles, apiConfig.WsAllowedOrigins, fileStore, runnerStore, taskStore).Run()
 }

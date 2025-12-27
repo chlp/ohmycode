@@ -83,10 +83,11 @@ func (w *Worker) filesCleanUp() {
 func (w *Worker) filesPersisting() {
 	files := w.fileStore.GetAllFiles()
 	for _, file := range files {
-		if !file.Persisted {
+		persisted, updatedAt, persistedAt := file.PersistInfo()
+		if !persisted {
 			continue
 		}
-		if !file.UpdatedAt.After(file.PersistedAt) {
+		if !updatedAt.After(persistedAt) {
 			continue
 		}
 		_ = w.fileStore.PersistFile(file)
@@ -96,8 +97,8 @@ func (w *Worker) filesPersisting() {
 func (w *Worker) filesSetIsRunnerOnline() {
 	files := w.fileStore.GetAllFiles()
 	for _, file := range files {
-		if file.UsePublicRunner {
-			file.IsRunnerOnline = w.runnerStore.IsOnline(true, "")
+		if file.Snapshot(false).UsePublicRunner {
+			file.SetRunnerOnline(w.runnerStore.IsOnline(true, ""))
 		} // todo: implement for !UsePublicRunner
 	}
 }

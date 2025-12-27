@@ -102,10 +102,31 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 func (fs *FileStore) PersistFile(file *model.File) error {
 	fileMu := fs.lockFileMutex(file.ID)
 	defer fileMu.Unlock()
-	if err := fs.db.ReplaceOneUpsert("files", map[string]interface{}{"_id": file.ID}, file); err != nil {
+
+	// Persist a stable snapshot to avoid data races with WS/worker.
+	snap := file.Snapshot(true)
+	doc := model.File{
+		ID:                 snap.ID,
+		Name:               snap.Name,
+		Lang:               snap.Lang,
+		Content:            snap.Content,
+		ContentUpdatedAt:   snap.ContentUpdatedAt,
+		Result:             snap.Result,
+		Writer:             snap.Writer,
+		UsePublicRunner:    snap.UsePublicRunner,
+		RunnerId:           snap.RunnerId,
+		Users:              snap.Users,
+		UpdatedAt:          snap.UpdatedAt,
+		Persisted:          snap.Persisted,
+		IsWaitingForResult: snap.IsWaitingForResult,
+		IsRunnerOnline:     snap.IsRunnerOnline,
+		PersistedAt:        snap.PersistedAt,
+	}
+
+	if err := fs.db.ReplaceOneUpsert("files", map[string]interface{}{"_id": doc.ID}, &doc); err != nil {
 		return err
 	}
-	file.PersistedAt = file.UpdatedAt
+	file.SetPersistedAt(snap.UpdatedAt)
 	return nil
 }
 

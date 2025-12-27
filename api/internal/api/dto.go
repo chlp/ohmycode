@@ -24,22 +24,23 @@ type fileDTO struct {
 }
 
 func toFileDTO(f *model.File, includeContent bool) fileDTO {
+	s := f.Snapshot(includeContent)
 	dto := fileDTO{
-		ID:                f.ID,
-		Name:              f.Name,
-		Lang:              f.Lang,
-		ContentUpdatedAt:  f.ContentUpdatedAt,
-		Result:            f.Result,
-		WriterID:          f.Writer,
-		Runner:            f.RunnerId,
-		Users:             f.Users,
-		UpdatedAt:         f.UpdatedAt,
-		Persisted:         f.Persisted,
-		IsWaitingForResult: f.IsWaitingForResult,
-		IsRunnerOnline:     f.IsRunnerOnline,
+		ID:                s.ID,
+		Name:              s.Name,
+		Lang:              s.Lang,
+		ContentUpdatedAt:  s.ContentUpdatedAt,
+		Result:            s.Result,
+		WriterID:          s.Writer,
+		Runner:            s.RunnerId,
+		Users:             s.Users,
+		UpdatedAt:         s.UpdatedAt,
+		Persisted:         s.Persisted,
+		IsWaitingForResult: s.IsWaitingForResult,
+		IsRunnerOnline:     s.IsRunnerOnline,
 	}
 	if includeContent {
-		dto.Content = f.Content
+		dto.Content = s.Content
 	}
 	return dto
 }

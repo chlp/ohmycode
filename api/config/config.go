@@ -15,6 +15,10 @@ type ApiConfig struct {
 	HttpPort         int            `json:"http_port"`
 	ServeClientFiles bool           `json:"serve_client_files"`
 	UseDynamicFiles  bool           `json:"use_dynamic_files"`
+	// WsAllowedOrigins controls the Origin-check during WebSocket upgrade.
+	// Empty (default) or ["*"] means allow all origins.
+	// Otherwise it should contain allowed origins like "https://example.com" or hosts like "example.com:3000".
+	WsAllowedOrigins []string `json:"ws_allowed_origins"`
 }
 
 var conf ApiConfig

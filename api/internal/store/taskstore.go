@@ -44,14 +44,18 @@ func (ts *TaskStore) signalLocked() {
 }
 
 func (ts *TaskStore) AddTask(file *model.File) {
+	snap := file.Snapshot(true)
+	if snap.Content == nil {
+		return
+	}
 	ts.mutex.Lock()
 	ts.tasks[file.ID] = &model.Task{
-		FileId:          file.ID,
-		Content:         *file.Content,
-		Lang:            file.Lang,
-		Hash:            util.OhMySimpleHash(*file.Content),
-		RunnerId:        file.RunnerId,
-		IsPublic:        file.UsePublicRunner,
+		FileId:          snap.ID,
+		Content:         *snap.Content,
+		Lang:            snap.Lang,
+		Hash:            util.OhMySimpleHash(*snap.Content),
+		RunnerId:        snap.RunnerId,
+		IsPublic:        snap.UsePublicRunner,
 		GivenToRunnerAt: time.Time{},
 	}
 	ts.signalLocked()

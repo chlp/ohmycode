@@ -27,9 +27,11 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 	defer touchTicker.Stop()
 
 	var nextSendAllowed time.Time
+	var updatesCh <-chan struct{}
 
 	// Send initial snapshot eagerly
 	if f := client.getFile(); f != nil {
+		updatesCh = f.Updates()
 		if err := client.send(toFileDTO(f, true)); err != nil {
 			util.Log("fileWork: send file error: " + err.Error())
 			return false
@@ -46,6 +48,7 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 		case <-client.fileSetCh:
 			// File was changed (SPA navigation), send new snapshot immediately.
 			if f := client.getFile(); f != nil {
+				updatesCh = f.Updates()
 				if err := client.send(toFileDTO(f, true)); err != nil {
 					util.Log("fileWork: send file error: " + err.Error())
 					return false
@@ -58,7 +61,7 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 			if f := client.getFile(); f != nil {
 				f.TouchByUser(client.getUserId(), "")
 			}
-		case <-client.getFile().Updates():
+		case <-updatesCh:
 			// throttle sends
 			if time.Now().Before(nextSendAllowed) {
 				timer := time.NewTimer(time.Until(nextSendAllowed))
@@ -75,16 +78,17 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 				continue
 			}
 			lastUpdate := client.getLastUpdate()
-			if !f.UpdatedAt.After(lastUpdate) {
+			snapMeta := f.Snapshot(false)
+			if !snapMeta.UpdatedAt.After(lastUpdate) {
 				continue
 			}
 
 			includeContent := true
-			if f.ContentUpdatedAt.Before(lastUpdate) {
+			if snapMeta.ContentUpdatedAt.Before(lastUpdate) {
 				includeContent = false
 			}
 			dto := toFileDTO(f, includeContent)
-			if f.ID != dto.ID {
+			if snapMeta.ID != dto.ID {
 				util.Log("fileWork: new file, will not send now")
 				continue
 			}
