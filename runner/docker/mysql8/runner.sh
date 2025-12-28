@@ -9,7 +9,8 @@ chmod 755 requests results 2>/dev/null || true
 
 mkdir -p tmp
 
-export MYSQL_PWD="${MYSQL_ROOT_PASSWORD:-mysql8root}"
+# MariaDB image uses MARIADB_ROOT_PASSWORD (we keep MYSQL_ROOT_PASSWORD as a backward-compatible alias).
+export MYSQL_PWD="${MYSQL_ROOT_PASSWORD:-${MARIADB_ROOT_PASSWORD:-mysql8root}}"
 
 while true; do
     mysql -u root -e "SHOW DATABASES;" 1>/dev/null 2>&1
