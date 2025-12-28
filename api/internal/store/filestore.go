@@ -50,6 +50,7 @@ func (fs *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, us
 	}
 	if found && fromDb.ID == fileId {
 		fromDb.Persisted = true
+		fromDb.PersistedAt = fromDb.UpdatedAt
 		fs.filesMu.Lock()
 		fs.files[fileId] = &fromDb
 		fs.filesMu.Unlock()
@@ -98,6 +99,7 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 	}
 
 	fromDb.Persisted = true
+	fromDb.PersistedAt = fromDb.UpdatedAt
 
 	fs.filesMu.Lock()
 	fs.files[fileId] = &fromDb

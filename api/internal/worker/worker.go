@@ -84,13 +84,15 @@ func (w *Worker) filesPersisting() {
 	files := w.fileStore.GetAllFiles()
 	for _, file := range files {
 		persisted, updatedAt, persistedAt := file.PersistInfo()
-		if !persisted {
-			continue
-		}
+		// Persist whenever the persisted timestamp lags behind current UpdatedAt,
+		// even if Persisted is still false (never persisted yet).
+		_ = persisted // intentionally unused; kept for clarity of semantics
 		if !updatedAt.After(persistedAt) {
 			continue
 		}
-		_ = w.fileStore.PersistFile(file)
+		if err := w.fileStore.PersistFile(file); err != nil {
+			util.Log("Worker: PersistFile error for file_id=" + file.ID + ": " + err.Error())
+		}
 	}
 }
 

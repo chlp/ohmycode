@@ -19,7 +19,9 @@ type File struct {
 	RunnerId         string    `json:"runner_id" bson:"runner_id"`
 	Users            []User    `json:"users" bson:"users"`
 	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`
-	Persisted        bool      `json:"persisted"`
+	// Persisted indicates whether the file has ever been persisted to DB at least once.
+	// Once it becomes true, it should never flip back to false.
+	Persisted bool `json:"persisted"`
 
 	IsWaitingForResult bool `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool `json:"is_runner_online"`
@@ -50,18 +52,18 @@ const (
 // FileSnapshot is a concurrency-safe copy of File state used for DTOs, task creation and persistence.
 // It intentionally contains no sync primitives/channels.
 type FileSnapshot struct {
-	ID               string
-	Name             string
-	Lang             string
-	Content          *string
-	ContentUpdatedAt time.Time
-	Result           string
-	Writer           string
-	UsePublicRunner  bool
-	RunnerId         string
-	Users            []User
-	UpdatedAt        time.Time
-	Persisted        bool
+	ID                 string
+	Name               string
+	Lang               string
+	Content            *string
+	ContentUpdatedAt   time.Time
+	Result             string
+	Writer             string
+	UsePublicRunner    bool
+	RunnerId           string
+	Users              []User
+	UpdatedAt          time.Time
+	Persisted          bool
 	IsWaitingForResult bool
 	IsRunnerOnline     bool
 
@@ -82,21 +84,21 @@ func (f *File) Snapshot(includeContent bool) FileSnapshot {
 	users := append([]User(nil), f.Users...)
 
 	return FileSnapshot{
-		ID:                f.ID,
-		Name:              f.Name,
-		Lang:              f.Lang,
-		Content:           content,
-		ContentUpdatedAt:  f.ContentUpdatedAt,
-		Result:            f.Result,
-		Writer:            f.Writer,
-		UsePublicRunner:   f.UsePublicRunner,
-		RunnerId:          f.RunnerId,
-		Users:             users,
-		UpdatedAt:         f.UpdatedAt,
-		Persisted:         f.Persisted,
+		ID:                 f.ID,
+		Name:               f.Name,
+		Lang:               f.Lang,
+		Content:            content,
+		ContentUpdatedAt:   f.ContentUpdatedAt,
+		Result:             f.Result,
+		Writer:             f.Writer,
+		UsePublicRunner:    f.UsePublicRunner,
+		RunnerId:           f.RunnerId,
+		Users:              users,
+		UpdatedAt:          f.UpdatedAt,
+		Persisted:          f.Persisted,
 		IsWaitingForResult: f.IsWaitingForResult,
 		IsRunnerOnline:     f.IsRunnerOnline,
-		PersistedAt:       f.PersistedAt,
+		PersistedAt:        f.PersistedAt,
 	}
 }
 
@@ -109,6 +111,7 @@ func (f *File) PersistInfo() (persisted bool, updatedAt, persistedAt time.Time) 
 func (f *File) SetPersistedAt(t time.Time) {
 	f.lock()
 	f.PersistedAt = t
+	f.Persisted = true
 	f.unlock()
 }
 
@@ -140,8 +143,8 @@ func NewFile(fileId, fileName, lang, content, userId, userName string) *File {
 		ContentUpdatedAt:   time.Now(),
 		Users:              nil,
 		IsWaitingForResult: false,
-		Persisted:          false,
-		IsRunnerOnline:     true, // todo: set correct
+		Persisted:          false, // dirty until first successful persist
+		IsRunnerOnline:     true,  // todo: set correct
 		subs:               make(map[chan struct{}]struct{}),
 	}
 	file.TouchByUser(userId, userName)
@@ -228,7 +231,6 @@ func (f *File) SetName(name string) bool {
 	if f.Name == name {
 		return true
 	}
-	f.Persisted = true
 	f.Name = name
 	f.UpdatedAt = time.Now()
 	f.signalUpdatedLocked()
@@ -260,7 +262,6 @@ func (f *File) SetContent(content, appId string) error {
 		return errors.New("file is locked by another user")
 	}
 
-	f.Persisted = true
 	f.Content = &content
 	f.Writer = appId
 	f.ContentUpdatedAt = time.Now()
@@ -276,7 +277,6 @@ func (f *File) SetWaitingForResult() {
 		return
 	}
 
-	f.Persisted = true
 	f.IsWaitingForResult = true
 	f.Result = "Started execution at " + time.Now().UTC().Format("15:04:05") + " UTC"
 	f.UpdatedAt = time.Now()
@@ -294,7 +294,6 @@ func (f *File) SetResult(result string) error {
 		return nil
 	}
 
-	f.Persisted = true
 	f.IsWaitingForResult = false
 	f.Result = result
 	f.UpdatedAt = time.Now()
@@ -333,7 +332,6 @@ func (f *File) SetRunnerId(runnerId string) bool {
 	if f.RunnerId == runnerId {
 		return true
 	}
-	f.Persisted = true
 	f.RunnerId = runnerId
 	f.UpdatedAt = time.Now()
 	f.signalUpdatedLocked()
