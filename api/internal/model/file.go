@@ -283,6 +283,35 @@ func (f *File) SetWaitingForResult() {
 	f.signalUpdatedLocked()
 }
 
+// StartRunWithContent updates content and switches the file into "waiting for result" state
+// under a single lock and with a single update signal. This prevents clients from observing
+// an intermediate state where content is updated but the result is still the previous one.
+func (f *File) StartRunWithContent(content, appId string) error {
+	if len(content) > contentMaxLength {
+		return errors.New("content is too long")
+	}
+
+	now := time.Now()
+
+	f.lock()
+	defer f.unlock()
+
+	if f.Writer != "" && f.Writer != appId {
+		return errors.New("file is locked by another user")
+	}
+
+	f.Content = &content
+	f.Writer = appId
+	f.ContentUpdatedAt = now
+
+	f.IsWaitingForResult = true
+	f.Result = "Started execution at " + now.UTC().Format("15:04:05") + " UTC"
+	f.UpdatedAt = now
+
+	f.signalUpdatedLocked()
+	return nil
+}
+
 func (f *File) SetResult(result string) error {
 	if len(result) > contentMaxLength {
 		return errors.New("result is too long")

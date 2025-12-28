@@ -129,11 +129,11 @@ window.addEventListener("DOMContentLoaded", () => {
             resultCodeMirror.setValue('No runner is available to run your code :(');
             return;
         }
-        actions.setContent(contentCodeMirror.getValue());
-        file.result = 'In progress..';
-        resultCodeMirror.setValue('In progress..');
+        // Send content + run as a single atomic action to avoid UI flicker
+        // (set_content could otherwise push an update with the previous result).
+        resultCodeMirror.setValue('In progress...');
         runButton.setAttribute('disabled', 'true');
-        actions.runTask();
+        actions.runTaskWithContent(contentCodeMirror.getValue());
     };
     runButton.onclick = () => {
         runTask();

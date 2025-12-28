@@ -88,6 +88,14 @@ const actions = {
     runTask: () => {
         postRequest('run_task', {});
     },
+    runTaskWithContent: (content) => {
+        if (!app.isOnline) {
+            return;
+        }
+        postRequest('run_task_with_content', {
+            content: content,
+        });
+    },
 };
 
 const doConnect = (app) => {

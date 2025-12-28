@@ -195,6 +195,15 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			file.SetWaitingForResult()
 			s.taskStore.AddTask(file)
 		}
+	case "run_task_with_content":
+		if !s.runnerStore.IsOnline(file.UsePublicRunner, file.RunnerId) {
+			return true
+		}
+		if err := file.StartRunWithContent(i.Content, client.getAppId()); err != nil {
+			util.Log("fileMessageHandler: run_task_with_content error: " + err.Error())
+			return true
+		}
+		s.taskStore.AddTask(file)
 	default:
 		util.Log("fileMessageHandler: Unknown message type: " + string(message))
 	}
