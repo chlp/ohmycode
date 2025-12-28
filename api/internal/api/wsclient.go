@@ -3,12 +3,15 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"net"
 	"net/http"
 	"net/url"
 	"ohmycode_api/internal/model"
 	"ohmycode_api/pkg/util"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -27,6 +30,34 @@ type wsClient struct {
 	writeMu     sync.Mutex
 	fileSetCh   chan struct{}
 	runnerSetCh chan struct{}
+}
+
+func isIgnorableWsErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	// Normal/expected WS close errors.
+	var closeErr *websocket.CloseError
+	if errors.As(err, &closeErr) {
+		return true
+	}
+	// Expected network timeouts (client gone / proxy closing).
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
+	}
+	// Common TCP-level disconnects.
+	if errors.Is(err, syscall.EPIPE) || errors.Is(err, syscall.ECONNRESET) {
+		return true
+	}
+	msg := strings.ToLower(err.Error())
+	if strings.Contains(msg, "broken pipe") ||
+		strings.Contains(msg, "connection reset by peer") ||
+		strings.Contains(msg, "use of closed network connection") ||
+		strings.Contains(msg, "i/o timeout") {
+		return true
+	}
+	return false
 }
 
 func isWsOriginAllowed(r *http.Request, allowed []string) bool {
@@ -97,7 +128,9 @@ func createWsClient(w http.ResponseWriter, r *http.Request, allowedOrigins []str
 	}
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		util.Log("WebSocket Upgrade error: " + err.Error())
+		if !isIgnorableWsErr(err) {
+			util.Log("WebSocket Upgrade error: " + err.Error())
+		}
 		return nil
 	}
 	conn.SetReadLimit(wsMessageLimit)
@@ -144,7 +177,9 @@ func (client *wsClient) pingPongHandling() {
 			err := client.conn.WriteMessage(websocket.PingMessage, nil)
 			client.writeMu.Unlock()
 			if err != nil {
-				util.Log("Ping error: " + err.Error())
+				if !isIgnorableWsErr(err) {
+					util.Log("Ping error: " + err.Error())
+				}
 				client.close()
 				return
 			}

@@ -1,9 +1,7 @@
 package api
 
 import (
-	"errors"
 	"github.com/gorilla/websocket"
-	"net"
 	"net/http"
 	"ohmycode_api/pkg/util"
 )
@@ -40,9 +38,7 @@ func (s *Service) HandleWs(w http.ResponseWriter, r *http.Request,
 			default:
 				wsMessageType, message, err := client.conn.ReadMessage()
 				if err != nil {
-					var closeErr *websocket.CloseError
-					var netErr net.Error
-					if !errors.As(err, &closeErr) && !(errors.As(err, &netErr) && netErr.Timeout()) {
+					if !isIgnorableWsErr(err) {
 						util.Log("websocket conn.ReadMessage err: " + err.Error())
 					}
 					client.close()

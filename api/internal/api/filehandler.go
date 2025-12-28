@@ -46,7 +46,9 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 		updatesCh = subCh
 		dto := toFileDTO(f, true)
 		if err := client.send(dto); err != nil {
-			util.Log("fileWork: send file error: " + err.Error())
+			if !isIgnorableWsErr(err) {
+				util.Log("fileWork: send file error: " + err.Error())
+			}
 			return false
 		}
 		// lastUpdate must track the file's UpdatedAt we have sent, not wall-clock send time.
@@ -71,7 +73,9 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 				updatesCh = subCh
 				dto := toFileDTO(f, true)
 				if err := client.send(dto); err != nil {
-					util.Log("fileWork: send file error: " + err.Error())
+					if !isIgnorableWsErr(err) {
+						util.Log("fileWork: send file error: " + err.Error())
+					}
 					return false
 				}
 				client.setLastUpdate(dto.UpdatedAt)
@@ -113,7 +117,9 @@ func (s *Service) fileWork(client *wsClient) (ok bool) {
 				continue
 			}
 			if err := client.send(dto); err != nil {
-				util.Log("fileWork: send file error: " + err.Error())
+				if !isIgnorableWsErr(err) {
+					util.Log("fileWork: send file error: " + err.Error())
+				}
 				return false
 			}
 
