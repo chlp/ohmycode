@@ -1,9 +1,10 @@
 package api
 
 import (
-	"github.com/gorilla/websocket"
 	"net/http"
 	"ohmycode_api/pkg/util"
+
+	"github.com/gorilla/websocket"
 )
 
 type input struct {
