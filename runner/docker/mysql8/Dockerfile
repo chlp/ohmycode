@@ -11,3 +11,4 @@ COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/runner.sh /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["mariadbd"]
