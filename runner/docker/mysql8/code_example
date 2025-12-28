@@ -13,8 +13,6 @@ create table departments
     name       varchar(255) null
 );
 
-#SELECT * FROM
-
 INSERT INTO employees (id, first_name, last_name, salary, department_id) values (1, 'Aa', 'FamilyA', 1000, 1);
 INSERT INTO employees (id, first_name, last_name, salary, department_id) values (2, 'Ab', 'FamilyA', 100, 1);
 INSERT INTO employees (id, first_name, last_name, salary, department_id) values (3, 'Cc', 'Hello, OhMyCode!', 3000, 3);
