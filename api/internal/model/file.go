@@ -399,6 +399,12 @@ func (f *File) IsUnused() bool {
 	f.lock()
 	defer f.unlock()
 
+	// If there are active subscribers (e.g. open WS connections),
+	// the file is still in use even if the host was sleeping and timestamps are stale.
+	if len(f.subs) > 0 {
+		return false
+	}
+
 	if time.Since(f.UpdatedAt) > durationIsUnused {
 		for _, user := range f.Users {
 			if time.Since(user.TouchedAt) < durationIsUnused {
