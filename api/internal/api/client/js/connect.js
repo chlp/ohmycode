@@ -92,6 +92,13 @@ const actions = {
         if (!app.isOnline) {
             return;
         }
+        // Keep local file state in sync to prevent background content sender
+        // from firing a separate set_content right before/after Run.
+        if (file.writer_id !== '' && file.writer_id !== app.id) {
+            return;
+        }
+        file.writer_id = app.id;
+        file.content = content;
         postRequest('run_task_with_content', {
             content: content,
         });

@@ -77,9 +77,26 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     let isResultFilledWithInProgress = false;
+    // After clicking Run we can force-show "In progress..." for a short window,
+    // ignoring any incoming file updates (prevents flicker).
+    let forceInProgressUntilMs = 0;
+    let forceInProgress = false;
+    let runUiToken = 0;
     const resultBlockUpdate = () => {
+        const nowMs = Date.now();
+        const isForceInProgress = forceInProgress && nowMs < forceInProgressUntilMs;
+        const isWaitingForResultUi = file.is_waiting_for_result || isForceInProgress;
+
         let isRunBtnShouldBeDisabled = false;
-        if (file.is_waiting_for_result) {
+        if (isForceInProgress) {
+            // Hard lock the UI text to "In progress..." for the whole window,
+            // even if server updates try to overwrite it.
+            isRunBtnShouldBeDisabled = true;
+            isResultFilledWithInProgress = true;
+            if (resultCodeMirror.getValue() !== 'In progress...') {
+                resultCodeMirror.setValue('In progress...');
+            }
+        } else if (isWaitingForResultUi) {
             isRunBtnShouldBeDisabled = true;
             if (isResultFilledWithInProgress) {
                 resultCodeMirror.setValue(resultCodeMirror.getValue() + '.');
@@ -110,7 +127,7 @@ window.addEventListener("DOMContentLoaded", () => {
             runButton.removeAttribute('disabled');
         }
 
-        if (getCurrentLang().action === 'run' && (file.is_waiting_for_result || file.result.length > 0)) {
+        if (getCurrentLang().action === 'run' && (isWaitingForResultUi || file.result.length > 0)) {
             resultContainerBlock.style.display = 'block';
             fileResultBlock.style.display = 'flex';
             cleanResultButton.removeAttribute('disabled');
@@ -129,9 +146,29 @@ window.addEventListener("DOMContentLoaded", () => {
             resultCodeMirror.setValue('No runner is available to run your code :(');
             return;
         }
+        // Force-show "In progress..." for 1s after clicking Run (UX tweak).
+        // During this window we ignore any incoming updates to the result pane,
+        // so it can't be overwritten by an older snapshot.
+        runUiToken++;
+        const myToken = runUiToken;
+        forceInProgress = true;
+        forceInProgressUntilMs = Date.now() + 1000;
+        // Immediately show feedback for the click.
+        isResultFilledWithInProgress = true;
+        resultCodeMirror.setValue('In progress...');
+        // Immediately update layout (button disable / pane visibility) and enforce the lock.
+        resultBlockUpdate();
+        setTimeout(() => {
+            if (runUiToken !== myToken) {
+                return;
+            }
+            forceInProgress = false;
+            forceInProgressUntilMs = 0;
+            resultBlockUpdate();
+        }, 1000);
+
         // Send content + run as a single atomic action to avoid UI flicker
         // (set_content could otherwise push an update with the previous result).
-        resultCodeMirror.setValue('In progress...');
         runButton.setAttribute('disabled', 'true');
         actions.runTaskWithContent(contentCodeMirror.getValue());
     };
