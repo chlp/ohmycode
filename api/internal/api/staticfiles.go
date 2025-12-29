@@ -16,6 +16,27 @@ import (
 //go:embed client/*
 var staticFiles embed.FS
 
+func setCacheHeadersForJS(w http.ResponseWriter, r *http.Request) {
+	if !strings.HasSuffix(r.URL.Path, ".js") {
+		return
+	}
+	// Manual cache control:
+	// - If URL includes ?v=... treat as versioned asset → cache "forever".
+	// - Otherwise allow caching but force revalidation (no cache-bust needed, and no module duplication).
+	if _, ok := r.URL.Query()["v"]; ok {
+		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	} else {
+		w.Header().Set("Cache-Control", "public, max-age=0, must-revalidate")
+	}
+}
+
+func setNoCacheForIndex(w http.ResponseWriter) {
+	// index.html should be revalidated so changes to the entrypoint URL (?v=...) are picked up reliably.
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+}
+
 func serveDynamicFiles(mux *http.ServeMux) {
 	const diskRoot = "./internal/api/client"
 
@@ -30,10 +51,12 @@ func serveDynamicFiles(mux *http.ServeMux) {
 			rel := strings.TrimPrefix(cleaned, "/")
 			file := filepath.Join(diskRoot, filepath.FromSlash(rel))
 			if st, err := os.Stat(file); err == nil && !st.IsDir() {
+				setCacheHeadersForJS(w, r)
 				http.ServeFile(w, r, file)
 				return
 			}
 		}
+		setNoCacheForIndex(w)
 		http.ServeFile(w, r, filepath.Join(diskRoot, "index.html"))
 	})
 }
@@ -70,6 +93,7 @@ func serveStaticFiles(mux *http.ServeMux) {
 			fileToServe := fmt.Sprintf("client%s", requestedFile)
 			if f, err := staticFS.Open(requestedFile[1:]); err == nil {
 				_ = f.Close()
+				setCacheHeadersForJS(w, r)
 				w.Header().Set("Content-Type", getMimeType(requestedFile))
 				data, err := staticFiles.ReadFile(fileToServe)
 				if err != nil {
@@ -80,6 +104,7 @@ func serveStaticFiles(mux *http.ServeMux) {
 				return
 			}
 		}
+		setNoCacheForIndex(w)
 		_, _ = w.Write(indexHtmlData)
 	})
 }
