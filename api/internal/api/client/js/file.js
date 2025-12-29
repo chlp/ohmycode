@@ -13,9 +13,9 @@ const onFileChange = (callback) => {
 const controlsContainerBlock = document.getElementById('controls-container');
 const applyFile = (newFile) => {
     if (file.id !== newFile.id) {
-        openFile(file.id, false).then(() => {
-        });
-        console.log('onmessage: new file.id', newFile.id, file.id);
+        // Ignore stale WS updates for a different file (can happen during navigation/reconnect).
+        // Re-opening the current file here causes UI reset loops and breaks the editor on load.
+        console.log('onmessage: ignore other file.id', newFile.id, 'current=', file.id);
         return;
     }
 
