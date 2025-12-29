@@ -121,8 +121,7 @@ The project uses the following technologies:
                 name varchar(255) null
             );
 
-            #SELECT
-            * FROM
+            #SELECT * FROM
 
 INSERT INTO employees (id, first_name, last_name, salary, department_id) values (1, 'Aa', 'FamilyA', 1000, 1);
             INSERT INTO employees (id, first_name, last_name, salary, department_id)
