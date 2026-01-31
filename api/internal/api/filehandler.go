@@ -156,7 +156,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 	}
 
 	if client.getFile() == nil {
-		util.Log("fileMessageHandler: nil file: " + i.RunnerId)
+		util.Log("fileMessageHandler: nil file: " + i.FileId)
 		return true
 	}
 

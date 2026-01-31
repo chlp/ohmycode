@@ -99,8 +99,7 @@ func (w *Worker) filesPersisting() {
 func (w *Worker) filesSetIsRunnerOnline() {
 	files := w.fileStore.GetAllFiles()
 	for _, file := range files {
-		if file.Snapshot(false).UsePublicRunner {
-			file.SetRunnerOnline(w.runnerStore.IsOnline(true, ""))
-		} // todo: implement for !UsePublicRunner
+		snap := file.Snapshot(false)
+		file.SetRunnerOnline(w.runnerStore.IsOnline(snap.UsePublicRunner, snap.RunnerId))
 	}
 }
