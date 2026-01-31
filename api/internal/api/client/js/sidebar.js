@@ -5,10 +5,7 @@ import {deleteFileInDB, getSortedFilesFromDB} from "./db.js";
 const updateHistoryBlock = () => {
     getSortedFilesFromDB().then(historyFiles => {
         historyBlock.innerHTML = '';
-        historyFiles.forEach((historyFile, index) => {
-            if (index > 0) {
-                historyBlock.appendChild(document.createElement('br'));
-            }
+        historyFiles.forEach((historyFile) => {
             let span = document.createElement('span');
             span.className = 'history-item';
 

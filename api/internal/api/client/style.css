@@ -731,13 +731,26 @@ button.transparent:hover {
 }
 
 .history-item {
-    display: inline-block;
+    display: flex;
     white-space: nowrap;
+    width: 100%;
+}
+
+.history-item > a.history-go {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .history-item > a {
     font-weight: normal;
     cursor: pointer;
+}
+
+.history-item > a.history-delete {
+    flex-shrink: 0;
+    min-width: 1.5em;
+    text-align: center;
 }
 
 .history-item > a:first-child {
