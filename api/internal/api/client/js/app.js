@@ -100,7 +100,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-document.getElementById('sidebar-create-new-file').onclick = () => {
+document.getElementById('header-new-file-btn').onclick = () => {
     openFile(genUuid(), true).then(() => {
     });
 };

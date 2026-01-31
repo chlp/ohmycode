@@ -12,7 +12,7 @@
     <link rel="shortcut icon" href="favicon.ico"/>
     <link rel="apple-touch-icon" sizes="180x180" href="favicon-apple-touch.png"/>
 
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
 
     <link rel="stylesheet" href="codemirror/codemirror.css">
     <link rel="stylesheet" href="codemirror/themes/base16-light.css">
@@ -35,34 +35,48 @@
 <script>
     window.addEventListener("DOMContentLoaded", () => {
         document.body.style.opacity = '1';
-        document.getElementById('file').style.transition = 'all 0.5s ease';
-        document.getElementById('sidebar').style.transition = 'all 0.5s ease';
-        document.getElementById('history').style.transition = 'all 0.5s ease';
     });
 </script>
 
 <div id="big-fat-boss-block">
-    <div id="sidebar">
-        <span class="collapse-with-sidebar" data-full-text="Hide ⬅️" data-collapsed-text="➡️" id="sidebar-toggle-visibility"></span>
-        <span class="collapse-with-sidebar" data-full-text="Download 📥" data-collapsed-text="📥" id="sidebar-save-content"></span>
-        <span class="collapse-with-sidebar" data-full-text="Copy URL 🔗" data-collapsed-text="🔗" id="sidebar-copy-url"></span>
-        <span class="collapse-with-sidebar" data-full-text="New file 📄" data-collapsed-text="📄" id="sidebar-create-new-file"></span>
-        <div id="history"></div>
-    </div>
-
     <div id="file">
         <div id="file-header">
-            <div class="blocks-container" id="file-name-container" style="float: left; clear: left;">
-                <a href="#" id="file-name" contenteditable="true" spellcheck="false"
-                   title="Rename file"></a>
+            <div class="header-left">
+                <button id="header-history-btn" class="header-icon-btn" title="History">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <button id="header-new-file-btn" class="header-icon-btn" title="New file">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                </button>
+                <button id="header-download-btn" class="header-icon-btn" title="Download">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
+                <a href="#" id="file-name" contenteditable="true" spellcheck="false" title="Rename file"></a>
             </div>
 
-            <div class="blocks-container" style="float: right; clear: right;">
+            <div class="header-right">
                 <span id="users-container"></span>
                 <a href="https://github.com/chlp/ohmycode" target="_blank">
                     <img src="github-mark.svg" style="height: 28px; vertical-align: middle; margin-left: 1em;">
                 </a>
             </div>
+        </div>
+
+        <div id="history-panel">
+            <div id="history"></div>
         </div>
 
         <div id="file-content">

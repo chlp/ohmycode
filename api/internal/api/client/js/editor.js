@@ -2,7 +2,7 @@ import {ohMySimpleHash} from "./utils.js";
 import {app, file} from "./app.js";
 import {actions} from "./connect.js";
 import {getCurrentLang, onLangChange, setLang} from "./lang.js";
-import {sidebarVisibilityToggle} from "./sidebar.js";
+import {historyPanelToggle} from "./sidebar.js";
 
 const contentContainerBlock = document.getElementById('content-container');
 const contentMarkdownBlock = document.getElementById('content-markdown');
@@ -97,7 +97,7 @@ let saveContentToFile = (text, fileName) => {
     URL.revokeObjectURL(a.href);
 };
 
-document.getElementById('sidebar-save-content').onclick = () => {
+document.getElementById('header-download-btn').onclick = () => {
     saveContentToFile(file.content, file.name);
 };
 
@@ -125,7 +125,7 @@ document.onkeydown = (event) => {
                 console.warn("wrong action: ", action);
         }
     } else if (event.key === 'Escape') {
-        sidebarVisibilityToggle();
+        historyPanelToggle();
     }
 };
 

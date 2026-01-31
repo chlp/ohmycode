@@ -1,7 +1,11 @@
 import {openFile} from "./app.js";
 import {deleteFileInDB, getSortedFilesFromDB} from "./db.js";
 
-// monitor changes in the db
+const historyPanel = document.getElementById('history-panel');
+const historyBlock = document.getElementById('history');
+const historyBtn = document.getElementById('header-history-btn');
+
+// Update history list
 const updateHistoryBlock = () => {
     getSortedFilesFromDB().then(historyFiles => {
         historyBlock.innerHTML = '';
@@ -26,10 +30,12 @@ const updateHistoryBlock = () => {
         });
     });
 };
+
 window.addEventListener("DOMContentLoaded", () => {
     updateHistoryBlock();
 });
 
+// Monitor changes in the db
 let lastUpdate = null;
 let historyFilesCount = 0;
 
@@ -45,74 +51,57 @@ const checkForUpdates = async () => {
         historyFilesCount = files.length;
         updateHistoryBlock();
     }
-}
+};
 
 setInterval(checkForUpdates, 1000);
 
-const sidebarBlock = document.getElementById('sidebar');
-const historyBlock = document.getElementById('history');
-const collapseWithSidebarBlocks = document.getElementsByClassName('collapse-with-sidebar');
+// History panel toggle
+let isHistoryOpen = false;
 
-let isSidebarVisible = true;
-if (localStorage['isSidebarVisible'] === undefined) {
-    localStorage['isSidebarVisible'] = JSON.stringify(isSidebarVisible);
-} else {
-    isSidebarVisible = JSON.parse(localStorage['isSidebarVisible']);
-}
-const showSidebar = () => {
-    sidebarBlock.style.flexBasis = '18em';
-    for (const block of collapseWithSidebarBlocks) {
-        block.innerHTML = block.dataset.fullText;
-    }
-    historyBlock.style.display = '';
-    setTimeout(() => {
-        historyBlock.style.opacity = '1';
-    }, 1);
-    isSidebarVisible = true;
-    localStorage['isSidebarVisible'] = JSON.stringify(true);
+const showHistoryPanel = () => {
+    historyPanel.classList.add('open');
+    isHistoryOpen = true;
 };
-const hideSidebar = () => {
-    sidebarBlock.style.flexBasis = '3em';
-    for (const block of collapseWithSidebarBlocks) {
-        block.innerHTML = block.dataset.collapsedText;
-    }
-    historyBlock.style.opacity = '0';
-    setTimeout(() => {
-        historyBlock.style.display = 'none';
-    }, 500); // 500 - the same as the CSS style #sidebar transition: width 0.5s ease;
-    isSidebarVisible = false;
-    localStorage['isSidebarVisible'] = JSON.stringify(false);
-};
-if (isSidebarVisible) {
-    showSidebar();
-} else {
-    hideSidebar();
-}
 
-const sidebarToggleVisibilitySpan = document.getElementById('sidebar-toggle-visibility');
-const sidebarVisibilityToggle = () => {
-    if (isSidebarVisible) {
-        hideSidebar();
+const hideHistoryPanel = () => {
+    historyPanel.classList.remove('open');
+    isHistoryOpen = false;
+};
+
+const historyPanelToggle = () => {
+    if (isHistoryOpen) {
+        hideHistoryPanel();
     } else {
-        showSidebar();
+        showHistoryPanel();
     }
 };
-sidebarToggleVisibilitySpan.onclick = () => {
-    sidebarVisibilityToggle();
+
+historyBtn.onclick = () => {
+    historyPanelToggle();
 };
 
+// Close panel when clicking outside
+document.addEventListener('click', (event) => {
+    if (isHistoryOpen &&
+        !historyPanel.contains(event.target) &&
+        !historyBtn.contains(event.target)) {
+        hideHistoryPanel();
+    }
+});
+
+// History item click handlers
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("history").addEventListener("click", async (event) => {
+    historyBlock.addEventListener("click", async (event) => {
         if (event.target.classList.contains("history-delete")) {
             const fileId = event.target.dataset.fileId;
             await deleteFileInDB(fileId);
             updateHistoryBlock();
         } else if (event.target.classList.contains("history-go")) {
             const fileId = event.target.dataset.fileId;
-            openFile(fileId, true).then(() => {
-            });
+            hideHistoryPanel();
+            openFile(fileId, true).then(() => {});
         }
     });
 });
 
-export {sidebarVisibilityToggle};
+export {historyPanelToggle};
