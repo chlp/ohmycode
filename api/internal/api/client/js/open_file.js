@@ -38,7 +38,7 @@ document.addEventListener('drop', (event) => {
         newFileName = newFileName.replace(allowedCharsRegex, '');
         newFileName = newFileName.substring(0, 64);
 
-        fileNameBlock.innerHTML = newFileName;
+        fileNameBlock.textContent = newFileName;
         file.name = newFileName;
         actions.setFileName(newFileName);
 

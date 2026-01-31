@@ -79,18 +79,24 @@ let updateUsers = () => {
             own: true,
         });
     }
-    let html = '';
+    usersContainerBlock.innerHTML = '';
     if (users.length > 1) {
         users.forEach((user) => {
             if (user.own) {
-                html += '<a href="#" id="own-name" contenteditable="true" spellcheck="false" title="Change name">' + user.name + '</a>';
+                let a = document.createElement('a');
+                a.href = '#';
+                a.id = 'own-name';
+                a.contentEditable = 'true';
+                a.spellcheck = false;
+                a.title = 'Change name';
+                a.textContent = user.name;
+                usersContainerBlock.appendChild(a);
             } else {
-                html += '<span>' + user.name + '</span>';
+                let span = document.createElement('span');
+                span.textContent = user.name;
+                usersContainerBlock.appendChild(span);
             }
-        })
-    }
-    usersContainerBlock.innerHTML = html;
-    if (html !== '') {
+        });
         userOwnNameBlock = document.getElementById('own-name');
         userOwnNameBlock.onkeydown = userOwnNameEditingFunc;
     }

@@ -4,21 +4,14 @@ import {getCurrentLang} from "./lang.js";
 
 let socket = null;
 const postRequest = (action, data, callback) => {
-    try {
-        if (socket === null) {
-            if (typeof callback === 'function') {
-                callback();
-            }
-        } else {
-            socket.send(JSON.stringify({
-                ...data,
-                action: action,
-            }));
-        }
-    } finally {
-        if (typeof callback === 'function') {
-            callback();
-        }
+    if (socket !== null) {
+        socket.send(JSON.stringify({
+            ...data,
+            action: action,
+        }));
+    }
+    if (typeof callback === 'function') {
+        callback();
     }
 };
 

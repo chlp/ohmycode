@@ -33,24 +33,27 @@ const openDB = () => {
 
 const saveFileToDB = async (file) => {
     const db = await openDB();
-    const tx = db.transaction("files", "readwrite");
-    const store = tx.objectStore("files");
-    store.put({
-        id: file.id,
-        name: file.name,
-        lang: file.lang,
-        runner: file.runner,
-        is_runner_online: file.is_runner_online,
-        updated_at: file.updated_at,
-        content_updated_at: file.content_updated_at,
-        users: file.users,
-        is_waiting_for_result: file.is_waiting_for_result,
-        result: file.result,
-        persisted: file.persisted,
-        writer_id: file.writer_id,
-        content: file.content,
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("files", "readwrite");
+        const store = tx.objectStore("files");
+        store.put({
+            id: file.id,
+            name: file.name,
+            lang: file.lang,
+            runner: file.runner,
+            is_runner_online: file.is_runner_online,
+            updated_at: file.updated_at,
+            content_updated_at: file.content_updated_at,
+            users: file.users,
+            is_waiting_for_result: file.is_waiting_for_result,
+            result: file.result,
+            persisted: file.persisted,
+            writer_id: file.writer_id,
+            content: file.content,
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject("Error saving file");
     });
-    return tx.complete;
 };
 
 const getFileFromDB = async (id) => {
@@ -81,9 +84,12 @@ const getSortedFilesFromDB = async () => {
 
 const deleteFileInDB = async (id) => {
     const db = await openDB();
-    const tx = db.transaction("files", "readwrite");
-    tx.objectStore("files").delete(id);
-    return tx.complete;
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("files", "readwrite");
+        tx.objectStore("files").delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject("Error deleting file");
+    });
 };
 
 export {saveFileToDB, getFileFromDB, getSortedFilesFromDB, deleteFileInDB};

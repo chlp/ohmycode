@@ -49,8 +49,8 @@ const initFile = (fileId) => {
             return this._name;
         },
         set name(value) {
-            if (fileNameBlock.innerHTML !== value && !fileNameEditing) {
-                fileNameBlock.innerHTML = value;
+            if (fileNameBlock.textContent !== value && !fileNameEditing) {
+                fileNameBlock.textContent = value;
             }
             this._name = value;
         },

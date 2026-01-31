@@ -4,13 +4,29 @@ import {deleteFileInDB, getSortedFilesFromDB} from "./db.js";
 // monitor changes in the db
 const updateHistoryBlock = () => {
     getSortedFilesFromDB().then(historyFiles => {
-        let htmlLines = historyFiles.map(historyFile =>
-            `<span class="history-item">` +
-            `<a class="history-delete" data-file-id="${historyFile.id}">x</a> ` +
-            `<a class="history-go" data-file-id="${historyFile.id}">${historyFile.name}</a>` +
-            `</span>`
-        );
-        historyBlock.innerHTML = htmlLines.join("<br>");
+        historyBlock.innerHTML = '';
+        historyFiles.forEach((historyFile, index) => {
+            if (index > 0) {
+                historyBlock.appendChild(document.createElement('br'));
+            }
+            let span = document.createElement('span');
+            span.className = 'history-item';
+
+            let deleteLink = document.createElement('a');
+            deleteLink.className = 'history-delete';
+            deleteLink.dataset.fileId = historyFile.id;
+            deleteLink.textContent = 'x';
+
+            let goLink = document.createElement('a');
+            goLink.className = 'history-go';
+            goLink.dataset.fileId = historyFile.id;
+            goLink.textContent = historyFile.name;
+
+            span.appendChild(deleteLink);
+            span.appendChild(document.createTextNode(' '));
+            span.appendChild(goLink);
+            historyBlock.appendChild(span);
+        });
     });
 };
 window.addEventListener("DOMContentLoaded", () => {
