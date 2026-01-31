@@ -9,6 +9,8 @@ import (
 
 const IdLength = 32
 
+var uuidRegex = regexp.MustCompile(fmt.Sprintf("^[a-z0-9]{%d}$", IdLength))
+
 func GenUuid() string {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
@@ -19,6 +21,5 @@ func GenUuid() string {
 }
 
 func IsUuid(id string) bool {
-	re := regexp.MustCompile(fmt.Sprintf("^[a-z0-9]{%d}$", IdLength))
-	return re.MatchString(id)
+	return uuidRegex.MatchString(id)
 }
