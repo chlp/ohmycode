@@ -134,6 +134,7 @@ func createWsClient(w http.ResponseWriter, r *http.Request, allowedOrigins []str
 		return nil
 	}
 	conn.SetReadLimit(wsMessageLimit)
+	conn.EnableWriteCompression(true)
 
 	done := make(chan struct{})
 	var once sync.Once
