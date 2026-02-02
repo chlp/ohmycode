@@ -8,18 +8,20 @@ import (
 )
 
 type FileStore struct {
-	filesMu     sync.RWMutex
-	files       map[string]*model.File
-	fileLocksMu sync.Mutex
-	fileLocks   map[string]*sync.Mutex
-	db          *Db
+	filesMu      sync.RWMutex
+	files        map[string]*model.File
+	fileLocksMu  sync.Mutex
+	fileLocks    map[string]*sync.Mutex
+	db           *Db
+	versionStore *VersionStore
 }
 
-func NewFileStore(dbConfig DBConfig) *FileStore {
+func NewFileStore(dbConfig DBConfig, versionStore *VersionStore) *FileStore {
 	return &FileStore{
-		files:     make(map[string]*model.File),
-		fileLocks: make(map[string]*sync.Mutex),
-		db:        newDb(dbConfig),
+		files:        make(map[string]*model.File),
+		fileLocks:    make(map[string]*sync.Mutex),
+		db:           newDb(dbConfig),
+		versionStore: versionStore,
 	}
 }
 
@@ -113,6 +115,18 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 
 	// Persist a stable snapshot to avoid data races with WS/worker.
 	snap := file.Snapshot(true)
+
+	versionedAt := snap.VersionedAt
+	if fs.versionStore != nil && snap.Content != nil {
+		if newVersionedAt, err := fs.versionStore.SaveVersion(snap.ID, *snap.Content, snap.Name, snap.Lang, snap.VersionedAt); err != nil {
+			// Log but don't fail the main persistence
+			// The version is optional, file persistence is critical
+		} else if !newVersionedAt.IsZero() {
+			versionedAt = newVersionedAt
+			file.SetVersionedAt(newVersionedAt)
+		}
+	}
+
 	doc := model.File{
 		ID:                 snap.ID,
 		Name:               snap.Name,
@@ -125,6 +139,7 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 		RunnerId:           snap.RunnerId,
 		Users:              snap.Users,
 		UpdatedAt:          snap.UpdatedAt,
+		VersionedAt:        versionedAt,
 		Persisted:          snap.Persisted,
 		IsWaitingForResult: snap.IsWaitingForResult,
 		IsRunnerOnline:     snap.IsRunnerOnline,

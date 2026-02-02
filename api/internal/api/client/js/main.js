@@ -5,3 +5,4 @@ import "./open_file.js";
 import "./run.js";
 import "./file_name.js";
 import "./sidebar.js";
+import "./versions.js";

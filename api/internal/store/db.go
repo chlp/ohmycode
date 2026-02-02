@@ -77,6 +77,50 @@ func (db *Db) ReplaceOneUpsert(collection string, filter map[string]interface{},
 	return nil
 }
 
+func (db *Db) InsertOne(collection string, document interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
+	defer cancel()
+
+	coll := db.db.Collection(collection)
+	_, err := coll.InsertOne(ctx, document)
+	if err != nil {
+		return fmt.Errorf("failed to insert document: %w", err)
+	}
+	return nil
+}
+
+func (db *Db) Find(collection string, filter map[string]interface{}, sort map[string]interface{}, limit int64) (*mongo.Cursor, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
+	defer cancel()
+
+	coll := db.db.Collection(collection)
+	opts := options.Find()
+	if sort != nil {
+		opts.SetSort(bson.M(sort))
+	}
+	if limit > 0 {
+		opts.SetLimit(limit)
+	}
+
+	cursor, err := coll.Find(ctx, bson.M(filter), opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find documents: %w", err)
+	}
+	return cursor, nil
+}
+
+func (db *Db) DeleteOne(collection string, filter map[string]interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), db.timeout)
+	defer cancel()
+
+	coll := db.db.Collection(collection)
+	_, err := coll.DeleteOne(ctx, bson.M(filter))
+	if err != nil {
+		return fmt.Errorf("failed to delete document: %w", err)
+	}
+	return nil
+}
+
 func (db *Db) Close(ctx context.Context) error {
 	return db.client.Disconnect(ctx)
 }

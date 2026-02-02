@@ -1,8 +1,19 @@
-import {app, file, openFile} from "./app.js";
+import {app, file} from "./app.js";
 import {applyFile} from "./file.js";
 import {getCurrentLang} from "./lang.js";
 
 let socket = null;
+let versionsHandler = null;
+let openFileHandler = null;
+
+const onVersions = (handler) => {
+    versionsHandler = handler;
+};
+
+const onOpenFile = (handler) => {
+    openFileHandler = handler;
+};
+
 const postRequest = (action, data, callback) => {
     if (socket !== null) {
         socket.send(JSON.stringify({
@@ -96,6 +107,14 @@ const actions = {
             content: content,
         });
     },
+    getVersions: () => {
+        postRequest('get_versions', {});
+    },
+    restoreVersion: (versionId) => {
+        postRequest('restore_version', {
+            version_id: versionId,
+        });
+    },
 };
 
 const doConnect = (app) => {
@@ -123,15 +142,33 @@ const doConnect = (app) => {
     };
     socket.onmessage = (event) => {
         try {
-            const fileFromServer = JSON.parse(event.data);
-            if (fileFromServer.error !== undefined) {
-                console.log('onmessage: wrong data', fileFromServer);
+            const data = JSON.parse(event.data);
+            if (data.error !== undefined) {
+                console.log('onmessage: wrong data', data);
+                return;
+            }
+
+            if (data.action === 'versions') {
+                console.log('versions from server');
+                if (versionsHandler) {
+                    versionsHandler(data.versions);
+                }
+                return;
+            }
+
+            if (data.action === 'open_file') {
+                console.log('open_file from server:', data.file_id, 'handler:', !!openFileHandler);
+                if (openFileHandler) {
+                    openFileHandler(data.file_id);
+                } else {
+                    console.log('openFileHandler not registered!');
+                }
                 return;
             }
 
             console.log('file from server');
 
-            applyFile(fileFromServer);
+            applyFile(data);
 
             app.isOnline = true;
         } catch (error) {
@@ -150,4 +187,4 @@ setInterval(() => {
     }
 }, 1000 * Math.min(2 ** reconnectAttempts, 30) + 3000);
 
-export {actions, doConnect};
+export {actions, doConnect, onVersions, onOpenFile};

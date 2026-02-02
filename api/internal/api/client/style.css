@@ -702,6 +702,29 @@ input:invalid {
     opacity: 1;
 }
 
+#versions-panel {
+    position: fixed;
+    top: 48px;
+    left: 0px;
+    width: 280px;
+    max-height: calc(100vh - 58px);
+    background: var(--color-bg);
+    border: 1px solid var(--color-bg-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow) var(--color-shadow);
+    z-index: 100;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    padding: 0.5em;
+}
+
+#versions-panel.open {
+    transform: translateX(0);
+    opacity: 1;
+}
+
 #file-content {
     flex: 1;
     min-height: 300px;
@@ -775,6 +798,44 @@ input:invalid {
 
 .history-item:hover > a:first-child {
     visibility: visible;
+}
+
+#versions {
+    width: 100%;
+}
+
+.versions-empty {
+    padding: 0.5em;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.version-item {
+    display: flex;
+    white-space: nowrap;
+    width: 100%;
+    padding: 0.4em 0.25em;
+    border-radius: var(--border-radius);
+    transition: background 0.15s;
+}
+
+.version-item:hover {
+    background: var(--color-bg-secondary);
+}
+
+.version-item > a.version-restore {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.version-item > span.version-date {
+    flex-shrink: 0;
+    margin-left: 0.5em;
+    color: var(--color-text-secondary);
+    font-size: 0.85em;
 }
 
 #content-markdown {

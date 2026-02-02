@@ -204,6 +204,67 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			return true
 		}
 		s.taskStore.AddTask(file)
+	case "get_versions":
+		versions, err := s.versionStore.GetVersions(file.ID)
+		if err != nil {
+			util.Log("fileMessageHandler: get_versions error: " + err.Error())
+			return true
+		}
+		dtos := make([]versionDTO, 0, len(versions))
+		for _, v := range versions {
+			dtos = append(dtos, versionDTO{
+				ID:        v.ID,
+				Name:      v.Name,
+				Lang:      v.Lang,
+				CreatedAt: v.CreatedAt,
+			})
+		}
+		resp := versionsResponseDTO{
+			Action:   "versions",
+			Versions: dtos,
+		}
+		if err := client.send(resp); err != nil {
+			if !isIgnorableWsErr(err) {
+				util.Log("fileMessageHandler: send versions error: " + err.Error())
+			}
+			return false
+		}
+	case "restore_version":
+		if i.VersionId == "" {
+			util.Log("fileMessageHandler: restore_version: empty version_id")
+			return true
+		}
+		version, err := s.versionStore.GetVersion(i.VersionId)
+		if err != nil {
+			util.Log("fileMessageHandler: restore_version error: " + err.Error())
+			return true
+		}
+		if version == nil {
+			util.Log("fileMessageHandler: restore_version: version not found")
+			return true
+		}
+		if version.FileID != file.ID {
+			util.Log("fileMessageHandler: restore_version: version belongs to another file")
+			return true
+		}
+		// Create new file with content from version
+		newFileId := util.GenUuid()
+		newFile, err := s.fileStore.GetFileOrCreate(newFileId, version.Name, version.Lang, version.Content, client.getUserId(), "")
+		if err != nil {
+			util.Log("fileMessageHandler: restore_version create file error: " + err.Error())
+			return true
+		}
+		// Send redirect response to client
+		resp := openFileResponseDTO{
+			Action: "open_file",
+			FileId: newFile.ID,
+		}
+		if err := client.send(resp); err != nil {
+			if !isIgnorableWsErr(err) {
+				util.Log("fileMessageHandler: send open_file error: " + err.Error())
+			}
+			return false
+		}
 	default:
 		util.Log("fileMessageHandler: Unknown message type: " + string(message))
 	}

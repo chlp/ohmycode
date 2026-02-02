@@ -26,16 +26,16 @@ type fileDTO struct {
 func toFileDTO(f *model.File, includeContent bool) fileDTO {
 	s := f.Snapshot(includeContent)
 	dto := fileDTO{
-		ID:                s.ID,
-		Name:              s.Name,
-		Lang:              s.Lang,
-		ContentUpdatedAt:  s.ContentUpdatedAt,
-		Result:            s.Result,
-		WriterID:          s.Writer,
-		Runner:            s.RunnerId,
-		Users:             s.Users,
-		UpdatedAt:         s.UpdatedAt,
-		Persisted:         s.Persisted,
+		ID:                 s.ID,
+		Name:               s.Name,
+		Lang:               s.Lang,
+		ContentUpdatedAt:   s.ContentUpdatedAt,
+		Result:             s.Result,
+		WriterID:           s.Writer,
+		Runner:             s.RunnerId,
+		Users:              s.Users,
+		UpdatedAt:          s.UpdatedAt,
+		Persisted:          s.Persisted,
 		IsWaitingForResult: s.IsWaitingForResult,
 		IsRunnerOnline:     s.IsRunnerOnline,
 	}
@@ -43,6 +43,23 @@ func toFileDTO(f *model.File, includeContent bool) fileDTO {
 		dto.Content = s.Content
 	}
 	return dto
+}
+
+type versionDTO struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Lang      string    `json:"lang"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type versionsResponseDTO struct {
+	Action   string       `json:"action"`
+	Versions []versionDTO `json:"versions"`
+}
+
+type openFileResponseDTO struct {
+	Action string `json:"action"`
+	FileId string `json:"file_id"`
 }
 
 

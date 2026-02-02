@@ -19,9 +19,10 @@ type Service struct {
 	fileStore        *store.FileStore
 	runnerStore      *store.RunnerStore
 	taskStore        *store.TaskStore
+	versionStore     *store.VersionStore
 }
 
-func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedOrigins []string, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore) *Service {
+func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedOrigins []string, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore, versionStore *store.VersionStore) *Service {
 	return &Service{
 		httpPort:         httpPort,
 		serveClientFiles: serveClientFiles,
@@ -30,6 +31,7 @@ func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedO
 		fileStore:        fileStore,
 		runnerStore:      runnerStore,
 		taskStore:        taskStore,
+		versionStore:     versionStore,
 	}
 }
 

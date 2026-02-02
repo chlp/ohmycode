@@ -19,6 +19,7 @@ type File struct {
 	RunnerId         string    `json:"runner_id" bson:"runner_id"`
 	Users            []User    `json:"users" bson:"users"`
 	UpdatedAt        time.Time `json:"updated_at" bson:"updated_at"`
+	VersionedAt      time.Time `json:"versioned_at" bson:"versioned_at"`
 	// Persisted indicates whether the file has ever been persisted to DB at least once.
 	// Once it becomes true, it should never flip back to false.
 	Persisted bool `json:"persisted"`
@@ -63,6 +64,7 @@ type FileSnapshot struct {
 	RunnerId           string
 	Users              []User
 	UpdatedAt          time.Time
+	VersionedAt        time.Time
 	Persisted          bool
 	IsWaitingForResult bool
 	IsRunnerOnline     bool
@@ -95,6 +97,7 @@ func (f *File) Snapshot(includeContent bool) FileSnapshot {
 		RunnerId:           f.RunnerId,
 		Users:              users,
 		UpdatedAt:          f.UpdatedAt,
+		VersionedAt:        f.VersionedAt,
 		Persisted:          f.Persisted,
 		IsWaitingForResult: f.IsWaitingForResult,
 		IsRunnerOnline:     f.IsRunnerOnline,
@@ -113,6 +116,18 @@ func (f *File) SetPersistedAt(t time.Time) {
 	f.PersistedAt = t
 	f.Persisted = true
 	f.unlock()
+}
+
+func (f *File) SetVersionedAt(t time.Time) {
+	f.lock()
+	f.VersionedAt = t
+	f.unlock()
+}
+
+func (f *File) GetVersionedAt() time.Time {
+	f.lock()
+	defer f.unlock()
+	return f.VersionedAt
 }
 
 func (f *File) SetRunnerOnline(v bool) {

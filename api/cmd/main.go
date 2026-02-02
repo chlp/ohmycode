@@ -19,13 +19,14 @@ func main() {
 
 	apiConfig := config.LoadApiConf()
 
-	fileStore := store.NewFileStore(apiConfig.DB)
+	versionStore := store.NewVersionStore(apiConfig.DB)
+	fileStore := store.NewFileStore(apiConfig.DB, versionStore)
 	runnerStore := store.NewRunnerStore()
 	taskStore := store.NewTaskStore()
 
 	worker.NewWorker(appCtx, fileStore, runnerStore).Run()
 
-	svc := api.NewService(apiConfig.HttpPort, apiConfig.ServeClientFiles, apiConfig.UseDynamicFiles, apiConfig.WsAllowedOrigins, fileStore, runnerStore, taskStore)
+	svc := api.NewService(apiConfig.HttpPort, apiConfig.ServeClientFiles, apiConfig.UseDynamicFiles, apiConfig.WsAllowedOrigins, fileStore, runnerStore, taskStore, versionStore)
 	if err := svc.Run(appCtx); err != nil && !errors.Is(err, context.Canceled) {
 		// avoid log.Fatal to allow defer cleanup
 		panic(err)
@@ -34,4 +35,5 @@ func main() {
 	closeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = fileStore.Close(closeCtx)
+	_ = versionStore.Close(closeCtx)
 }
