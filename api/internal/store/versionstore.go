@@ -33,11 +33,11 @@ func (vs *VersionStore) Close(ctx context.Context) error {
 // Returns the creation time of the new version, or zero time if no version was created.
 func (vs *VersionStore) SaveVersion(fileID, content, name, lang string, lastVersionedAt time.Time) (time.Time, error) {
 	now := time.Now().UTC()
-	currentMinute := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), 0, 0, time.UTC)
+	currentDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 
 	if !lastVersionedAt.IsZero() {
-		lastMinute := time.Date(lastVersionedAt.Year(), lastVersionedAt.Month(), lastVersionedAt.Day(), lastVersionedAt.Hour(), lastVersionedAt.Minute(), 0, 0, time.UTC)
-		if lastMinute.Equal(currentMinute) {
+		lastDay := time.Date(lastVersionedAt.Year(), lastVersionedAt.Month(), lastVersionedAt.Day(), 0, 0, 0, 0, time.UTC)
+		if lastDay.Equal(currentDay) {
 			return time.Time{}, nil
 		}
 	}
