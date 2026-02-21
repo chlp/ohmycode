@@ -1,11 +1,14 @@
 # OhMyCode
 
-* Keep notes
+* Keep notes — perfect for quick shared scratchpads
 * Write and execute code
-* Share with ease
-* Collaborate in real-time
+* Share with ease — just share the URL, no sign-up required
+* Collaborate in real-time — see who's editing and what they're typing
+* Change history — one snapshot per day, restore any version in one click
+* Markdown with live preview
 * Lightning-fast
 * Use public server or deploy in your private network
+* Connect your own private runner for code execution
 
 Try it -> https://ohmycode.work/
 
