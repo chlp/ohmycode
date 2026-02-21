@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"ohmycode_api/internal/model"
-	"ohmycode_api/pkg/util"
 	"sync"
 )
 
@@ -117,17 +116,6 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 	// Persist a stable snapshot to avoid data races with WS/worker.
 	snap := file.Snapshot(true)
 
-	versionedAt := snap.VersionedAt
-	if fs.versionStore != nil && snap.Content != nil {
-		if newVersionedAt, err := fs.versionStore.SaveVersion(snap.ID, *snap.Content, snap.Name, snap.Lang, snap.VersionedAt); err != nil {
-			// Version is optional; log but don't fail the main persistence.
-			util.Log("PersistFile: SaveVersion error for file_id=" + snap.ID + ": " + err.Error())
-		} else if !newVersionedAt.IsZero() {
-			versionedAt = newVersionedAt
-			file.SetVersionedAt(newVersionedAt)
-		}
-	}
-
 	doc := model.File{
 		ID:                 snap.ID,
 		Name:               snap.Name,
@@ -140,7 +128,7 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 		RunnerId:           snap.RunnerId,
 		Users:              snap.Users,
 		UpdatedAt:          snap.UpdatedAt,
-		VersionedAt:        versionedAt,
+		VersionedAt:        snap.VersionedAt,
 		Persisted:          snap.Persisted,
 		IsWaitingForResult: snap.IsWaitingForResult,
 		IsRunnerOnline:     snap.IsRunnerOnline,

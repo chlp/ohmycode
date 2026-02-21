@@ -3,11 +3,35 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"ohmycode_api/internal/model"
 	"ohmycode_api/pkg/util"
 	"time"
 )
 
 const timeToSleepUntilNextFileUpdateSending = 500 * time.Millisecond
+
+// saveVersionBeforeChange snapshots the current file content and saves it as a history
+// version (using its ContentUpdatedAt as the version date) before the content is overwritten.
+func (s *Service) saveVersionBeforeChange(file interface {
+	Snapshot(includeContent bool) model.FileSnapshot
+	SetVersionedAt(t time.Time)
+}) {
+	if s.versionStore == nil {
+		return
+	}
+	snap := file.Snapshot(true)
+	if snap.Content == nil || snap.ContentUpdatedAt.IsZero() {
+		return
+	}
+	newVersionedAt, err := s.versionStore.SaveVersion(snap.ID, *snap.Content, snap.Name, snap.Lang, snap.ContentUpdatedAt, snap.VersionedAt)
+	if err != nil {
+		util.Log("saveVersionBeforeChange: SaveVersion error for file_id=" + snap.ID + ": " + err.Error())
+		return
+	}
+	if !newVersionedAt.IsZero() {
+		file.SetVersionedAt(newVersionedAt)
+	}
+}
 
 func (s *Service) handleWsFileConnection(w http.ResponseWriter, r *http.Request) {
 	s.HandleWs(w, r, s.fileMessageHandler, s.fileWork)
@@ -163,6 +187,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 	file := client.getFile()
 	switch i.Action {
 	case "set_content":
+		s.saveVersionBeforeChange(file)
 		if err := file.SetContent(i.Content, client.getAppId()); err != nil {
 			util.Log("fileMessageHandler: set_content error: " + err.Error())
 		}
@@ -200,6 +225,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		if !s.runnerStore.IsOnline(snap.UsePublicRunner, snap.RunnerId) {
 			return true
 		}
+		s.saveVersionBeforeChange(file)
 		if err := file.StartRunWithContent(i.Content, client.getAppId()); err != nil {
 			util.Log("fileMessageHandler: run_task_with_content error: " + err.Error())
 			return true

@@ -29,17 +29,21 @@ func (vs *VersionStore) Close(ctx context.Context) error {
 	return vs.db.Close(ctx)
 }
 
-// SaveVersion creates a new version if enough time has passed since lastVersionedAt.
-// Returns the creation time of the new version, or zero time if no version was created.
+// SaveVersion saves a snapshot of the content as it was at contentUpdatedAt.
+// A version is only created if no version has already been saved for the same calendar day
+// as contentUpdatedAt. Returns contentUpdatedAt on success, or zero time if no version was created.
 // After inserting it trims old versions beyond maxVersions so that cleanup is
 // co-located with the write path rather than the read path.
-func (vs *VersionStore) SaveVersion(fileID, content, name, lang string, lastVersionedAt time.Time) (time.Time, error) {
-	now := time.Now().UTC()
-	currentDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+func (vs *VersionStore) SaveVersion(fileID, content, name, lang string, contentUpdatedAt, lastVersionedAt time.Time) (time.Time, error) {
+	if contentUpdatedAt.IsZero() {
+		return time.Time{}, nil
+	}
+	contentUpdatedAt = contentUpdatedAt.UTC()
+	contentDay := time.Date(contentUpdatedAt.Year(), contentUpdatedAt.Month(), contentUpdatedAt.Day(), 0, 0, 0, 0, time.UTC)
 
 	if !lastVersionedAt.IsZero() {
 		lastDay := time.Date(lastVersionedAt.Year(), lastVersionedAt.Month(), lastVersionedAt.Day(), 0, 0, 0, 0, time.UTC)
-		if lastDay.Equal(currentDay) {
+		if lastDay.Equal(contentDay) {
 			return time.Time{}, nil
 		}
 	}
@@ -50,7 +54,7 @@ func (vs *VersionStore) SaveVersion(fileID, content, name, lang string, lastVers
 		Content:   content,
 		Name:      name,
 		Lang:      lang,
-		CreatedAt: now,
+		CreatedAt: contentUpdatedAt,
 	}
 
 	if err := vs.db.InsertOne(versionCollection, &version); err != nil {
@@ -59,7 +63,7 @@ func (vs *VersionStore) SaveVersion(fileID, content, name, lang string, lastVers
 
 	vs.trimOldVersions(fileID)
 
-	return now, nil
+	return contentUpdatedAt, nil
 }
 
 // trimOldVersions deletes versions beyond maxVersions, keeping the most recent ones.
