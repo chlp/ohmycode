@@ -2,23 +2,27 @@ package util
 
 import (
 	"crypto/rand"
-	"fmt"
 	"log"
 	"regexp"
 )
 
-const IdLength = 32
+const IdLength = 22
+const idAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+var idRegex = regexp.MustCompile(`^([0-9A-Za-z]{22}|[a-z0-9]{32})$`)
 
 func GenUuid() string {
-	b := make([]byte, 16)
+	b := make([]byte, IdLength)
 	_, err := rand.Read(b)
 	if err != nil {
-		log.Fatal("uuid: cannot generate uuid", err)
+		log.Fatal("id: cannot generate id", err)
 	}
-	return fmt.Sprintf("%08x%04x%04x%04x%12x", b[0:4], b[4:6], (b[6]&0x0f)|0x40, (b[8]&0x3f)|0x80, b[10:])
+	for i := range b {
+		b[i] = idAlphabet[b[i]%62]
+	}
+	return string(b)
 }
 
 func IsUuid(id string) bool {
-	re := regexp.MustCompile(fmt.Sprintf("^[a-z0-9]{%d}$", IdLength))
-	return re.MatchString(id)
+	return idRegex.MatchString(id)
 }

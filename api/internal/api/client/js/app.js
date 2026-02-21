@@ -5,15 +5,15 @@ import {applyFile} from "./file.js";
 import {fileNameBlock, fileNameEditing} from "./file_name.js";
 import {doConnect} from "./connect.js";
 
-const genUuid = () => { // Генерация случайного UUID без дефисов
-    return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+const genUuid = () => {
+    const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const bytes = new Uint8Array(22);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => alphabet[b % 62]).join('');
 };
 
 const isUuid = (id) => {
-    return (new RegExp(`^[a-z0-9]{32}$`)).test(id);
+    return /^[0-9A-Za-z]{22}$/.test(id) || /^[a-z0-9]{32}$/.test(id);
 };
 
 const getFileIdFromWindowLocation = () => {
