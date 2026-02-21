@@ -189,14 +189,15 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			util.Log("fileMessageHandler: set_runner error")
 		}
 	case "run_task":
-		if !s.runnerStore.IsOnline(file.UsePublicRunner, file.RunnerId) {
+		snap := file.Snapshot(false)
+		if !s.runnerStore.IsOnline(snap.UsePublicRunner, snap.RunnerId) {
 			return true
-		} else {
-			file.SetWaitingForResult()
-			s.taskStore.AddTask(file)
 		}
+		file.SetWaitingForResult()
+		s.taskStore.AddTask(file)
 	case "run_task_with_content":
-		if !s.runnerStore.IsOnline(file.UsePublicRunner, file.RunnerId) {
+		snap := file.Snapshot(false)
+		if !s.runnerStore.IsOnline(snap.UsePublicRunner, snap.RunnerId) {
 			return true
 		}
 		if err := file.StartRunWithContent(i.Content, client.getAppId()); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"ohmycode_api/internal/model"
+	"ohmycode_api/pkg/util"
 	"sync"
 )
 
@@ -119,8 +120,8 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 	versionedAt := snap.VersionedAt
 	if fs.versionStore != nil && snap.Content != nil {
 		if newVersionedAt, err := fs.versionStore.SaveVersion(snap.ID, *snap.Content, snap.Name, snap.Lang, snap.VersionedAt); err != nil {
-			// Log but don't fail the main persistence
-			// The version is optional, file persistence is critical
+			// Version is optional; log but don't fail the main persistence.
+			util.Log("PersistFile: SaveVersion error for file_id=" + snap.ID + ": " + err.Error())
 		} else if !newVersionedAt.IsZero() {
 			versionedAt = newVersionedAt
 			file.SetVersionedAt(newVersionedAt)
@@ -168,13 +169,12 @@ func (fs *FileStore) DeleteFile(fileId string) {
 
 func (fs *FileStore) lockFileMutex(fileId string) *sync.Mutex {
 	fs.fileLocksMu.Lock()
-	defer fs.fileLocksMu.Unlock()
-	var fileMutex *sync.Mutex
-	var ok bool
-	if fileMutex, ok = fs.fileLocks[fileId]; !ok {
+	fileMutex, ok := fs.fileLocks[fileId]
+	if !ok {
 		fileMutex = &sync.Mutex{}
 		fs.fileLocks[fileId] = fileMutex
 	}
+	fs.fileLocksMu.Unlock() // release before blocking on the per-file mutex
 
 	fileMutex.Lock()
 	return fileMutex

@@ -33,25 +33,19 @@ func (rs *RunnerStore) GetRunner(id string) *model.Runner {
 }
 
 func (rs *RunnerStore) SetRunner(id string, isPublic bool) *model.Runner {
-	runner := rs.GetRunner(id)
-	if runner != nil {
-		if runner.IsPublic != isPublic {
-			rs.mutex.Lock()
-			runner.IsPublic = isPublic
-			runner.CheckedAt = time.Now()
-			rs.mutex.Unlock()
-		}
+	rs.mutex.Lock()
+	defer rs.mutex.Unlock()
+	if runner, ok := rs.runners[id]; ok {
+		runner.IsPublic = isPublic
+		runner.CheckedAt = time.Now()
 		return runner
 	}
-
-	rs.mutex.Lock()
-	runner = &model.Runner{
+	runner := &model.Runner{
 		ID:        id,
 		IsPublic:  isPublic,
 		CheckedAt: time.Now(),
 	}
 	rs.runners[id] = runner
-	rs.mutex.Unlock()
 	return runner
 }
 

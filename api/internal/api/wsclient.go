@@ -93,9 +93,6 @@ func isWsOriginAllowed(r *http.Request, allowed []string) bool {
 		if a == "" {
 			continue
 		}
-		if a == "*" {
-			return true
-		}
 		if strings.HasPrefix(a, "http://") || strings.HasPrefix(a, "https://") {
 			if originFull != "" && a == originFull {
 				return true
