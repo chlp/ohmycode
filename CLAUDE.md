@@ -65,3 +65,7 @@ Files use 22-character base62 IDs (not UUIDs). Users/runners use standard UUIDs.
 
 - `api/CLAUDE.md` — detailed API config, data flow, and client JS structure
 - `runner/CLAUDE.md` — runner config, Docker setup per language
+
+## Related repositories
+
+- `../ohmycode-private` — private repo with product planning, ideas, and business notes (not public)
