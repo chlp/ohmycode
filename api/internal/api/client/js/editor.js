@@ -3,6 +3,7 @@ import {app, file} from "./app.js";
 import {actions} from "./connect.js";
 import {getCurrentLang, onLangChange, setLang} from "./lang.js";
 import {historyPanelToggle} from "./sidebar.js";
+import {setLockStatus, setIdleStatus} from "./status.js";
 
 const contentContainerBlock = document.getElementById('content-container');
 const contentMarkdownBlock = document.getElementById('content-markdown');
@@ -42,24 +43,28 @@ contentCodeMirror.on('keydown', function (codemirror, event) {
     }
 });
 
-const statusBarBlock = document.getElementById('status-bar');
+const contentMaxLengthKb = 512;
+
 let updateEditorLockStatus = () => {
     if (!app.isOnline) {
         contentCodeMirror.setOption('readOnly', true);
-        statusBarBlock.style.removeProperty('display');
-        statusBarBlock.innerHTML = 'Offline';
+        setLockStatus('Offline');
         return;
     }
 
     contentCodeMirror.setOption('readOnly', file.writer_id !== '' && file.writer_id !== app.id);
     if (file.writer_id === '' || file.writer_id === app.id) {
-        statusBarBlock.style.display = 'none';
-        statusBarBlock.innerHTML = '';
+        setLockStatus(null);
     } else {
-        statusBarBlock.style.removeProperty('display');
-        statusBarBlock.innerHTML = 'Editing is blocked by someone else';
+        setLockStatus('Editing is blocked by someone else');
     }
 };
+
+const updateContentSizeStatus = () => {
+    const sizeKb = (contentCodeMirror.getValue().length / 1024).toFixed(1);
+    setIdleStatus(`${sizeKb} KB / ${contentMaxLengthKb} KB`);
+};
+contentCodeMirror.on('change', updateContentSizeStatus);
 
 let contentSenderTimer = 0;
 let contentSender = () => {

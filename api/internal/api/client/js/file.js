@@ -2,6 +2,7 @@ import {ohMySimpleHash} from "./utils.js";
 import {app, file, openFile} from "./app.js";
 import {saveFileToDB} from "./db.js";
 import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
+import {setStatus} from "./status.js";
 
 const fileChangeHandlers = [];
 const onFileChange = (callback) => {
@@ -30,10 +31,19 @@ const applyFile = (newFile) => {
     file.users = newFile.users;
     file.is_waiting_for_result = newFile.is_waiting_for_result;
     file.result = newFile.result;
+
+    const justPersisted = !file.persisted && newFile.persisted;
     file.persisted = newFile.persisted;
+
     file.writer_id = newFile.writer_id;
     if (typeof newFile.content === 'string') {
         file.content = newFile.content;
+    }
+
+    if (justPersisted) {
+        const t = new Date();
+        const timeStr = t.toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'});
+        setStatus(`Saved ${timeStr}`, 3000);
     }
 
     if (file.persisted) {

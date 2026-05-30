@@ -1,3 +1,4 @@
+import "./status.js";
 import "./hello_world.js";
 import "./connect.js";
 import "./editor.js";

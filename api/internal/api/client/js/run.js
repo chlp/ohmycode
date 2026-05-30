@@ -4,6 +4,7 @@ import {actions} from "./connect.js";
 import {onFileChange} from "./file.js";
 import {getCurrentLang, onLangChange} from "./lang.js";
 import {contentCodeMirror} from "./editor.js";
+import {setStatus} from "./status.js";
 
 const runButton = document.getElementById('run-button');
 const cleanResultButton = document.getElementById('clean-result-button');
@@ -82,6 +83,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let forceInProgressUntilMs = 0;
     let forceInProgress = false;
     let runUiToken = 0;
+    let runStartMs = 0;
     const resultBlockUpdate = () => {
         const nowMs = Date.now();
         const isForceInProgress = forceInProgress && nowMs < forceInProgressUntilMs;
@@ -109,6 +111,11 @@ window.addEventListener("DOMContentLoaded", () => {
                 isResultFilledWithInProgress ||
                 ohMySimpleHash(file.result) !== ohMySimpleHash(resultCodeMirror.getValue())
             ) {
+                if (isResultFilledWithInProgress && runStartMs > 0) {
+                    const elapsedS = ((Date.now() - runStartMs) / 1000).toFixed(1);
+                    setStatus(`Ran in ${elapsedS}s`, 5000);
+                    runStartMs = 0;
+                }
                 isResultFilledWithInProgress = false;
                 resultCodeMirror.setValue(file.result);
             }
@@ -151,6 +158,7 @@ window.addEventListener("DOMContentLoaded", () => {
         // so it can't be overwritten by an older snapshot.
         runUiToken++;
         const myToken = runUiToken;
+        runStartMs = Date.now();
         forceInProgress = true;
         forceInProgressUntilMs = Date.now() + 1000;
         // Immediately show feedback for the click.
