@@ -66,4 +66,4 @@ Each language runs in an isolated container with:
 - Mounted volumes for requests/results at `/app/requests` and `/app/results`
 - tmpfs for temporary execution files
 
-Supported languages: go, java, json, markdown, mysql8, php82, postgres13
+Supported languages: go, java, json, markdown, mysql8, nodejs, php82, postgres13, python3
