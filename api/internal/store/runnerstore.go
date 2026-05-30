@@ -20,7 +20,7 @@ func NewRunnerStore() *RunnerStore {
 }
 
 func (rs *RunnerStore) GetRunner(id string) *model.Runner {
-	if !util.IsUuid(id) {
+	if !util.IsValidId(id) {
 		return nil
 	}
 	rs.mutex.RLock()
@@ -52,7 +52,7 @@ func (rs *RunnerStore) SetRunner(id string, isPublic bool) *model.Runner {
 const durationIsActiveFromLastUpdate = 5 * time.Second
 
 func (rs *RunnerStore) TouchRunner(id string) {
-	if !util.IsUuid(id) {
+	if !util.IsValidId(id) {
 		return
 	}
 	rs.mutex.Lock()

@@ -162,7 +162,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 	}
 
 	if i.Action == "init" {
-		if !util.IsUuid(i.FileId) || !util.IsUuid(i.UserId) {
+		if !util.IsValidId(i.FileId) || !util.IsValidId(i.UserId) {
 			util.Log("fileMessageHandler: Wrong file_id or user_id: " + i.FileId + ", " + i.UserId)
 			return false
 		}
@@ -275,7 +275,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			return true
 		}
 		// Create new file with content from version
-		newFileId := util.GenUuid()
+		newFileId := util.GenId()
 		newFile, err := s.fileStore.GetFileOrCreate(newFileId, version.Name, version.Lang, version.Content, client.getUserId(), "")
 		if err != nil {
 			util.Log("fileMessageHandler: restore_version create file error: " + err.Error())

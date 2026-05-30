@@ -41,7 +41,7 @@ func serveDynamicFiles(mux *http.ServeMux) {
 	const diskRoot = "./internal/api/client"
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsUuid(r.URL.Path[1:]) {
+		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsValidId(r.URL.Path[1:]) {
 			cleaned := path.Clean("/" + strings.TrimPrefix(r.URL.Path, "/"))
 			// prevent traversal like /../../etc/passwd
 			if strings.HasPrefix(cleaned, "/..") {
@@ -88,7 +88,7 @@ func serveStaticFiles(mux *http.ServeMux) {
 		log.Fatal("index.html not found")
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsUuid(r.URL.Path[1:]) {
+		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsValidId(r.URL.Path[1:]) {
 			requestedFile := path.Clean(r.URL.Path)
 			fileToServe := fmt.Sprintf("client%s", requestedFile)
 			if f, err := staticFS.Open(requestedFile[1:]); err == nil {

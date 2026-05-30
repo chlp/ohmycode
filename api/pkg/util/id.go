@@ -11,7 +11,7 @@ const idAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx
 
 var idRegex = regexp.MustCompile(`^([0-9A-Za-z]{22}|[a-z0-9]{32})$`)
 
-func GenUuid() string {
+func GenId() string {
 	b := make([]byte, IdLength)
 	_, err := rand.Read(b)
 	if err != nil {
@@ -23,6 +23,6 @@ func GenUuid() string {
 	return string(b)
 }
 
-func IsUuid(id string) bool {
+func IsValidId(id string) bool {
 	return idRegex.MatchString(id)
 }

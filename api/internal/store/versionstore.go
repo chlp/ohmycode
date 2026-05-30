@@ -49,7 +49,7 @@ func (vs *VersionStore) SaveVersion(fileID, content, name, lang string, contentU
 	}
 
 	version := model.FileVersion{
-		ID:        util.GenUuid(),
+		ID:        util.GenId(),
 		FileID:    fileID,
 		Content:   content,
 		Name:      name,

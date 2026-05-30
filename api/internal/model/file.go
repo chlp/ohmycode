@@ -208,7 +208,7 @@ func (f *File) signalUpdatedLocked() {
 }
 
 func (f *File) TouchByUser(userId, userName string) {
-	if !util.IsUuid(userId) {
+	if !util.IsValidId(userId) {
 		return
 	}
 
@@ -346,7 +346,7 @@ func (f *File) SetResult(result string) error {
 }
 
 func (f *File) SetUserName(userId, userName string) bool {
-	if !util.IsValidName(userName) || !util.IsUuid(userId) {
+	if !util.IsValidName(userName) || !util.IsValidId(userId) {
 		return false
 	}
 
@@ -368,7 +368,7 @@ func (f *File) SetUserName(userId, userName string) bool {
 }
 
 func (f *File) SetRunnerId(runnerId string) bool {
-	if !util.IsUuid(runnerId) {
+	if !util.IsValidId(runnerId) {
 		return false
 	}
 	f.lock()
