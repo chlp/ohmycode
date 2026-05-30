@@ -1,0 +1,67 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Build & Run
+
+Run both services together (recommended):
+```bash
+docker compose -f api/docker/docker-compose.yml up -d --build --remove-orphans --force-recreate && \
+docker compose -f runner/docker/docker-compose.yml up -d --build --remove-orphans --force-recreate
+```
+App available at http://localhost:52674/
+
+Run services separately — see `api/CLAUDE.md` and `runner/CLAUDE.md`.
+
+## Testing
+
+```bash
+# api — only model-level unit tests exist
+cd api && go test ./internal/model
+```
+
+## Architecture
+
+Two independent Go modules communicate over WebSocket:
+
+```
+Browser ──WS /file──► API (Go + MongoDB)
+                          │
+                     TaskStore ──WS /runner──► Runner Manager (Go)
+                                                      │
+                                          data/{lang}/requests/
+                                                      │
+                                          Language containers (Docker)
+                                                      │
+                                          data/{lang}/results/
+                                                      │
+                                     Runner Manager ──set_result──► API ──► Browser
+```
+
+**`api/`** — HTTP + WebSocket server, in-memory file cache backed by MongoDB.
+- `/file` WS endpoint for browser clients
+- `/runner` WS endpoint for runner services
+- Files live in memory with per-file mutex; persisted to MongoDB every 30s
+- Version snapshots taken once per day per file
+- Background worker: cleanup (10 min), persist (30 s), runner status sync (1 s)
+
+**`runner/`** — Stateless bridge between API and language containers.
+- Connects to API via WebSocket with auto-reconnect
+- Distributes tasks by writing files to `data/{lang}/requests/`
+- Language containers read requests and write results to `data/{lang}/results/`
+- Each language runs in an isolated Docker container with no external network access
+
+### Key concurrency patterns in `api/`
+
+- `File` uses `sync.Mutex` + snapshot pattern (`File.Snapshot()`) — never read fields directly, always snapshot under lock
+- `FileStore` uses per-file mutex (`fileLocks`) to serialize GetOrCreate without blocking unrelated files
+- `File.subs` is a fan-out map of per-subscriber buffered channels for WS push notifications
+
+### IDs
+
+Files use 22-character base62 IDs (not UUIDs). Users/runners use standard UUIDs. See `api/pkg/util/uuid.go`.
+
+## Sub-project guidance
+
+- `api/CLAUDE.md` — detailed API config, data flow, and client JS structure
+- `runner/CLAUDE.md` — runner config, Docker setup per language
