@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/sha256"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -10,8 +11,30 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
+
+var (
+	jsImportRe = regexp.MustCompile(`"(\./[^"?]+\.js)"`)
+	versionRe  = regexp.MustCompile(`\?v=\w+`)
+)
+
+func computeBuildHash(staticFS fs.FS) string {
+	h := sha256.New()
+	_ = fs.WalkDir(staticFS, ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		data, err := fs.ReadFile(staticFS, p)
+		if err != nil {
+			return nil
+		}
+		h.Write(data)
+		return nil
+	})
+	return fmt.Sprintf("%x", h.Sum(nil))[:8]
+}
 
 //go:embed client/*
 var staticFiles embed.FS
@@ -65,7 +88,7 @@ func serveStaticFiles(mux *http.ServeMux) {
 	staticFS, _ := fs.Sub(staticFiles, "client")
 	indexHtmlFound := false
 	styleCssFound := false
-	fileJsFound := false
+	mainJsFound := false
 	_ = fs.WalkDir(staticFS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -75,21 +98,51 @@ func serveStaticFiles(mux *http.ServeMux) {
 			indexHtmlFound = true
 		case "style.css":
 			styleCssFound = true
-		case "js/app.js":
-			fileJsFound = true
+		case "js/main.js":
+			mainJsFound = true
 		}
 		return nil
 	})
-	if !indexHtmlFound || !styleCssFound || !fileJsFound {
+	if !indexHtmlFound || !styleCssFound || !mainJsFound {
 		log.Fatal("important static http file not found")
 	}
+
+	hash := computeBuildHash(staticFS)
+	log.Printf("Static build hash: %s", hash)
+
 	indexHtmlData, err := staticFiles.ReadFile("client/index.html")
 	if err != nil {
 		log.Fatal("index.html not found")
 	}
+	indexHtmlData = versionRe.ReplaceAll(indexHtmlData, []byte("?v="+hash))
+
+	// Patch relative imports in every JS file so all modules share the same versioned URLs.
+	// Without this, different modules importing the same file with and without ?v= would
+	// create duplicate module instances, breaking shared state.
+	patchedJS := make(map[string][]byte)
+	_ = fs.WalkDir(staticFS, ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".js") {
+			return err
+		}
+		data, readErr := staticFiles.ReadFile("client/" + p)
+		if readErr != nil {
+			return nil
+		}
+		patchedJS["/"+p] = jsImportRe.ReplaceAll(data, []byte(`"$1?v=`+hash+`"`))
+		return nil
+	})
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "" && r.URL.Path != "/" && r.URL.Path != "/index.html" && !util.IsValidId(r.URL.Path[1:]) {
 			requestedFile := path.Clean(r.URL.Path)
+
+			if patched, ok := patchedJS[requestedFile]; ok {
+				setCacheHeadersForJS(w, r)
+				w.Header().Set("Content-Type", "application/javascript")
+				_, _ = w.Write(patched)
+				return
+			}
+
 			fileToServe := fmt.Sprintf("client%s", requestedFile)
 			if f, err := staticFS.Open(requestedFile[1:]); err == nil {
 				_ = f.Close()

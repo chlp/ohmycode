@@ -90,6 +90,8 @@ const openFile = async (id, pushHistory) => {
 };
 
 window.addEventListener("DOMContentLoaded", () => {
+    setLang(localStorage['initialLang']);
+
     let fileId = getFileIdFromWindowLocation();
     let pushHistory = false;
     if (fileId === undefined) {
@@ -133,7 +135,5 @@ const app = {
 if (localStorage['user_id'] === undefined) {
     localStorage['user_id'] = app.userId;
 }
-
-setLang(localStorage['initialLang']);
 
 export {file, app, openFile};
