@@ -26,8 +26,25 @@ docker compose -f docker/docker-compose.yml up --build
 ## Testing
 
 ```bash
-go test ./internal/model
+# All Go tests (unit + WS integration), with race detector
+go test -race ./...
 ```
+
+### Test layers
+
+| Layer | Location | Command | Needs DB? |
+|-------|----------|---------|-----------|
+| Go unit | `internal/model`, `internal/store`, `internal/api` | `go test -race ./...` | No |
+| Go WS integration | `internal/api/ws_integration_test.go` | included above | No — uses `store.NewFileStoreInMemory()` |
+| JS unit (Vitest) | `internal/api/client/js/test/` | `cd internal/api/client && npm test` | No |
+| E2E (Playwright) | `../../e2e/` | see root CLAUDE.md | App must run |
+
+### Key test files
+
+- **`internal/api/staticfiles_test.go`** — cache-busting hash, JS import patching, HTTP handler
+- **`internal/model/file_test.go`** — `File` model: SetContent, SetLang, Snapshot, subscribe/unsubscribe, concurrency
+- **`internal/store/filestore_test.go`** — in-memory store CRUD and concurrent access
+- **`internal/api/ws_integration_test.go`** — WS init→snapshot, set_content→broadcast, two-client sync
 
 ## Architecture
 
@@ -87,13 +104,26 @@ Browser → WS /file → API → FileStore (in-memory + MongoDB)
 
 ## Supported Languages
 
-Defined in `internal/model/lang.go`: go, java, json, markdown, mysql8, php82, postgres13
+Defined in `internal/model/lang.go`: go, java, json, markdown, mysql8, nodejs, php82, postgres13, python3
 
 ## Client Files
 
 JavaScript modules in `internal/api/client/js/`:
-- `app.js` — initialization
-- `connect.js` — WebSocket management
+- `main.js` — entry point (side-effect imports only)
+- `app.js` — initialization, file open/navigate
+- `connect.js` — WebSocket management, reconnect loop
 - `editor.js` — CodeMirror integration
-- `file.js` — file model
+- `file.js` — file state and persistence triggers
+- `lang.js` — language selector and mode switching
 - `run.js` — code execution UI
+- `sidebar.js` — file history panel
+- `versions.js` — version history panel
+- `db.js` — IndexedDB cache for offline/fast load
+- `utils.js` — pure helpers (`ohMySimpleHash`)
+
+### Static file serving & cache busting
+
+`internal/api/staticfiles.go` computes a SHA-256 hash of all embedded client files at
+startup. Every relative JS import (`"./foo.js"`) is rewritten to `"./foo.js?v=HASH"` in
+all served modules, and `?v=N` in `index.html` is replaced with `?v=HASH`. Versioned
+assets get `Cache-Control: immutable`; `index.html` gets `no-cache`.

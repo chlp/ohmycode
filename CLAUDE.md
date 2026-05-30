@@ -16,8 +16,15 @@ Run services separately — see `api/CLAUDE.md` and `runner/CLAUDE.md`.
 ## Testing
 
 ```bash
-# api — only model-level unit tests exist
-cd api && go test ./internal/model
+# Go — unit + integration (no external deps required)
+cd api && go test -race ./...
+
+# JS unit (Vitest, pure functions)
+cd api/internal/api/client && npm test
+
+# E2E (Playwright, requires running app at localhost:52674)
+cd e2e && npm install && npx playwright install chromium && npx playwright test
+# Override base URL:  APP_URL=https://ohmycode.work npx playwright test
 ```
 
 ## Architecture
