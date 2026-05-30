@@ -42,4 +42,8 @@ var Langs = map[string]Lang{
 		Name:        "PostgreSQL 13",
 		Highlighter: "sql",
 	},
+	"python3": {
+		Name:        "Python 3",
+		Highlighter: "python",
+	},
 }

@@ -8,7 +8,8 @@
     "markdown",
     "mysql8",
     "php82",
-    "postgres13"
+    "postgres13",
+    "python3"
   ],
   "id": "32charsUUID",
   "api": "ws://host.docker.internal:52674"

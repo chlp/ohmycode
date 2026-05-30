@@ -184,6 +184,33 @@ services:
           create_host_path: true
     tmpfs:
       - /app/tmp:mode=1777,uid=1000,gid=1000
+  ohmycode-runner-python3:
+    container_name: ohmycode-runner-python3
+    networks:
+      - isolated-network-python3
+    build:
+      context: python3
+      dockerfile: Dockerfile
+    stop_grace_period: 1s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
+    volumes:
+      - type: bind
+        source: ../data/python3/requests
+        target: /app/requests
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ../data/python3/results
+        target: /app/results
+        bind:
+          create_host_path: true
+    tmpfs:
+      - /app/tmp:mode=1777,uid=1000,gid=1000
   ohmycode-runner-postgres13:
     container_name: ohmycode-runner-postgres13
     networks:
@@ -235,6 +262,9 @@ networks:
     driver: bridge
     internal: true
   isolated-network-php82:
+    driver: bridge
+    internal: true
+  isolated-network-python3:
     driver: bridge
     internal: true
   isolated-network-postgres13:
