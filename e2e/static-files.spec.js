@@ -1,0 +1,71 @@
+import { test, expect } from '@playwright/test';
+
+// Verifies the hash-based cache busting mechanism end-to-end.
+
+test('index.html is served with no-cache', async ({ request }) => {
+  const resp = await request.get('/');
+  expect(resp.status()).toBe(200);
+  expect(resp.headers()['cache-control']).toContain('no-cache');
+});
+
+test('index.html contains versioned asset references', async ({ request }) => {
+  const resp = await request.get('/');
+  const body = await resp.text();
+  // All ?v= references should be a short hex hash, not the old hardcoded numbers
+  expect(body).toContain('?v=');
+  expect(body).not.toMatch(/\?v=\d+"/); // no bare numeric versions like ?v=18"
+});
+
+test('main.js is served with versioned module imports', async ({ request }) => {
+  const resp = await request.get('/js/main.js');
+  expect(resp.status()).toBe(200);
+  const body = await resp.text();
+  // Every relative import should be versioned
+  const lines = body.split('\n').filter(l => l.includes('"./') && l.includes('.js'));
+  for (const line of lines) {
+    expect(line).toContain('?v=');
+  }
+});
+
+test('versioned JS asset has immutable cache headers', async ({ request }) => {
+  // Extract the build hash from index.html
+  const indexResp = await request.get('/');
+  const indexBody = await indexResp.text();
+  const match = indexBody.match(/main\.js\?v=([a-f0-9]+)/);
+  expect(match).not.toBeNull();
+  const hash = match[1];
+
+  const jsResp = await request.get(`/js/main.js?v=${hash}`);
+  expect(jsResp.status()).toBe(200);
+  const cc = jsResp.headers()['cache-control'];
+  expect(cc).toContain('immutable');
+  expect(cc).toContain('max-age=31536000');
+});
+
+test('all JS modules loaded by the browser have versioned URLs', async ({ page }) => {
+  const jsUrls = new Set();
+  page.on('request', req => {
+    const url = req.url();
+    if (url.includes('/js/') && url.includes('.js')) {
+      jsUrls.add(url);
+    }
+  });
+
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+
+  expect(jsUrls.size).toBeGreaterThan(0);
+  for (const url of jsUrls) {
+    expect(url, `unversioned JS module: ${url}`).toContain('?v=');
+  }
+});
+
+test('build hash is consistent across requests', async ({ request }) => {
+  const extractHash = async () => {
+    const body = await (await request.get('/')).text();
+    return body.match(/main\.js\?v=([a-f0-9]+)/)?.[1];
+  };
+  const h1 = await extractHash();
+  const h2 = await extractHash();
+  expect(h1).toBe(h2);
+});

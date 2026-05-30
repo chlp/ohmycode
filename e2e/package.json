@@ -1,0 +1,12 @@
+{
+  "name": "ohmycode-e2e",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "install-browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0"
+  }
+}

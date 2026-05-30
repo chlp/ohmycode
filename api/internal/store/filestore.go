@@ -25,6 +25,15 @@ func NewFileStore(dbConfig DBConfig, versionStore *VersionStore) *FileStore {
 	}
 }
 
+// NewFileStoreInMemory creates a store with no database backend.
+// Useful for tests that only exercise the in-memory layer.
+func NewFileStoreInMemory() *FileStore {
+	return &FileStore{
+		files:     make(map[string]*model.File),
+		fileLocks: make(map[string]*sync.Mutex),
+	}
+}
+
 func (fs *FileStore) Close(ctx context.Context) error {
 	if fs.db == nil {
 		return nil
@@ -45,18 +54,20 @@ func (fs *FileStore) GetFileOrCreate(fileId, fileName, lang, content, userId, us
 	fs.filesMu.RUnlock()
 
 	// try DB
-	var fromDb model.File
-	found, err := fs.db.FindOne("files", map[string]interface{}{"_id": fileId}, &fromDb)
-	if err != nil {
-		return nil, err
-	}
-	if found && fromDb.ID == fileId {
-		fromDb.Persisted = true
-		fromDb.PersistedAt = fromDb.UpdatedAt
-		fs.filesMu.Lock()
-		fs.files[fileId] = &fromDb
-		fs.filesMu.Unlock()
-		return &fromDb, nil
+	if fs.db != nil {
+		var fromDb model.File
+		found, err := fs.db.FindOne("files", map[string]interface{}{"_id": fileId}, &fromDb)
+		if err != nil {
+			return nil, err
+		}
+		if found && fromDb.ID == fileId {
+			fromDb.Persisted = true
+			fromDb.PersistedAt = fromDb.UpdatedAt
+			fs.filesMu.Lock()
+			fs.files[fileId] = &fromDb
+			fs.filesMu.Unlock()
+			return &fromDb, nil
+		}
 	}
 
 	// create new
@@ -88,28 +99,34 @@ func (fs *FileStore) GetFile(fileId string) (*model.File, error) {
 	}
 	fs.filesMu.RUnlock()
 
-	var fromDb model.File
-	found, err := fs.db.FindOne("files", map[string]interface{}{"_id": fileId}, &fromDb)
-	if err != nil {
-		return nil, err
-	}
-	if !found {
-		return nil, nil
-	}
-	if fromDb.ID != fileId {
-		return nil, errors.New("problem with fileId")
+	if fs.db != nil {
+		var fromDb model.File
+		found, err := fs.db.FindOne("files", map[string]interface{}{"_id": fileId}, &fromDb)
+		if err != nil {
+			return nil, err
+		}
+		if !found {
+			return nil, nil
+		}
+		if fromDb.ID != fileId {
+			return nil, errors.New("problem with fileId")
+		}
+		fromDb.Persisted = true
+		fromDb.PersistedAt = fromDb.UpdatedAt
+		fs.filesMu.Lock()
+		fs.files[fileId] = &fromDb
+		fs.filesMu.Unlock()
+		return &fromDb, nil
 	}
 
-	fromDb.Persisted = true
-	fromDb.PersistedAt = fromDb.UpdatedAt
-
-	fs.filesMu.Lock()
-	fs.files[fileId] = &fromDb
-	fs.filesMu.Unlock()
-	return &fromDb, nil
+	return nil, nil
 }
 
 func (fs *FileStore) PersistFile(file *model.File) error {
+	if fs.db == nil {
+		return nil
+	}
+
 	fileMu := fs.lockFileMutex(file.ID)
 	defer fileMu.Unlock()
 
