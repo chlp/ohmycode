@@ -2,6 +2,21 @@ import {app, file} from "./app.js";
 import {actions} from "./connect.js";
 import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
 import {fileNameBlock} from "./file_name.js";
+import {setLang} from "./lang.js";
+
+const extToLang = {
+    'go':       'go',
+    'java':     'java',
+    'json':     'json',
+    'md':       'markdown',
+    'markdown': 'markdown',
+    'sql':      'mysql8',
+    'php':      'php82',
+    'py':       'python3',
+    'js':       'nodejs',
+    'mjs':      'nodejs',
+    'ts':       'nodejs',
+};
 
 contentCodeMirror.on('drop', (cm, event) => {
     event.preventDefault();
@@ -41,6 +56,12 @@ document.addEventListener('drop', (event) => {
         fileNameBlock.textContent = newFileName;
         file.name = newFileName;
         actions.setFileName(newFileName);
+
+        const ext = droppedFile.name.split('.').pop().toLowerCase();
+        const detectedLang = extToLang[ext];
+        if (detectedLang) {
+            setLang(detectedLang);
+        }
 
         contentCodeMirror.setValue(newContent);
         contentMarkdownBlock.innerHTML = marked.parse(file.content);
