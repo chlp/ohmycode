@@ -191,6 +191,12 @@ echo 'Hello, OhMyCode!';`;
             from employees
             where first_name like 'C%';`;
             break;
+        case 'nodejs':
+            helloWorldCode = `console.log("Hello, OhMyCode!");`;
+            break;
+        case 'python3':
+            helloWorldCode = `print("Hello, OhMyCode!")`;
+            break;
         default:
             console.error('no helloWorld code');
     }

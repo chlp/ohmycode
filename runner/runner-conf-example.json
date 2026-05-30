@@ -9,6 +9,7 @@
     "mysql8",
     "php82",
     "postgres13",
+    "nodejs",
     "python3"
   ],
   "id": "32charsUUID",

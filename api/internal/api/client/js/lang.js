@@ -68,6 +68,22 @@ const languages = {
         action: 'run',
         helloWorld: 'postgres',
     },
+    nodejs: {
+        key: 'nodejs',
+        name: 'Node.js',
+        highlighter: 'text/javascript',
+        renderer: 'codemirror',
+        action: 'run',
+        helloWorld: 'nodejs',
+    },
+    python3: {
+        key: 'python3',
+        name: 'Python 3',
+        highlighter: null,
+        renderer: 'codemirror',
+        action: 'run',
+        helloWorld: 'python3',
+    },
 };
 
 const langSelect = document.getElementById('lang-select');
