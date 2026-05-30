@@ -42,8 +42,15 @@ type User struct {
 	TouchedAt time.Time `json:"touched_at" bson:"touched_at"`
 }
 
+var contentMaxLength = 512 * (1 << 10) // 512 Kb, overridable via SetContentMaxLength
+
+func SetContentMaxLength(bytes int) {
+	if bytes > 0 {
+		contentMaxLength = bytes
+	}
+}
+
 const (
-	contentMaxLength               = 512 * (1 << 10) // 512 Kb
 	durationIsActiveFromLastUpdate = 5 * time.Second
 	durationIsWriterStillWriting   = 2 * time.Second
 	durationForWaitingForResultMax = 20 * time.Second

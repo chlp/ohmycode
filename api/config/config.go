@@ -19,6 +19,8 @@ type ApiConfig struct {
 	// Empty (default) or ["*"] means allow all origins.
 	// Otherwise it should contain allowed origins like "https://example.com" or hosts like "example.com:3000".
 	WsAllowedOrigins []string `json:"ws_allowed_origins"`
+	// ContentMaxLengthKb sets the maximum file content size in kilobytes. Default: 512.
+	ContentMaxLengthKb int `json:"content_max_length_kb"`
 }
 
 var conf ApiConfig

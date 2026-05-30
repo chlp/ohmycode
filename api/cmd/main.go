@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"ohmycode_api/config"
 	"ohmycode_api/internal/api"
+	"ohmycode_api/internal/model"
 	"ohmycode_api/internal/store"
 	"ohmycode_api/internal/worker"
 	"syscall"
@@ -18,6 +19,7 @@ func main() {
 	defer stop()
 
 	apiConfig := config.LoadApiConf()
+	model.SetContentMaxLength(apiConfig.ContentMaxLengthKb * 1024)
 
 	versionStore := store.NewVersionStore(apiConfig.DB)
 	fileStore := store.NewFileStore(apiConfig.DB, versionStore)
