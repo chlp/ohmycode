@@ -22,6 +22,11 @@ services:
       dockerfile: Dockerfile
     stop_grace_period: 1s
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     volumes:
       - type: bind
         source: ../data/go/requests
@@ -45,6 +50,11 @@ services:
       dockerfile: Dockerfile
     stop_grace_period: 1s
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     volumes:
       - type: bind
         source: ../data/java/requests
@@ -68,6 +78,11 @@ services:
       dockerfile: Dockerfile
     stop_grace_period: 1s
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
     volumes:
       - type: bind
         source: ../data/json/requests
@@ -90,6 +105,11 @@ services:
       dockerfile: Dockerfile
     stop_grace_period: 1s
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
     volumes:
       - type: bind
         source: ../data/markdown/requests
@@ -114,6 +134,11 @@ services:
       - SYS_NICE
     stop_grace_period: 1s
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     volumes:
       - type: bind
         source: ../data/mysql8/requests
@@ -141,6 +166,11 @@ services:
       dockerfile: Dockerfile
     stop_grace_period: 1s
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
     volumes:
       - type: bind
         source: ../data/php82/requests
@@ -165,6 +195,11 @@ services:
       - SYS_NICE
     stop_grace_period: 1s
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     volumes:
       - type: bind
         source: ../data/postgres13/requests
