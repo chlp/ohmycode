@@ -34,7 +34,7 @@ const languages = {
         highlighter: 'text/x-markdown',
         renderer: 'codemirror',
         action: 'view',
-        helloWorld: 'markdown',
+        helloWorld: undefined,
     },
     markdown_view: {
         key: 'markdown_view',
