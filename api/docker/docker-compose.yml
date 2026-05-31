@@ -9,10 +9,16 @@ services:
       dockerfile: docker/Dockerfile
     volumes:
       - ../internal/api/client:/app/internal/api/client
-    stop_grace_period: 1s
+    stop_grace_period: 15s
     restart: always
     ports:
       - "52674:52674"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:52674/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
   ohmycode-mongodb:
     image: mongo:latest
     container_name: ohmycode-mongodb

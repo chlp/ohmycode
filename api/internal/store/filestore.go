@@ -34,6 +34,13 @@ func NewFileStoreInMemory() *FileStore {
 	}
 }
 
+func (fs *FileStore) Ping(ctx context.Context) error {
+	if fs.db == nil {
+		return nil
+	}
+	return fs.db.Ping(ctx)
+}
+
 func (fs *FileStore) Close(ctx context.Context) error {
 	if fs.db == nil {
 		return nil

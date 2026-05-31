@@ -39,6 +39,7 @@ func (s *Service) Run(ctx context.Context) error {
 	util.Log("API Service started")
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/health", s.handleHealth)
 	mux.HandleFunc("/file", s.handleWsFileConnection)
 	mux.HandleFunc("/runner", s.handleWsRunnerConnection)
 	if s.serveClientFiles {

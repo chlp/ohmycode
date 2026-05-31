@@ -121,6 +121,10 @@ func (db *Db) DeleteOne(collection string, filter map[string]interface{}) error 
 	return nil
 }
 
+func (db *Db) Ping(ctx context.Context) error {
+	return db.client.Ping(ctx, nil)
+}
+
 func (db *Db) Close(ctx context.Context) error {
 	return db.client.Disconnect(ctx)
 }

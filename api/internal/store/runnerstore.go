@@ -80,6 +80,18 @@ func (rs *RunnerStore) IsOnline(isPublic bool, runnerId string) bool {
 	return false
 }
 
+func (rs *RunnerStore) CountOnline() int {
+	rs.mutex.RLock()
+	defer rs.mutex.RUnlock()
+	count := 0
+	for _, runner := range rs.runners {
+		if time.Since(runner.CheckedAt) < durationIsActiveFromLastUpdate {
+			count++
+		}
+	}
+	return count
+}
+
 func (rs *RunnerStore) GetPublicRunner() *model.Runner {
 	rs.mutex.RLock()
 	defer rs.mutex.RUnlock()
