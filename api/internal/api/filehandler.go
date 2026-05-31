@@ -215,14 +215,26 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		}
 	case "run_task":
 		snap := file.Snapshot(false)
+		if snap.IsWaitingForResult {
+			return true
+		}
 		if !s.runnerStore.IsOnline(snap.UsePublicRunner, snap.RunnerId) {
+			return true
+		}
+		if !s.runLimiter.Allow(client.ip) {
 			return true
 		}
 		file.SetWaitingForResult()
 		s.taskStore.AddTask(file)
 	case "run_task_with_content":
 		snap := file.Snapshot(false)
+		if snap.IsWaitingForResult {
+			return true
+		}
 		if !s.runnerStore.IsOnline(snap.UsePublicRunner, snap.RunnerId) {
+			return true
+		}
+		if !s.runLimiter.Allow(client.ip) {
 			return true
 		}
 		s.saveVersionBeforeChange(file)

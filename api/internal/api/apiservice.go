@@ -20,6 +20,7 @@ type Service struct {
 	runnerStore      *store.RunnerStore
 	taskStore        *store.TaskStore
 	versionStore     *store.VersionStore
+	runLimiter       *ipRunLimiter
 }
 
 func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedOrigins []string, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore, versionStore *store.VersionStore) *Service {
@@ -32,11 +33,24 @@ func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedO
 		runnerStore:      runnerStore,
 		taskStore:        taskStore,
 		versionStore:     versionStore,
+		runLimiter:       newIpRunLimiter(),
 	}
 }
 
 func (s *Service) Run(ctx context.Context) error {
 	util.Log("API Service started")
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				s.runLimiter.cleanup()
+			}
+		}
+	}()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/health", s.handleHealth)

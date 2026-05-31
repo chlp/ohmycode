@@ -22,6 +22,7 @@ type wsClient struct {
 	file        *model.File
 	userId      string
 	appId       string
+	ip          string
 	runner      *model.Runner
 	lastUpdate  time.Time
 	conn        *websocket.Conn
@@ -146,6 +147,7 @@ func createWsClient(w http.ResponseWriter, r *http.Request, allowedOrigins []str
 
 	client := wsClient{
 		conn:        conn,
+		ip:          clientIP(r),
 		done:        done,
 		close:       closeClient,
 		fileSetCh:   make(chan struct{}, 1),
