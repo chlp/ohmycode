@@ -9,6 +9,13 @@ const historyBtn = document.getElementById('header-history-btn');
 const updateHistoryBlock = () => {
     getSortedFilesFromDB().then(historyFiles => {
         historyBlock.innerHTML = '';
+        if (historyFiles.length === 0) {
+            let emptyMsg = document.createElement('div');
+            emptyMsg.className = 'history-empty';
+            emptyMsg.textContent = 'No files in history';
+            historyBlock.appendChild(emptyMsg);
+            return;
+        }
         historyFiles.forEach((historyFile) => {
             let span = document.createElement('span');
             span.className = 'history-item';

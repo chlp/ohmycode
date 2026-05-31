@@ -42,4 +42,14 @@ fileNameBlock.onkeydown = (event) => {
     }, 5000);
 };
 
+fileNameBlock.onblur = () => {
+    if (fileNameEditing) {
+        clearTimeout(fileNameSavingTimeout);
+        fileNameSavingTimeout = null;
+        fileNameEditing = false;
+        file.name = fileNameBlock.textContent;
+        actions.setFileName(fileNameBlock.textContent);
+    }
+};
+
 export {fileNameBlock, fileNameEditing};

@@ -148,6 +148,12 @@ window.addEventListener("DOMContentLoaded", () => {
     };
     onFileChange(resultBlockUpdate);
 
+    runButton.addEventListener('mouseenter', () => {
+        if (runButton.disabled && !file.is_runner_online) {
+            setStatus('No runner connected — click Runner to set one up');
+        }
+    });
+
     let runTask = () => {
         if (!file.is_runner_online) {
             resultCodeMirror.setValue('No runner is available to run your code :(');

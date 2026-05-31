@@ -4,6 +4,22 @@ import {onFileChange} from "./file.js";
 import {contentCodeMirror, contentCodeMirrorBlock, contentMarkdownBlock} from "./editor.js";
 
 const languages = {
+    python3: {
+        key: 'python3',
+        name: 'Python 3',
+        highlighter: 'python',
+        renderer: 'codemirror',
+        action: 'run',
+        helloWorld: 'python3',
+    },
+    nodejs: {
+        key: 'nodejs',
+        name: 'Node.js',
+        highlighter: 'text/javascript',
+        renderer: 'codemirror',
+        action: 'run',
+        helloWorld: 'nodejs',
+    },
     go: {
         key: 'go',
         name: 'GoLang',
@@ -19,6 +35,30 @@ const languages = {
         renderer: 'codemirror',
         action: 'run',
         helloWorld: 'java',
+    },
+    php82: {
+        key: 'php82',
+        name: 'PHP 8.2',
+        highlighter: 'php',
+        renderer: 'codemirror',
+        action: 'run',
+        helloWorld: 'php',
+    },
+    mysql8: {
+        key: 'mysql8',
+        name: 'MySQL 8',
+        highlighter: 'sql',
+        renderer: 'codemirror',
+        action: 'run',
+        helloWorld: 'mysql',
+    },
+    postgres13: {
+        key: 'postgres13',
+        name: 'PostgreSQL 13',
+        highlighter: 'sql',
+        renderer: 'codemirror',
+        action: 'run',
+        helloWorld: 'postgres',
     },
     json: {
         key: 'json',
@@ -43,46 +83,6 @@ const languages = {
         renderer: 'markdown',
         action: 'edit',
         helloWorld: undefined,
-    },
-    mysql8: {
-        key: 'mysql8',
-        name: 'MySQL 8',
-        highlighter: 'sql',
-        renderer: 'codemirror',
-        action: 'run',
-        helloWorld: 'mysql',
-    },
-    php82: {
-        key: 'php82',
-        name: 'PHP 8.2',
-        highlighter: 'php',
-        renderer: 'codemirror',
-        action: 'run',
-        helloWorld: 'php',
-    },
-    postgres13: {
-        key: 'postgres13',
-        name: 'PostgreSQL 13',
-        highlighter: 'sql',
-        renderer: 'codemirror',
-        action: 'run',
-        helloWorld: 'postgres',
-    },
-    nodejs: {
-        key: 'nodejs',
-        name: 'Node.js',
-        highlighter: 'text/javascript',
-        renderer: 'codemirror',
-        action: 'run',
-        helloWorld: 'nodejs',
-    },
-    python3: {
-        key: 'python3',
-        name: 'Python 3',
-        highlighter: null,
-        renderer: 'codemirror',
-        action: 'run',
-        helloWorld: 'python3',
     },
 };
 

@@ -178,13 +178,20 @@ const doConnect = (app) => {
 };
 
 let reconnectAttempts = 0;
-setInterval(() => {
-    if (socket === null) {
-        reconnectAttempts++;
-        doConnect(app);
-    } else {
-        reconnectAttempts = 0;
-    }
-}, 1000 * Math.min(2 ** reconnectAttempts, 30) + 3000);
+const scheduleReconnect = () => {
+    const delayMs = reconnectAttempts === 0
+        ? 1000
+        : Math.min(1000 * 2 ** reconnectAttempts, 30000);
+    setTimeout(() => {
+        if (socket === null) {
+            reconnectAttempts++;
+            doConnect(app);
+        } else {
+            reconnectAttempts = 0;
+        }
+        scheduleReconnect();
+    }, delayMs);
+};
+scheduleReconnect();
 
 export {actions, doConnect, onVersions, onOpenFile};
