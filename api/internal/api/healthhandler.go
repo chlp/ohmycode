@@ -7,9 +7,12 @@ import (
 	"time"
 )
 
+const persistErrDegradedThreshold = 5
+
 type healthResponse struct {
 	Status        string `json:"status"`
 	Mongo         string `json:"mongo"`
+	PersistErrors int    `json:"persist_errors"`
 	RunnersOnline int    `json:"runners_online"`
 }
 
@@ -22,14 +25,18 @@ func (s *Service) handleHealth(w http.ResponseWriter, r *http.Request) {
 		mongoStatus = "error"
 	}
 
+	persistErrors := s.fileStore.PersistErrCount()
+
 	resp := healthResponse{
 		Status:        "ok",
 		Mongo:         mongoStatus,
+		PersistErrors: persistErrors,
 		RunnersOnline: s.runnerStore.CountOnline(),
 	}
 
+	degraded := mongoStatus != "ok" || persistErrors >= persistErrDegradedThreshold
 	w.Header().Set("Content-Type", "application/json")
-	if mongoStatus != "ok" {
+	if degraded {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		resp.Status = "degraded"
 	}

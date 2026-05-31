@@ -91,7 +91,8 @@ func (w *Worker) filesPersisting() {
 			continue
 		}
 		if err := w.fileStore.PersistFile(file); err != nil {
-			util.LogError("persist file failed", "file_id", file.ID, "error", err)
+			n := w.fileStore.PersistErrCount()
+			util.LogError("persist file failed", "file_id", file.ID, "error", err, "consecutive_errors", n)
 		}
 	}
 }

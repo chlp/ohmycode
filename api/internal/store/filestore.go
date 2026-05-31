@@ -5,6 +5,7 @@ import (
 	"errors"
 	"ohmycode_api/internal/model"
 	"sync"
+	"sync/atomic"
 )
 
 type FileStore struct {
@@ -14,6 +15,8 @@ type FileStore struct {
 	fileLocks    map[string]*sync.Mutex
 	db           *Db
 	versionStore *VersionStore
+	// consecutivePersistErrors tracks back-to-back MongoDB write failures.
+	consecutivePersistErrors atomic.Int64
 }
 
 func NewFileStore(dbConfig DBConfig, versionStore *VersionStore) *FileStore {
@@ -160,10 +163,17 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 	}
 
 	if err := fs.db.ReplaceOneUpsert("files", map[string]interface{}{"_id": doc.ID}, &doc); err != nil {
+		fs.consecutivePersistErrors.Add(1)
 		return err
 	}
+	fs.consecutivePersistErrors.Store(0)
 	file.SetPersistedAt(snap.UpdatedAt)
 	return nil
+}
+
+// PersistErrCount returns the number of consecutive MongoDB write failures.
+func (fs *FileStore) PersistErrCount() int {
+	return int(fs.consecutivePersistErrors.Load())
 }
 
 func (fs *FileStore) DeleteFile(fileId string) {
