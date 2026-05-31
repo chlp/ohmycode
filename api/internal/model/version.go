@@ -8,5 +8,6 @@ type FileVersion struct {
 	Content   string    `json:"content" bson:"content"`
 	Name      string    `json:"name" bson:"name"`
 	Lang      string    `json:"lang" bson:"lang"`
+	Preview   string    `json:"preview" bson:"preview"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"ohmycode_api/internal/model"
 	"ohmycode_api/pkg/util"
+	"strings"
 	"time"
 )
 
@@ -48,12 +49,15 @@ func (vs *VersionStore) SaveVersion(fileID, content, name, lang string, contentU
 		}
 	}
 
+	preview := diffPreview(vs.latestContent(fileID), content)
+
 	version := model.FileVersion{
 		ID:        util.GenId(),
 		FileID:    fileID,
 		Content:   content,
 		Name:      name,
 		Lang:      lang,
+		Preview:   preview,
 		CreatedAt: contentUpdatedAt,
 	}
 
@@ -115,6 +119,85 @@ func (vs *VersionStore) GetVersions(fileID string) ([]model.FileVersion, error) 
 	}
 
 	return versions, nil
+}
+
+// latestContent returns the content of the most recent saved version for fileID, or "" if none.
+func (vs *VersionStore) latestContent(fileID string) string {
+	cursor, err := vs.db.Find(
+		versionCollection,
+		map[string]interface{}{"file_id": fileID},
+		map[string]interface{}{"created_at": -1},
+		1,
+	)
+	if err != nil {
+		return ""
+	}
+	defer cursor.Close(context.Background())
+	var versions []model.FileVersion
+	if err := cursor.All(context.Background(), &versions); err != nil || len(versions) == 0 {
+		return ""
+	}
+	return versions[0].Content
+}
+
+// diffPreview returns a one-line summary of what changed between oldContent and newContent.
+// It finds the first line in newContent absent from oldContent ("+"), or the first line in
+// oldContent absent from newContent ("-"). Falls back to first positionally changed line ("~").
+func diffPreview(oldContent, newContent string) string {
+	if oldContent == newContent {
+		return ""
+	}
+
+	oldSet := toLineSet(oldContent)
+	newSet := toLineSet(newContent)
+
+	for _, l := range splitTrimmedLines(newContent) {
+		if !oldSet[l] {
+			return truncLine("+ " + l)
+		}
+	}
+	for _, l := range splitTrimmedLines(oldContent) {
+		if !newSet[l] {
+			return truncLine("- " + l)
+		}
+	}
+
+	// All lines exist in both — find first positionally different line
+	oldLines := splitTrimmedLines(oldContent)
+	newLines := splitTrimmedLines(newContent)
+	for i := 0; i < min(len(oldLines), len(newLines)); i++ {
+		if oldLines[i] != newLines[i] {
+			return truncLine("~ " + newLines[i])
+		}
+	}
+	return ""
+}
+
+func toLineSet(content string) map[string]bool {
+	m := make(map[string]bool)
+	for _, l := range splitTrimmedLines(content) {
+		m[l] = true
+	}
+	return m
+}
+
+func splitTrimmedLines(content string) []string {
+	raw := strings.Split(content, "\n")
+	out := make([]string, 0, len(raw))
+	for _, l := range raw {
+		if t := strings.TrimSpace(l); t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+func truncLine(s string) string {
+	r := []rune(s)
+	if len(r) > 62 {
+		return string(r[:62]) + "…"
+	}
+	return s
 }
 
 func (vs *VersionStore) GetVersion(versionID string) (*model.FileVersion, error) {
