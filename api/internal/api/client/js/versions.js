@@ -47,6 +47,9 @@ const updateVersionsBlock = () => {
         let span = document.createElement('span');
         span.className = 'version-item';
 
+        let topRow = document.createElement('span');
+        topRow.className = 'version-item-top';
+
         let restoreLink = document.createElement('a');
         restoreLink.className = 'version-restore';
         restoreLink.dataset.versionId = version.id;
@@ -57,8 +60,17 @@ const updateVersionsBlock = () => {
         dateSpan.className = 'version-date';
         dateSpan.textContent = formatDate(version.created_at);
 
-        span.appendChild(restoreLink);
-        span.appendChild(dateSpan);
+        topRow.appendChild(restoreLink);
+        topRow.appendChild(dateSpan);
+        span.appendChild(topRow);
+
+        if (version.preview) {
+            let previewSpan = document.createElement('span');
+            previewSpan.className = 'version-preview';
+            previewSpan.textContent = version.preview;
+            span.appendChild(previewSpan);
+        }
+
         versionsBlock.appendChild(span);
     });
 };

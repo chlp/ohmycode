@@ -49,6 +49,7 @@ type versionDTO struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Lang      string    `json:"lang"`
+	Preview   string    `json:"preview"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

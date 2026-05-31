@@ -812,7 +812,7 @@ input:invalid {
 
 .version-item {
     display: flex;
-    white-space: nowrap;
+    flex-direction: column;
     width: 100%;
     padding: 0.4em 0.25em;
     border-radius: var(--border-radius);
@@ -823,7 +823,13 @@ input:invalid {
     background: var(--color-bg-secondary);
 }
 
-.version-item > a.version-restore {
+.version-item-top {
+    display: flex;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.version-item-top > a.version-restore {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -831,11 +837,21 @@ input:invalid {
     cursor: pointer;
 }
 
-.version-item > span.version-date {
+.version-item-top > span.version-date {
     flex-shrink: 0;
     margin-left: 0.5em;
     color: var(--color-text-secondary);
     font-size: 0.85em;
+}
+
+.version-preview {
+    font-size: 0.8em;
+    color: var(--color-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 0.1em;
+    font-family: monospace;
 }
 
 #content-markdown {

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"ohmycode_api/internal/model"
 	"ohmycode_api/pkg/util"
+	"strings"
 	"time"
 )
 
@@ -255,6 +256,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 				ID:        v.ID,
 				Name:      v.Name,
 				Lang:      v.Lang,
+				Preview:   versionPreview(v.Content),
 				CreatedAt: v.CreatedAt,
 			})
 		}
@@ -308,4 +310,17 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		util.LogDebug("unknown action", "action", i.Action, "file_id", file.ID)
 	}
 	return true
+}
+
+// versionPreview returns the first non-blank line of content, trimmed and capped at 60 chars.
+func versionPreview(content string) string {
+	for _, line := range strings.SplitN(content, "\n", 50) {
+		if t := strings.TrimSpace(line); t != "" {
+			if len([]rune(t)) > 60 {
+				return string([]rune(t)[:60]) + "…"
+			}
+			return t
+		}
+	}
+	return ""
 }
