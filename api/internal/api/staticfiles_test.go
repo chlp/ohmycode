@@ -284,3 +284,28 @@ func TestServeStaticFiles_ContentTypeIsJavascript(t *testing.T) {
 		t.Errorf("expected javascript Content-Type for JS file, got %q", ct)
 	}
 }
+
+func TestStaticFilesEmbedStructure(t *testing.T) {
+	staticFS, err := fs.Sub(staticFiles, "client")
+	if err != nil {
+		t.Fatalf("fs.Sub: %v", err)
+	}
+	allowedDirs := map[string]bool{"js": true, "codemirror": true, "md": true}
+	requiredFiles := []string{"index.html", "style.css", "js/main.js"}
+
+	_ = fs.WalkDir(staticFS, ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil || p == "." || !d.IsDir() {
+			return err
+		}
+		if !strings.Contains(p, "/") && !allowedDirs[p] {
+			t.Errorf("unexpected top-level directory in embedded FS: %q", p)
+		}
+		return nil
+	})
+
+	for _, f := range requiredFiles {
+		if _, err := fs.Stat(staticFS, f); err != nil {
+			t.Errorf("required file missing from embed: %q", f)
+		}
+	}
+}

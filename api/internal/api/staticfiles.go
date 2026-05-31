@@ -36,7 +36,7 @@ func computeBuildHash(staticFS fs.FS) string {
 	return fmt.Sprintf("%x", h.Sum(nil))[:8]
 }
 
-//go:embed client/*
+//go:embed client/index.html client/style.css client/favicon* client/github-mark.svg client/js client/codemirror client/md
 var staticFiles embed.FS
 
 func setCacheHeadersForJS(w http.ResponseWriter, r *http.Request) {
