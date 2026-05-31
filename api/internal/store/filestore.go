@@ -172,6 +172,23 @@ func (fs *FileStore) DeleteFile(fileId string) {
 	fs.fileLocksMu.Unlock()
 }
 
+func (fs *FileStore) FlushAll() error {
+	files := fs.GetAllFiles()
+	var firstErr error
+	for _, file := range files {
+		_, updatedAt, persistedAt := file.PersistInfo()
+		if !updatedAt.After(persistedAt) {
+			continue
+		}
+		if err := fs.PersistFile(file); err != nil {
+			if firstErr == nil {
+				firstErr = err
+			}
+		}
+	}
+	return firstErr
+}
+
 func (fs *FileStore) lockFileMutex(fileId string) *sync.Mutex {
 	fs.fileLocksMu.Lock()
 	fileMutex, ok := fs.fileLocks[fileId]

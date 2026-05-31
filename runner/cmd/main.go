@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
@@ -21,9 +20,11 @@ func main() {
 	util.Log(appCtx, fmt.Sprintf("OhMyCode.Runner app started with id: %s", apiConfig.RunnerId))
 	apiClient := api.NewApiClient(appCtx, apiConfig.RunnerId, apiConfig.IsPublic, apiConfig.ApiUrl)
 
-	worker.NewWorker(appCtx, apiConfig.RunnerId, apiClient, apiConfig.Languages).Run()
+	w := worker.NewWorker(appCtx, apiConfig.RunnerId, apiClient, apiConfig.Languages)
+	w.Run()
 
 	<-appCtx.Done()
-	util.Log(appCtx, "Application stopped")
-	time.Sleep(2 * time.Second)
+	util.Log(appCtx, "Shutting down: waiting for worker goroutines...")
+	w.WaitDone()
+	util.Log(appCtx, "Shutdown complete")
 }

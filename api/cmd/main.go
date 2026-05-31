@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"log"
 	"os"
 	"os/signal"
 	"ohmycode_api/config"
@@ -34,8 +35,14 @@ func main() {
 		panic(err)
 	}
 
+	log.Println("Shutting down: flushing dirty files to MongoDB...")
+	if err := fileStore.FlushAll(); err != nil {
+		log.Println("FlushAll error:", err)
+	}
+
 	closeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = fileStore.Close(closeCtx)
 	_ = versionStore.Close(closeCtx)
+	log.Println("Shutdown complete")
 }
