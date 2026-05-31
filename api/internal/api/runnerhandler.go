@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"ohmycode_api/pkg/util"
-	"strconv"
 	"time"
 )
 
@@ -76,7 +75,7 @@ func (s *Service) runnerMessageHandler(client *wsClient, message []byte) (ok boo
 
 	if i.Action == "init" {
 		if !util.IsValidId(i.RunnerId) {
-			util.Log("runnerMessageHandler: Wrong runner_id: " + i.RunnerId)
+			util.LogError("runner init: invalid runner_id", "runner_id", i.RunnerId)
 			return false
 		}
 		client.setRunner(s.runnerStore.SetRunner(i.RunnerId, i.IsPublic))
@@ -84,7 +83,7 @@ func (s *Service) runnerMessageHandler(client *wsClient, message []byte) (ok boo
 	}
 
 	if client.getRunner() == nil {
-		util.Log("runnerMessageHandler: nil runner: " + i.RunnerId)
+		util.LogDebug("runner message before init", "action", i.Action, "runner_id", i.RunnerId)
 		return true
 	}
 
@@ -93,28 +92,28 @@ func (s *Service) runnerMessageHandler(client *wsClient, message []byte) (ok boo
 	case "set_result":
 		task := s.taskStore.GetTask(runner.ID, i.Lang, i.Hash)
 		if task == nil {
-			util.Log("runnerMessageHandler: task not found: " + i.Lang + ", " + strconv.Itoa(int(i.Hash)))
+			util.LogError("set_result: task not found", "runner_id", runner.ID, "lang", i.Lang, "hash", i.Hash)
 			return true
 		}
 		file, err := s.fileStore.GetFile(task.FileId)
 		if err != nil {
-			util.Log("runnerMessageHandler: file getting: " + i.FileId + ", err: " + err.Error())
+			util.LogError("set_result: get file failed", "file_id", task.FileId, "error", err)
 			return true
 		}
 		if file == nil {
-			util.Log("runnerMessageHandler: file not found: " + i.FileId)
+			util.LogError("set_result: file not found", "file_id", task.FileId)
 			return true
 		}
 		if i.Result == "" {
 			i.Result = "_"
 		}
 		if err := file.SetResult(i.Result); err != nil {
-			util.Log("runnerMessageHandler: SetResult: " + i.FileId + ", err: " + err.Error())
+			util.LogError("set_result: SetResult failed", "file_id", file.ID, "error", err)
 			return true
 		}
 		s.taskStore.DeleteTask(file.ID)
 	default:
-		util.Log("runnerMessageHandler: Unknown message type: " + string(message))
+		util.LogDebug("runner: unknown action", "action", i.Action, "runner_id", runner.ID)
 	}
 	return true
 }
