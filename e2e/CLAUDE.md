@@ -77,11 +77,10 @@ APP_URL=https://ohmycode.work npx playwright test
 
 ### `static-files.spec.js`
 
-- `index.html` отдаётся с `Cache-Control: no-cache`
-- Все `?v=` ссылки в `index.html` содержат hex-хэш (не числа вида `?v=18`)
-- JS-модули содержат версионированные relative imports (`./foo.js?v=HASH`)
-- Версионированные ассеты получают `Cache-Control: immutable, max-age=31536000`
-- Хэш стабилен между запросами
+- `index.html` отдаётся с `Cache-Control: no-cache` — работает в обоих режимах
+- Остальные 5 тестов проверяют hash-based versioning и **автоматически пропускаются** в dev-режиме (`use_dynamic_files=true`): хэш `?v=HASH` в URL, immutable Cache-Control, стабильность хэша
+
+В prod-режиме (`use_dynamic_files=false`, embedded files) все 6 тестов должны проходить.
 
 ## Добавление новых тестов
 
@@ -137,3 +136,7 @@ npx playwright show-trace e2e/test-results/<test-name>/trace.zip
 ```
 
 **Написание исследовательских тестов:** для UX-проверок используй `page.keyboard.insertText()` вместо `page.keyboard.type()` — `type()` эмулирует посимвольный ввод и может потерять фокус в CodeMirror до подключения WS (редактор `readOnly: true` до получения первого снапшота).
+
+**Два CodeMirror на странице:** `.CodeMirror` разрешается в 2 элемента когда runner подключён (второй — read-only result pane с темой `tomorrow-night-bright`). Всегда используй `.first()` или явный селектор `#content-container .CodeMirror`.
+
+**WS-тесты:** регистрируй `page.waitForEvent('websocket', ...)` **до** `page.goto()` — иначе событие подключения может произойти раньше, чем слушатель будет установлен, и тест зависнет на таймауте.

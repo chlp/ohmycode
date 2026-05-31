@@ -110,16 +110,23 @@ Defined in `internal/model/lang.go`: go, java, json, markdown, mysql8, nodejs, p
 
 JavaScript modules in `internal/api/client/js/`:
 - `main.js` — entry point (side-effect imports only)
-- `app.js` — initialization, file open/navigate
-- `connect.js` — WebSocket management, reconnect loop
-- `editor.js` — CodeMirror integration
-- `file.js` — file state and persistence triggers
-- `lang.js` — language selector and mode switching
-- `run.js` — code execution UI
-- `sidebar.js` — file history panel
-- `versions.js` — version history panel
+- `app.js` — initialization, file open/navigate, UUID generation
+- `connect.js` — WebSocket management, exponential backoff reconnect (recursive setTimeout: 1s → 2s → 4s → … → 30s)
+- `editor.js` — CodeMirror integration, content sync, Cmd+S download, Cmd/Ctrl+Enter shortcut
+- `file.js` — file state application, persistence triggers, IndexedDB save
+- `file_name.js` — file name editing: saves immediately on blur, 5s auto-save while typing
+- `lang.js` — language selector and CodeMirror mode switching; order: Python 3, Node.js, GoLang, Java, PHP, MySQL, PostgreSQL, JSON, Markdown
+- `run.js` — code execution UI, result pane, status bar hint on hover when no runner connected
+- `sidebar.js` — file history panel (with empty state message)
+- `versions.js` — version history panel, restore-in-new-tab
+- `hello_world.js` — "Code example" button: inserts language-specific starter code
+- `open_file.js` — drag-and-drop file upload with binary detection and language auto-detection from extension
 - `db.js` — IndexedDB cache for offline/fast load
+- `status.js` — status bar: lock messages (Offline, Blocked), transient notifications (save time, run time), idle info (file size)
 - `utils.js` — pure helpers (`ohMySimpleHash`)
+
+CodeMirror modes bundled in `internal/api/client/codemirror/mode/`:
+`clike`, `css`, `go`, `htmlmixed`, `javascript`, `markdown`, `php`, `python`, `sql`, `xml`
 
 ### Static file serving & cache busting
 
