@@ -412,6 +412,7 @@ func (f *File) CleanupWaitingForResult() {
 
 	if f.IsWaitingForResult && time.Since(f.UpdatedAt) > durationForWaitingForResultMax {
 		f.IsWaitingForResult = false
+		f.Result = "Execution timed out after 20 seconds"
 		f.UpdatedAt = time.Now()
 		f.signalUpdatedLocked()
 	}
