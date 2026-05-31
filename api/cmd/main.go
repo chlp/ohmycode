@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"os"
 	"os/signal"
 	"ohmycode_api/config"
@@ -11,6 +10,7 @@ import (
 	"ohmycode_api/internal/model"
 	"ohmycode_api/internal/store"
 	"ohmycode_api/internal/worker"
+	"ohmycode_api/pkg/util"
 	"syscall"
 	"time"
 )
@@ -31,18 +31,17 @@ func main() {
 
 	svc := api.NewService(apiConfig.HttpPort, apiConfig.ServeClientFiles, apiConfig.UseDynamicFiles, apiConfig.WsAllowedOrigins, fileStore, runnerStore, taskStore, versionStore)
 	if err := svc.Run(appCtx); err != nil && !errors.Is(err, context.Canceled) {
-		// avoid log.Fatal to allow defer cleanup
 		panic(err)
 	}
 
-	log.Println("Shutting down: flushing dirty files to MongoDB...")
+	util.LogInfo("shutting down: flushing dirty files to MongoDB")
 	if err := fileStore.FlushAll(); err != nil {
-		log.Println("FlushAll error:", err)
+		util.LogError("flush all failed", "error", err)
 	}
 
 	closeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = fileStore.Close(closeCtx)
 	_ = versionStore.Close(closeCtx)
-	log.Println("Shutdown complete")
+	util.LogInfo("shutdown complete")
 }

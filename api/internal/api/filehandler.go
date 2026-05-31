@@ -25,7 +25,7 @@ func (s *Service) saveVersionBeforeChange(file interface {
 	}
 	newVersionedAt, err := s.versionStore.SaveVersion(snap.ID, *snap.Content, snap.Name, snap.Lang, snap.ContentUpdatedAt, snap.VersionedAt)
 	if err != nil {
-		util.Log("saveVersionBeforeChange: SaveVersion error for file_id=" + snap.ID + ": " + err.Error())
+		util.LogError("save version failed", "file_id", snap.ID, "error", err)
 		return
 	}
 	if !newVersionedAt.IsZero() {
@@ -163,16 +163,16 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 
 	if i.Action == "init" {
 		if !util.IsValidId(i.FileId) || !util.IsValidId(i.UserId) {
-			util.Log("fileMessageHandler: Wrong file_id or user_id: " + i.FileId + ", " + i.UserId)
+			util.LogError("init: invalid file_id or user_id", "file_id", i.FileId, "user_id", i.UserId)
 			return false
 		}
 		file, err := s.fileStore.GetFileOrCreate(i.FileId, i.FileName, i.Lang, i.Content, i.UserId, i.UserName)
 		if err != nil {
-			util.Log("fileMessageHandler: GetFile error: " + err.Error())
+			util.LogError("init: get file failed", "file_id", i.FileId, "error", err)
 			return false
 		}
 		if file == nil {
-			util.Log("fileMessageHandler: GetFile not found")
+			util.LogError("init: file not found", "file_id", i.FileId)
 			return false
 		}
 		client.setFile(file, i.AppId, i.UserId)
@@ -180,7 +180,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 	}
 
 	if client.getFile() == nil {
-		util.Log("fileMessageHandler: nil file: " + i.FileId)
+		util.LogDebug("message before init", "action", i.Action, "file_id", i.FileId)
 		return true
 	}
 
@@ -189,29 +189,29 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 	case "set_content":
 		s.saveVersionBeforeChange(file)
 		if err := file.SetContent(i.Content, client.getAppId()); err != nil {
-			util.Log("fileMessageHandler: set_content error: " + err.Error())
+			util.LogError("set_content failed", "file_id", file.ID, "error", err)
 		}
 	case "set_name":
 		if !file.SetName(i.FileName) {
-			util.Log("fileMessageHandler: set_name error")
+			util.LogError("set_name failed", "file_id", file.ID)
 		}
 	case "set_user_name":
 		if !file.SetUserName(client.getUserId(), i.UserName) {
-			util.Log("fileMessageHandler: set_user_name error")
+			util.LogError("set_user_name failed", "file_id", file.ID, "user_id", client.getUserId())
 		}
 	case "set_lang":
 		if !file.SetLang(i.Lang) {
-			util.Log("fileMessageHandler: set_lang error")
+			util.LogError("set_lang failed", "file_id", file.ID, "lang", i.Lang)
 		}
 	case "set_runner":
 		if !file.SetRunnerId(i.RunnerId) {
-			util.Log("fileMessageHandler: set_runner error")
+			util.LogError("set_runner failed", "file_id", file.ID, "runner_id", i.RunnerId)
 		}
 	case "clean_result":
 		s.taskStore.DeleteTask(file.ID)
 		err = file.SetResult("")
 		if err != nil {
-			util.Log("fileMessageHandler: set_runner error")
+			util.LogError("clean_result failed", "file_id", file.ID, "error", err)
 		}
 	case "run_task":
 		snap := file.Snapshot(false)
@@ -239,14 +239,14 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		}
 		s.saveVersionBeforeChange(file)
 		if err := file.StartRunWithContent(i.Content, client.getAppId()); err != nil {
-			util.Log("fileMessageHandler: run_task_with_content error: " + err.Error())
+			util.LogError("start run failed", "file_id", file.ID, "error", err)
 			return true
 		}
 		s.taskStore.AddTask(file)
 	case "get_versions":
 		versions, err := s.versionStore.GetVersions(file.ID)
 		if err != nil {
-			util.Log("fileMessageHandler: get_versions error: " + err.Error())
+			util.LogError("get_versions failed", "file_id", file.ID, "error", err)
 			return true
 		}
 		dtos := make([]versionDTO, 0, len(versions))
@@ -264,33 +264,33 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		}
 		if err := client.send(resp); err != nil {
 			if !isIgnorableWsErr(err) {
-				util.Log("fileMessageHandler: send versions error: " + err.Error())
+				util.LogError("send versions failed", "file_id", file.ID, "error", err)
 			}
 			return false
 		}
 	case "restore_version":
 		if i.VersionId == "" {
-			util.Log("fileMessageHandler: restore_version: empty version_id")
+			util.LogError("restore_version: empty version_id", "file_id", file.ID)
 			return true
 		}
 		version, err := s.versionStore.GetVersion(i.VersionId)
 		if err != nil {
-			util.Log("fileMessageHandler: restore_version error: " + err.Error())
+			util.LogError("restore_version failed", "file_id", file.ID, "version_id", i.VersionId, "error", err)
 			return true
 		}
 		if version == nil {
-			util.Log("fileMessageHandler: restore_version: version not found")
+			util.LogError("restore_version: not found", "file_id", file.ID, "version_id", i.VersionId)
 			return true
 		}
 		if version.FileID != file.ID {
-			util.Log("fileMessageHandler: restore_version: version belongs to another file")
+			util.LogError("restore_version: belongs to another file", "file_id", file.ID, "version_id", i.VersionId)
 			return true
 		}
 		// Create new file with content from version
 		newFileId := util.GenId()
 		newFile, err := s.fileStore.GetFileOrCreate(newFileId, version.Name, version.Lang, version.Content, client.getUserId(), "")
 		if err != nil {
-			util.Log("fileMessageHandler: restore_version create file error: " + err.Error())
+			util.LogError("restore_version: create file failed", "file_id", file.ID, "error", err)
 			return true
 		}
 		// Send redirect response to client
@@ -300,12 +300,12 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		}
 		if err := client.send(resp); err != nil {
 			if !isIgnorableWsErr(err) {
-				util.Log("fileMessageHandler: send open_file error: " + err.Error())
+				util.LogError("send open_file failed", "file_id", file.ID, "error", err)
 			}
 			return false
 		}
 	default:
-		util.Log("fileMessageHandler: Unknown message type: " + string(message))
+		util.LogDebug("unknown action", "action", i.Action, "file_id", file.ID)
 	}
 	return true
 }
