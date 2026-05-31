@@ -725,6 +725,125 @@ input:invalid {
     opacity: 1;
 }
 
+#encrypt-panel {
+    position: fixed;
+    top: 48px;
+    left: 0px;
+    width: 320px;
+    max-height: calc(100vh - 58px);
+    background: var(--color-bg);
+    border: 1px solid var(--color-bg-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow) var(--color-shadow);
+    z-index: 100;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    padding: 0.8em;
+}
+
+#encrypt-panel.open {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.encrypt-panel-msg {
+    font-size: 0.85em;
+    color: var(--color-text-secondary);
+    margin: 0 0 0.8em 0;
+    line-height: 1.4;
+}
+
+.encrypt-action-btn {
+    width: 100%;
+    margin-top: 0.3em;
+}
+
+.encrypt-action-danger {
+    opacity: 0.7;
+    font-size: 0.85em;
+}
+
+.encrypt-link-row {
+    margin-bottom: 0.8em;
+}
+
+.encrypt-link-label {
+    font-size: 0.8em;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.2em;
+}
+
+.encrypt-link-input-wrap {
+    display: flex;
+    gap: 0.3em;
+}
+
+.encrypt-link-input {
+    flex: 1;
+    font-size: 0.75em;
+    padding: 0.3em 0.4em;
+    border: 1px solid var(--color-bg-secondary);
+    border-radius: var(--border-radius);
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    min-width: 0;
+}
+
+.encrypt-copy-btn {
+    font-size: 0.8em;
+    padding: 0.2em 0.6em;
+    flex-shrink: 0;
+}
+
+#no-key-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+#no-key-dialog {
+    background: var(--color-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5em 2em;
+    max-width: 380px;
+    width: 90%;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+#no-key-dialog p {
+    margin: 0 0 0.8em 0;
+    font-size: 0.9em;
+}
+
+#no-key-input {
+    width: 100%;
+    font-family: monospace;
+    font-size: 0.8em;
+    padding: 0.5em;
+    border: 1px solid var(--color-bg-secondary);
+    border-radius: var(--border-radius);
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    box-sizing: border-box;
+    margin-bottom: 0.5em;
+}
+
+#no-key-submit {
+    width: 100%;
+}
+
+.no-key-error {
+    color: #e74c3c;
+    font-size: 0.8em;
+    min-height: 1.2em;
+}
+
 #file-content {
     flex: 1;
     min-height: 300px;

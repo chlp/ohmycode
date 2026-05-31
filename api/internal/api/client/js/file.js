@@ -37,6 +37,8 @@ const applyFile = (newFile) => {
 
     file.writer_id = newFile.writer_id;
     file.is_locked = newFile.is_locked ?? false;
+    file.encrypted = newFile.encrypted ?? false;
+    file.ro_token = newFile.ro_token ?? '';
     if (typeof newFile.content === 'string') {
         file.content = newFile.content;
     }

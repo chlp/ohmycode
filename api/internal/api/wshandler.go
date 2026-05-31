@@ -22,6 +22,8 @@ type input struct {
 	IsPublic  bool   `json:"is_public"`
 	IsLocked  bool   `json:"is_locked"`
 	VersionId string `json:"version_id"`
+	ROToken   string `json:"ro_token"`
+	Encrypted bool   `json:"encrypted"`
 }
 
 func (s *Service) HandleWs(w http.ResponseWriter, r *http.Request,

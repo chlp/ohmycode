@@ -27,6 +27,8 @@ type File struct {
 
 	IsWaitingForResult bool `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool `json:"is_runner_online"`
+	Encrypted          bool `json:"encrypted" bson:"encrypted"`
+	ROToken            string `json:"ro_token" bson:"ro_token"`
 
 	PersistedAt time.Time `json:"-" bson:"-"`
 	mutex       sync.Mutex
@@ -77,6 +79,8 @@ type FileSnapshot struct {
 	Persisted          bool
 	IsWaitingForResult bool
 	IsRunnerOnline     bool
+	Encrypted          bool
+	ROToken            string
 
 	PersistedAt time.Time
 }
@@ -111,6 +115,8 @@ func (f *File) Snapshot(includeContent bool) FileSnapshot {
 		Persisted:          f.Persisted,
 		IsWaitingForResult: f.IsWaitingForResult,
 		IsRunnerOnline:     f.IsRunnerOnline,
+		Encrypted:          f.Encrypted,
+		ROToken:            f.ROToken,
 		PersistedAt:        f.PersistedAt,
 	}
 }
@@ -275,6 +281,24 @@ func (f *File) SetLang(lang string) bool {
 	f.UpdatedAt = time.Now()
 	f.signalUpdatedLocked()
 	return true
+}
+
+func (f *File) SetEncrypted(encrypted bool, roToken string) {
+	f.lock()
+	defer f.unlock()
+	changed := f.Encrypted != encrypted || (encrypted && roToken != "" && f.ROToken != roToken)
+	if !changed {
+		return
+	}
+	f.Encrypted = encrypted
+	if encrypted && roToken != "" {
+		f.ROToken = roToken
+	}
+	if !encrypted {
+		f.ROToken = ""
+	}
+	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
 }
 
 func (f *File) SetLocked(isLocked bool) {

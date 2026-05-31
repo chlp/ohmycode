@@ -23,6 +23,7 @@ type wsClient struct {
 	userId      string
 	appId       string
 	ip          string
+	isROLink    bool
 	runner      *model.Runner
 	lastUpdate  time.Time
 	conn        *websocket.Conn
@@ -255,6 +256,19 @@ func (client *wsClient) setLastUpdate(t time.Time) {
 	client.stateMu.Lock()
 	client.lastUpdate = t
 	client.stateMu.Unlock()
+}
+
+func (client *wsClient) setROLink(v bool) {
+	client.stateMu.Lock()
+	client.isROLink = v
+	client.stateMu.Unlock()
+}
+
+func (client *wsClient) getIsROLink() bool {
+	client.stateMu.RLock()
+	v := client.isROLink
+	client.stateMu.RUnlock()
+	return v
 }
 
 func (client *wsClient) setRunner(runner *model.Runner) {

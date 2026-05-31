@@ -74,6 +74,9 @@
                 <button id="header-lock-btn" class="header-icon-btn" title="Lock editing">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
                 </button>
+                <button id="header-encrypt-btn" class="header-icon-btn" title="Encryption">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </button>
                 <a href="#" id="file-name" contenteditable="true" spellcheck="false" title="Rename file"></a>
             </div>
 
@@ -91,6 +94,19 @@
 
         <div id="versions-panel">
             <div id="versions"></div>
+        </div>
+
+        <div id="encrypt-panel">
+            <div id="encrypt-panel-content"></div>
+        </div>
+
+        <div id="no-key-overlay">
+            <div id="no-key-dialog">
+                <p>This file is encrypted. Paste the key to view it.</p>
+                <input type="text" id="no-key-input" placeholder="Encryption key" autocomplete="off" spellcheck="false">
+                <p id="no-key-error" class="no-key-error"></p>
+                <button id="no-key-submit">Unlock</button>
+            </div>
         </div>
 
         <div id="file-content">

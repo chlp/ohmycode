@@ -22,6 +22,8 @@ type fileDTO struct {
 	Persisted        bool         `json:"persisted"`
 	IsWaitingForResult bool       `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool       `json:"is_runner_online"`
+	Encrypted          bool       `json:"encrypted"`
+	ROToken            string     `json:"ro_token,omitempty"`
 }
 
 func toFileDTO(f *model.File, includeContent bool) fileDTO {
@@ -40,6 +42,8 @@ func toFileDTO(f *model.File, includeContent bool) fileDTO {
 		Persisted:          s.Persisted,
 		IsWaitingForResult: s.IsWaitingForResult,
 		IsRunnerOnline:     s.IsRunnerOnline,
+		Encrypted:          s.Encrypted,
+		ROToken:            s.ROToken,
 	}
 	if includeContent {
 		dto.Content = s.Content

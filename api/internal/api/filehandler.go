@@ -176,6 +176,12 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			return false
 		}
 		client.setFile(file, i.AppId, i.UserId)
+		if i.ROToken != "" {
+			snap := file.Snapshot(false)
+			if snap.ROToken != "" && snap.ROToken == i.ROToken {
+				client.setROLink(true)
+			}
+		}
 		return true
 	}
 
@@ -187,11 +193,20 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 	file := client.getFile()
 	switch i.Action {
 	case "set_content":
-		s.saveVersionBeforeChange(file)
+		if client.getIsROLink() {
+			return true
+		}
+		snap := file.Snapshot(false)
+		if !snap.Encrypted {
+			s.saveVersionBeforeChange(file)
+		}
 		if err := file.SetContent(i.Content, client.getAppId()); err != nil {
 			util.LogError("set_content failed", "file_id", file.ID, "error", err)
 		}
 	case "set_name":
+		if client.getIsROLink() {
+			return true
+		}
 		if !file.SetName(i.FileName) {
 			util.LogError("set_name failed", "file_id", file.ID)
 		}
@@ -200,22 +215,51 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			util.LogError("set_user_name failed", "file_id", file.ID, "user_id", client.getUserId())
 		}
 	case "set_lang":
+		if client.getIsROLink() {
+			return true
+		}
 		if !file.SetLang(i.Lang) {
 			util.LogError("set_lang failed", "file_id", file.ID, "lang", i.Lang)
 		}
 	case "set_runner":
+		if client.getIsROLink() {
+			return true
+		}
 		if !file.SetRunnerId(i.RunnerId) {
 			util.LogError("set_runner failed", "file_id", file.ID, "runner_id", i.RunnerId)
 		}
 	case "set_locked":
+		if client.getIsROLink() {
+			return true
+		}
 		file.SetLocked(i.IsLocked)
+	case "set_encrypted":
+		if client.getIsROLink() {
+			return true
+		}
+		if i.Encrypted {
+			snap := file.Snapshot(false)
+			roToken := snap.ROToken
+			if roToken == "" {
+				roToken = util.GenId()
+			}
+			file.SetEncrypted(true, roToken)
+		} else {
+			file.SetEncrypted(false, "")
+		}
 	case "clean_result":
+		if client.getIsROLink() {
+			return true
+		}
 		s.taskStore.DeleteTask(file.ID)
 		err = file.SetResult("")
 		if err != nil {
 			util.LogError("clean_result failed", "file_id", file.ID, "error", err)
 		}
 	case "run_task":
+		if client.getIsROLink() {
+			return true
+		}
 		snap := file.Snapshot(false)
 		if snap.IsWaitingForResult {
 			return true
@@ -229,6 +273,9 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		file.SetWaitingForResult()
 		s.taskStore.AddTask(file)
 	case "run_task_with_content":
+		if client.getIsROLink() {
+			return true
+		}
 		snap := file.Snapshot(false)
 		if snap.IsWaitingForResult {
 			return true
@@ -239,12 +286,19 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		if !s.runLimiter.Allow(client.ip) {
 			return true
 		}
-		s.saveVersionBeforeChange(file)
-		if err := file.StartRunWithContent(i.Content, client.getAppId()); err != nil {
-			util.LogError("start run failed", "file_id", file.ID, "error", err)
-			return true
+		if snap.Encrypted {
+			// For encrypted files: run the client-decrypted plaintext without storing it.
+			// file.Content stays encrypted; only the task payload carries the plaintext.
+			file.SetWaitingForResult()
+			s.taskStore.AddTaskWithContent(file, i.Content)
+		} else {
+			s.saveVersionBeforeChange(file)
+			if err := file.StartRunWithContent(i.Content, client.getAppId()); err != nil {
+				util.LogError("start run failed", "file_id", file.ID, "error", err)
+				return true
+			}
+			s.taskStore.AddTask(file)
 		}
-		s.taskStore.AddTask(file)
 	case "get_versions":
 		versions, err := s.versionStore.GetVersions(file.ID)
 		if err != nil {

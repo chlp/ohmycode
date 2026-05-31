@@ -62,6 +62,21 @@ func (ts *TaskStore) AddTask(file *model.File) {
 	ts.mutex.Unlock()
 }
 
+func (ts *TaskStore) AddTaskWithContent(file *model.File, content string) {
+	snap := file.Snapshot(false)
+	ts.mutex.Lock()
+	ts.tasks[file.ID] = &model.Task{
+		FileId:   snap.ID,
+		Content:  content,
+		Lang:     snap.Lang,
+		Hash:     util.OhMySimpleHash(content),
+		RunnerId: snap.RunnerId,
+		IsPublic: snap.UsePublicRunner,
+	}
+	ts.signalLocked()
+	ts.mutex.Unlock()
+}
+
 func (ts *TaskStore) GetTask(runnerId, lang string, hash uint32) *model.Task {
 	ts.mutex.Lock()
 	defer ts.mutex.Unlock()

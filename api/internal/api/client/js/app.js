@@ -4,6 +4,7 @@ import {getFileFromDB} from "./db.js";
 import {applyFile} from "./file.js";
 import {fileNameBlock, fileNameEditing} from "./file_name.js";
 import {doConnect} from "./connect.js";
+import {importKey} from "./encrypt.js";
 
 const genUuid = () => {
     const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -25,6 +26,28 @@ const getFileIdFromWindowLocation = () => {
     return fileId;
 };
 
+const loadKeyForFile = async (fileId) => {
+    const currentFileId = getFileIdFromWindowLocation();
+    if (currentFileId === fileId && window.location.hash) {
+        const hashStr = window.location.hash.slice(1);
+        const params = new URLSearchParams(hashStr);
+        const keyStr = params.get('key') || (hashStr.length >= 40 ? hashStr : null);
+        if (keyStr) {
+            try {
+                const key = await importKey(keyStr);
+                localStorage.setItem('ohmycode_key_' + fileId, keyStr);
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+                return key;
+            } catch(e) { console.warn('Key from URL hash invalid:', e); }
+        }
+    }
+    const stored = localStorage.getItem('ohmycode_key_' + fileId);
+    if (stored) {
+        try { return await importKey(stored); } catch(e) { console.warn('Stored key invalid, clearing:', e); localStorage.removeItem('ohmycode_key_' + fileId); }
+    }
+    return null;
+};
+
 const initFile = (fileId) => {
     if (!isUuid(fileId)) {
         console.error('initFile. Wrong fileId', fileId);
@@ -43,6 +66,8 @@ const initFile = (fileId) => {
         is_waiting_for_result: false,
         result: "",
         persisted: false,
+        encrypted: false,
+        ro_token: '',
 
         _name: "",
         get name() {
@@ -84,6 +109,12 @@ let file;
 const openFile = async (id, pushHistory) => {
     app.isOnline = false;
 
+    if (pushHistory) {
+        app.roToken = null;
+        app.isROLink = false;
+    }
+    app.encKey = await loadKeyForFile(id);
+
     file = initFile(id);
     contentCodeMirror.setValue('');
     contentMarkdownBlock.innerHTML = '';
@@ -102,6 +133,10 @@ const openFile = async (id, pushHistory) => {
 
 window.addEventListener("DOMContentLoaded", () => {
     setLang(localStorage['initialLang']);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    app.roToken = urlParams.get('ro') || null;
+    app.isROLink = !!app.roToken;
 
     let fileId = getFileIdFromWindowLocation();
     let pushHistory = false;
@@ -141,10 +176,13 @@ const app = {
     userId: localStorage['user_id'] === undefined ? genUuid() : localStorage['user_id'],
     userName: localStorage['user_name'] === undefined ? '' : localStorage['user_name'],
     renderer: undefined,
+    encKey: null,
+    isROLink: false,
+    roToken: null,
 };
 
 if (localStorage['user_id'] === undefined) {
     localStorage['user_id'] = app.userId;
 }
 
-export {file, app, openFile};
+export {file, app, openFile, loadKeyForFile};

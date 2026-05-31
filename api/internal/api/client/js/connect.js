@@ -1,6 +1,7 @@
 import {app, file} from "./app.js";
 import {applyFile} from "./file.js";
 import {getCurrentLang} from "./lang.js";
+import {encryptText, decryptText} from "./encrypt.js";
 
 let socket = null;
 let versionsHandler = null;
@@ -48,6 +49,7 @@ const actions = {
             user_id: app.userId,
             user_name: app.userName,
             lang: getCurrentLang().key,
+            ro_token: app.roToken || '',
         });
     },
     setFileName: (newFileName) => {
@@ -73,7 +75,7 @@ const actions = {
             runner_id: runnerId,
         });
     },
-    setContent: (content) => {
+    setContent: async (content) => {
         if (!app.isOnline) {
             return;
         }
@@ -85,14 +87,24 @@ const actions = {
         }
         file.writer_id = app.id;
         file.content = content;
-        postRequest('set_content', {
-            content: content,
-        });
+        let payload = content;
+        if (file.encrypted && app.encKey) {
+            try {
+                payload = await encryptText(app.encKey, content);
+            } catch(e) {
+                console.error('Encryption failed, not sending:', e);
+                return;
+            }
+        }
+        postRequest('set_content', {content: payload});
     },
     setLocked: (isLocked) => {
         postRequest('set_locked', {
             is_locked: isLocked,
         });
+    },
+    setEncrypted: (encrypted) => {
+        postRequest('set_encrypted', {encrypted});
     },
     cleanResult: () => {
         postRequest('clean_result', {});
@@ -148,7 +160,7 @@ const doConnect = (app) => {
     socket.onerror = (error) => {
         console.log('WebSocket error: ', error);
     };
-    socket.onmessage = (event) => {
+    socket.onmessage = async (event) => {
         try {
             const data = JSON.parse(event.data);
             if (data.error !== undefined) {
@@ -175,6 +187,19 @@ const doConnect = (app) => {
             }
 
             console.log('file from server');
+
+            if (data.encrypted && typeof data.content === 'string') {
+                if (app.encKey) {
+                    try {
+                        data.content = await decryptText(app.encKey, data.content);
+                    } catch(e) {
+                        console.error('Decryption failed:', e);
+                        delete data.content;
+                    }
+                } else {
+                    delete data.content;
+                }
+            }
 
             applyFile(data);
 
