@@ -5,6 +5,8 @@ import (
 	"log"
 	"ohmycode_api/internal/store"
 	"os"
+	"strconv"
+	"strings"
 )
 
 const confPath = "api-conf.json"
@@ -23,13 +25,46 @@ type ApiConfig struct {
 	ContentMaxLengthKb int `json:"content_max_length_kb"`
 }
 
-var conf ApiConfig
-
 func LoadApiConf() ApiConfig {
+	var c ApiConfig
 	if _, err := os.Stat(confPath); os.IsNotExist(err) {
-		return loadConfFromFile(confExamplePath)
+		c = loadConfFromFile(confExamplePath)
+	} else {
+		c = loadConfFromFile(confPath)
 	}
-	return loadConfFromFile(confPath)
+	applyEnvOverrides(&c)
+	validateConf(c)
+	return c
+}
+
+func applyEnvOverrides(c *ApiConfig) {
+	if v := os.Getenv("OHMYCODE_MONGO_URI"); v != "" {
+		c.DB.ConnectionString = v
+	}
+	if v := os.Getenv("OHMYCODE_MONGO_DBNAME"); v != "" {
+		c.DB.DBName = v
+	}
+	if v := os.Getenv("OHMYCODE_PORT"); v != "" {
+		if port, err := strconv.Atoi(v); err == nil {
+			c.HttpPort = port
+		}
+	}
+	if v := os.Getenv("OHMYCODE_WS_ORIGINS"); v != "" {
+		parts := strings.Split(v, ",")
+		for i := range parts {
+			parts[i] = strings.TrimSpace(parts[i])
+		}
+		c.WsAllowedOrigins = parts
+	}
+}
+
+func validateConf(c ApiConfig) {
+	if c.DB.ConnectionString == "" {
+		log.Fatal("config: OHMYCODE_MONGO_URI or db.connectionString is required")
+	}
+	if c.HttpPort == 0 {
+		log.Fatal("config: OHMYCODE_PORT or http_port is required")
+	}
 }
 
 func loadConfFromFile(filePath string) ApiConfig {
@@ -37,9 +72,9 @@ func loadConfFromFile(filePath string) ApiConfig {
 	if err != nil {
 		log.Fatal("config: cannot read file")
 	}
-	err = json.Unmarshal(data, &conf)
-	if err != nil {
+	var c ApiConfig
+	if err = json.Unmarshal(data, &c); err != nil {
 		log.Fatal("config: cannot parse file")
 	}
-	return conf
+	return c
 }

@@ -28,13 +28,23 @@ func LoadRunnerConf() RunnerConf {
 	} else {
 		conf = loadConfFromFile(confPath)
 	}
+	applyEnvOverrides(&conf)
 	if !util.IsUuid(conf.RunnerId) {
 		log.Fatalf("config: runner id is wrong")
 	}
 	if conf.ApiUrl == "" {
-		log.Fatalf("config: api url is empty")
+		log.Fatalf("config: OHMYCODE_API_URL or api field is required")
 	}
 	return conf
+}
+
+func applyEnvOverrides(c *RunnerConf) {
+	if v := os.Getenv("OHMYCODE_API_URL"); v != "" {
+		c.ApiUrl = v
+	}
+	if v := os.Getenv("OHMYCODE_RUNNER_ID"); v != "" {
+		c.RunnerId = v
+	}
 }
 
 func loadConfFromFile(filePath string) RunnerConf {
