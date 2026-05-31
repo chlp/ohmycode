@@ -29,7 +29,8 @@ test('WebSocket connects to /file endpoint', async ({ page }) => {
 test('CodeMirror editor is rendered', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
-  await expect(page.locator('.CodeMirror')).toBeVisible({ timeout: 5000 });
+  // Use first() — a second read-only CodeMirror exists in the result pane when runner is online
+  await expect(page.locator('.CodeMirror').first()).toBeVisible({ timeout: 5000 });
 });
 
 test('file header is visible', async ({ page }) => {
@@ -39,14 +40,14 @@ test('file header is visible', async ({ page }) => {
 });
 
 test('saving content via WebSocket updates the editor', async ({ page }) => {
+  // Register listener before navigation so we don't miss the connect event
+  const wsPromise = page.waitForEvent('websocket', ws => ws.url().includes('/file'), { timeout: 10_000 });
   await page.goto('/');
-  await page.waitForLoadState('networkidle');
+  const ws = await wsPromise;
 
-  // Wait for WS to connect and initial file to arrive
-  const ws = await page.waitForEvent('websocket', ws => ws.url().includes('/file'), { timeout: 10_000 });
   await ws.waitForEvent('framesent', { timeout: 5000 }); // init message sent
   await ws.waitForEvent('framereceived', { timeout: 5000 }); // file snapshot received
 
   // Editor should have some state at this point
-  await expect(page.locator('.CodeMirror')).toBeVisible();
+  await expect(page.locator('.CodeMirror').first()).toBeVisible();
 });
