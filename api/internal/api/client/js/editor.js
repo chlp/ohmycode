@@ -45,13 +45,29 @@ contentCodeMirror.on('keydown', function (codemirror, event) {
 
 const contentMaxLengthKb = 512;
 
+const lockButton = document.getElementById('header-lock-btn');
+const lockIconClosed = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
+const lockIconOpen = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
+
 let updateEditorLockStatus = () => {
     if (!app.isOnline) {
         contentCodeMirror.setOption('readOnly', true);
         setLockStatus('Offline');
+        lockButton.innerHTML = lockIconOpen;
+        lockButton.title = 'Lock editing';
         return;
     }
 
+    if (file.is_locked) {
+        contentCodeMirror.setOption('readOnly', true);
+        setLockStatus('Locked');
+        lockButton.innerHTML = lockIconClosed;
+        lockButton.title = 'Unlock editing';
+        return;
+    }
+
+    lockButton.innerHTML = lockIconOpen;
+    lockButton.title = 'Lock editing';
     contentCodeMirror.setOption('readOnly', file.writer_id !== '' && file.writer_id !== app.id);
     if (file.writer_id === '' || file.writer_id === app.id) {
         setLockStatus(null);
@@ -75,7 +91,7 @@ let contentSender = () => {
         }, timeout);
     };
     const newContent = contentCodeMirror.getValue();
-    if (app.isOnline && ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
+    if (app.isOnline && !file.is_locked && ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
         getNextUpdateFunc(1000);
         contentMarkdownBlock.innerHTML = marked.parse(newContent); // todo: should have function to update all editors/views or load data after changing mode
         actions.setContent(newContent);
@@ -166,5 +182,9 @@ onLangChange((lang) => {
             break;
     }
 });
+
+lockButton.onclick = () => {
+    actions.setLocked(!file.is_locked);
+};
 
 export {contentCodeMirror, contentCodeMirrorBlock, contentMarkdownBlock, updateEditorLockStatus};

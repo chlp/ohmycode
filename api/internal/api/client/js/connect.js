@@ -77,6 +77,9 @@ const actions = {
         if (!app.isOnline) {
             return;
         }
+        if (file.is_locked) {
+            return;
+        }
         if (file.writer_id !== '' && file.writer_id !== app.id) {
             return;
         }
@@ -84,6 +87,11 @@ const actions = {
         file.content = content;
         postRequest('set_content', {
             content: content,
+        });
+    },
+    setLocked: (isLocked) => {
+        postRequest('set_locked', {
+            is_locked: isLocked,
         });
     },
     cleanResult: () => {

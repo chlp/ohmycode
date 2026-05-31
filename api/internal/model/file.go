@@ -15,6 +15,7 @@ type File struct {
 	ContentUpdatedAt time.Time `json:"content_updated_at" bson:"content_updated_at"`
 	Result           string    `json:"result" bson:"result"`
 	Writer           string    `json:"writer_id" bson:"writer_id"`
+	IsLocked         bool      `json:"is_locked" bson:"is_locked"`
 	UsePublicRunner  bool      `json:"use_public_runner" bson:"use_public_runner"`
 	RunnerId         string    `json:"runner_id" bson:"runner_id"`
 	Users            []User    `json:"users" bson:"users"`
@@ -67,6 +68,7 @@ type FileSnapshot struct {
 	ContentUpdatedAt   time.Time
 	Result             string
 	Writer             string
+	IsLocked           bool
 	UsePublicRunner    bool
 	RunnerId           string
 	Users              []User
@@ -100,6 +102,7 @@ func (f *File) Snapshot(includeContent bool) FileSnapshot {
 		ContentUpdatedAt:   f.ContentUpdatedAt,
 		Result:             f.Result,
 		Writer:             f.Writer,
+		IsLocked:           f.IsLocked,
 		UsePublicRunner:    f.UsePublicRunner,
 		RunnerId:           f.RunnerId,
 		Users:              users,
@@ -274,12 +277,26 @@ func (f *File) SetLang(lang string) bool {
 	return true
 }
 
+func (f *File) SetLocked(isLocked bool) {
+	f.lock()
+	defer f.unlock()
+	if f.IsLocked == isLocked {
+		return
+	}
+	f.IsLocked = isLocked
+	f.UpdatedAt = time.Now()
+	f.signalUpdatedLocked()
+}
+
 func (f *File) SetContent(content, appId string) error {
 	if len(content) > contentMaxLength {
 		return errors.New("content is too long")
 	}
 	f.lock()
 	defer f.unlock()
+	if f.IsLocked {
+		return errors.New("file is locked")
+	}
 	if f.Writer != "" && f.Writer != appId {
 		return errors.New("file is locked by another user")
 	}

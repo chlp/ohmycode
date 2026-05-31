@@ -36,6 +36,7 @@ const applyFile = (newFile) => {
     file.persisted = newFile.persisted;
 
     file.writer_id = newFile.writer_id;
+    file.is_locked = newFile.is_locked ?? false;
     if (typeof newFile.content === 'string') {
         file.content = newFile.content;
     }

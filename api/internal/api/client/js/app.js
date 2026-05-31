@@ -65,6 +65,17 @@ const initFile = (fileId) => {
                 updateEditorLockStatus();
             }
         },
+
+        _is_locked: false,
+        get is_locked() {
+            return this._is_locked;
+        },
+        set is_locked(value) {
+            if (this._is_locked !== value) {
+                this._is_locked = value;
+                updateEditorLockStatus();
+            }
+        },
     };
 };
 

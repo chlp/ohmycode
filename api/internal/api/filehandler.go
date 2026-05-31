@@ -207,6 +207,8 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		if !file.SetRunnerId(i.RunnerId) {
 			util.LogError("set_runner failed", "file_id", file.ID, "runner_id", i.RunnerId)
 		}
+	case "set_locked":
+		file.SetLocked(i.IsLocked)
 	case "clean_result":
 		s.taskStore.DeleteTask(file.ID)
 		err = file.SetResult("")

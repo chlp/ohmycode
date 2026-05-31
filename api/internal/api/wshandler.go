@@ -20,6 +20,7 @@ type input struct {
 	RunnerId  string `json:"runner_id"`
 	Result    string `json:"result"`
 	IsPublic  bool   `json:"is_public"`
+	IsLocked  bool   `json:"is_locked"`
 	VersionId string `json:"version_id"`
 }
 
