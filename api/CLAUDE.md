@@ -28,22 +28,36 @@ docker compose -f docker/docker-compose.yml up --build
 ```bash
 # All Go tests (unit + WS integration), with race detector
 go test -race ./...
+
+# All tests including JS unit (from repo root)
+../test.sh
+
+# All tests including E2E (requires running app)
+../test.sh --e2e
 ```
 
 ### Test layers
 
 | Layer | Location | Command | Needs DB? |
 |-------|----------|---------|-----------|
-| Go unit | `internal/model`, `internal/store`, `internal/api` | `go test -race ./...` | No |
+| Go model unit | `internal/model/*_test.go` | `go test -race ./...` | No |
+| Go store unit | `internal/store/*_test.go` | `go test -race ./...` | No |
+| Go API unit | `internal/api/health_test.go`, `headers_test.go`, `ratelimiter_test.go` | `go test -race ./...` | No |
 | Go WS integration | `internal/api/ws_integration_test.go` | included above | No — uses `store.NewFileStoreInMemory()` |
+| Go static files | `internal/api/staticfiles_test.go` | included above | No |
 | JS unit (Vitest) | `internal/api/client/js/test/` | `cd internal/api/client && npm test` | No |
 | E2E (Playwright) | `../../e2e/` | see root CLAUDE.md | App must run |
 
 ### Key test files
 
 - **`internal/api/staticfiles_test.go`** — cache-busting hash, JS import patching, HTTP handler
-- **`internal/model/file_test.go`** — `File` model: SetContent, SetLang, Snapshot, subscribe/unsubscribe, concurrency
+- **`internal/api/health_test.go`** — `/health` endpoint: status, JSON body, runners count
+- **`internal/api/headers_test.go`** — CORS headers, OPTIONS, cache-control per route
+- **`internal/api/ratelimiter_test.go`** — run rate limiter, `clientIP`, WebSocket origin check
+- **`internal/api/ws_integration_test.go`** — WS init→snapshot, set_content broadcast, set_lang, set_encrypted, RO token, invalid ID disconnect
+- **`internal/model/file_test.go`** — `File` model: SetContent, SetLang, SetEncrypted, SetLocked, SetName, subscribe/unsubscribe, concurrency
 - **`internal/store/filestore_test.go`** — in-memory store CRUD and concurrent access
+- **`internal/store/runnerstore_test.go`** — RunnerStore: SetRunner, IsOnline, CountOnline, GetPublicRunner, TouchRunner
 - **`internal/api/ws_integration_test.go`** — WS init→snapshot, set_content→broadcast, two-client sync
 
 ## Architecture

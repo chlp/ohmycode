@@ -16,7 +16,18 @@ Run services separately — see `api/CLAUDE.md` and `runner/CLAUDE.md`.
 ## Testing
 
 ```bash
-# Go — unit + integration (no external deps required)
+# All tests (Go unit + WS integration + JS unit) — no external deps required
+./test.sh
+
+# Include E2E — requires app running at localhost:52674
+./test.sh --e2e
+APP_URL=https://ohmycode.work ./test.sh --e2e
+```
+
+Individual commands:
+
+```bash
+# Go — unit + WS integration (no external deps required)
 cd api && go test -race ./...
 
 # JS unit (Vitest, pure functions)
@@ -26,6 +37,23 @@ cd api/internal/api/client && npm test
 cd e2e && npm install && npx playwright install chromium && npx playwright test
 # Override base URL:  APP_URL=https://ohmycode.work npx playwright test
 ```
+
+### Test coverage
+
+| Layer | Files | Needs running app? |
+|-------|-------|--------------------|
+| Go model unit | `internal/model/*_test.go` | No |
+| Go store unit | `internal/store/*_test.go` | No |
+| Go API unit (health, headers, rate limiter, origin) | `internal/api/*_test.go` | No |
+| Go WS integration | `internal/api/ws_integration_test.go` | No |
+| Go static files | `internal/api/staticfiles_test.go` | No |
+| JS unit (Vitest) | `internal/api/client/js/test/` | No |
+| E2E editor | `e2e/editor.spec.js` | Yes |
+| E2E static files | `e2e/static-files.spec.js` | Yes |
+| E2E lang switch | `e2e/lang-switch.spec.js` | Yes |
+| E2E file rename | `e2e/file-rename.spec.js` | Yes |
+| E2E collaboration | `e2e/collaboration.spec.js` | Yes |
+| E2E UI controls | `e2e/ui-controls.spec.js` | Yes |
 
 ## Architecture
 
