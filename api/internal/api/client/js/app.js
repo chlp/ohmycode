@@ -26,8 +26,8 @@ const getFileIdFromWindowLocation = () => {
     return fileId;
 };
 
-const loadKeyForFile = async (fileId) => {
-    const isRO = !!new URLSearchParams(window.location.search).get('ro');
+// isRO: true when opening via a read-only link — determines which localStorage slot to use.
+const loadKeyForFile = async (fileId, isRO) => {
     const storagePrefix = isRO ? 'ohmycode_rokey_' : 'ohmycode_key_';
 
     const currentFileId = getFileIdFromWindowLocation();
@@ -39,7 +39,7 @@ const loadKeyForFile = async (fileId) => {
             try {
                 const key = await importKey(keyStr);
                 localStorage.setItem(storagePrefix + fileId, keyStr);
-                history.replaceState(null, '', window.location.pathname + window.location.search);
+                history.replaceState(null, '', window.location.pathname);
                 return key;
             } catch(e) { console.warn('Key from URL hash invalid:', e); }
         }
@@ -109,16 +109,34 @@ const initFile = (fileId) => {
 
 let file;
 
+// Detect read-only access for a file from localStorage.
+// Edit key takes priority: if the user has the edit key, they get full access
+// even if a ro_token was previously stored (e.g. owner testing their own RO link).
+const detectROFromStorage = (id) => {
+    const hasEditKey = !!localStorage.getItem('ohmycode_key_' + id);
+    const storedRoToken = localStorage.getItem('ohmycode_ro_token_' + id);
+    if (!hasEditKey && storedRoToken) {
+        return storedRoToken;
+    }
+    return null;
+};
+
 const openFile = async (id, pushHistory) => {
     app.isOnline = false;
 
     if (pushHistory) {
         app.roToken = null;
         app.isROLink = false;
+        localStorage.removeItem('ohmycode_ro_token_' + id);
+    } else {
+        const storedRoToken = detectROFromStorage(id);
+        app.roToken = storedRoToken;
+        app.isROLink = !!storedRoToken;
     }
-    app.encKey = await loadKeyForFile(id);
 
-    // Load readonly encryption key for non-RO owners who have generated readonly links
+    app.encKey = await loadKeyForFile(id, app.isROLink);
+
+    // Load readonly encryption key for non-RO owners who have generated readonly links.
     app.roEncKey = null;
     if (!app.isROLink) {
         const roKeyStr = localStorage.getItem('ohmycode_rokey_' + id);
@@ -146,16 +164,24 @@ const openFile = async (id, pushHistory) => {
 window.addEventListener("DOMContentLoaded", () => {
     setLang(localStorage['initialLang']);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    app.roToken = urlParams.get('ro') || null;
-    app.isROLink = !!app.roToken;
-
     let fileId = getFileIdFromWindowLocation();
     let pushHistory = false;
     if (fileId === undefined) {
         fileId = genUuid();
         pushHistory = true;
     }
+
+    // On first visit via a RO link the ro_token is in the hash (#key=...&ro=TOKEN).
+    // Persist it to localStorage so subsequent plain visits stay in read-only mode.
+    if (!pushHistory) {
+        const hashStr = window.location.hash.slice(1);
+        const hashParams = new URLSearchParams(hashStr);
+        const roTokenFromHash = hashParams.get('ro');
+        if (roTokenFromHash) {
+            localStorage.setItem('ohmycode_ro_token_' + fileId, roTokenFromHash);
+        }
+    }
+
     openFile(fileId, pushHistory).then(() => {
     });
 });

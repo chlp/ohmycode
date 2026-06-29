@@ -46,13 +46,16 @@ const copyText = async (text, btn) => {
 const buildShareLinks = () => {
     const keyStr = localStorage.getItem('ohmycode_key_' + file.id) || '';
     const roKeyStr = localStorage.getItem('ohmycode_rokey_' + file.id) || '';
-    const hash = keyStr ? '#key=' + keyStr : '';
-    const roHash = roKeyStr ? '#key=' + roKeyStr : '';
     const base = window.location.origin + '/' + file.id;
-    return {
-        editLink: base + hash,
-        roLink: file.ro_token ? base + '?ro=' + file.ro_token + roHash : null,
-    };
+    const editLink = keyStr ? base + '#key=' + keyStr : base;
+    let roLink = null;
+    if (file.ro_token) {
+        const roHash = roKeyStr
+            ? '#key=' + roKeyStr + '&ro=' + file.ro_token
+            : '#ro=' + file.ro_token;
+        roLink = base + roHash;
+    }
+    return { editLink, roLink, editKey: keyStr, roKey: roKeyStr };
 };
 
 const addLinkRow = (label, url) => {
@@ -139,10 +142,12 @@ const renderEncryptPanel = () => {
         return;
     }
 
-    const {editLink, roLink} = buildShareLinks();
+    const {editLink, roLink, editKey, roKey} = buildShareLinks();
 
+    if (editKey) addLinkRow('Edit key:', editKey);
     addLinkRow('Edit link:', editLink);
     if (roLink) {
+        if (roKey) addLinkRow('Read-only key:', roKey);
         addLinkRow('Read-only link:', roLink);
     } else {
         const pending = document.createElement('p');
