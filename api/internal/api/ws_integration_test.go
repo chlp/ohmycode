@@ -169,3 +169,199 @@ func TestWS_SetName_UpdatePropagates(t *testing.T) {
 		t.Errorf("name: got %q, want 'Renamed'", name)
 	}
 }
+
+// TestWS_SetLang_UpdatePropagates verifies set_lang changes the lang in the file snapshot.
+func TestWS_SetLang_UpdatePropagates(t *testing.T) {
+	ts := wsTestServer(t, newWsTestService())
+	conn := wsConnect(t, ts)
+
+	wsInit(t, conn, wsFileA, "File")
+	wsRead(t, conn) // initial snapshot: lang=markdown
+
+	wsSend(t, conn, map[string]interface{}{
+		"action": "set_lang",
+		"lang":   "go",
+	})
+
+	msg := wsRead(t, conn)
+	if lang, _ := msg["lang"].(string); lang != "go" {
+		t.Errorf("lang: got %q, want 'go'", lang)
+	}
+}
+
+// TestWS_SetLang_Locked_NoUpdate verifies set_lang is silently ignored when the file is locked.
+func TestWS_SetLang_Locked_NoUpdate(t *testing.T) {
+	ts := wsTestServer(t, newWsTestService())
+	conn := wsConnect(t, ts)
+
+	wsInit(t, conn, wsFileA, "File")
+	wsRead(t, conn)
+
+	wsSend(t, conn, map[string]interface{}{
+		"action":    "set_locked",
+		"is_locked": true,
+	})
+	wsRead(t, conn) // snapshot after lock (is_locked=true, lang=markdown)
+
+	wsSend(t, conn, map[string]interface{}{
+		"action": "set_lang",
+		"lang":   "go",
+	})
+
+	// set_lang is ignored; send set_name to get the next snapshot and verify lang unchanged.
+	wsSend(t, conn, map[string]interface{}{
+		"action":    "set_name",
+		"file_name": "Probe",
+	})
+	msg := wsRead(t, conn)
+	if lang, _ := msg["lang"].(string); lang != "markdown" {
+		t.Errorf("lang should stay 'markdown' while locked, got %q", lang)
+	}
+}
+
+// TestWS_SetEncrypted_Enable verifies set_encrypted=true sets encrypted=true and generates ro_token.
+func TestWS_SetEncrypted_Enable(t *testing.T) {
+	ts := wsTestServer(t, newWsTestService())
+	conn := wsConnect(t, ts)
+
+	wsInit(t, conn, wsFileA, "File")
+	wsRead(t, conn)
+
+	wsSend(t, conn, map[string]interface{}{
+		"action":    "set_encrypted",
+		"encrypted": true,
+	})
+
+	msg := wsRead(t, conn)
+	if enc, _ := msg["encrypted"].(bool); !enc {
+		t.Error("expected encrypted=true after set_encrypted")
+	}
+	if tok, _ := msg["ro_token"].(string); tok == "" {
+		t.Error("expected non-empty ro_token after enabling encryption")
+	}
+}
+
+// TestWS_ROToken_BlocksSetContent verifies that a client using the read-only token cannot modify content.
+func TestWS_ROToken_BlocksSetContent(t *testing.T) {
+	svc := newWsTestService()
+	ts := wsTestServer(t, svc)
+
+	// Owner: create file and enable encryption to get ro_token.
+	connOwner := wsConnect(t, ts)
+	wsInit(t, connOwner, wsFileA, "Encrypted File")
+	wsRead(t, connOwner)
+
+	wsSend(t, connOwner, map[string]interface{}{
+		"action":    "set_encrypted",
+		"encrypted": true,
+	})
+	snap := wsRead(t, connOwner)
+	roToken, _ := snap["ro_token"].(string)
+	if roToken == "" {
+		t.Fatal("ro_token not returned after set_encrypted")
+	}
+
+	// RO client: connect with ro_token.
+	connRO := wsConnect(t, ts)
+	wsSend(t, connRO, map[string]interface{}{
+		"action":    "init",
+		"file_id":   wsFileA,
+		"file_name": "Encrypted File",
+		"app_id":    wsApp,
+		"user_id":   wsApp,
+		"lang":      "markdown",
+		"content":   "",
+		"ro_token":  roToken,
+	})
+	wsRead(t, connRO)
+
+	// RO client tries to set content — should be silently ignored.
+	wsSend(t, connRO, map[string]interface{}{
+		"action":  "set_content",
+		"content": "should not be saved",
+	})
+
+	// Verify via a fresh third client that content is unchanged.
+	connVerify := wsConnect(t, ts)
+	wsInit(t, connVerify, wsFileA, "Encrypted File")
+	snapVerify := wsRead(t, connVerify)
+	if content, ok := snapVerify["content"]; ok {
+		if c, _ := content.(string); c == "should not be saved" {
+			t.Error("RO client must not be able to set_content")
+		}
+	}
+}
+
+// TestWS_InvalidFileId_DisconnectsClient verifies init with a malformed file_id closes the connection.
+func TestWS_InvalidFileId_DisconnectsClient(t *testing.T) {
+	ts := wsTestServer(t, newWsTestService())
+	conn := wsConnect(t, ts)
+
+	wsSend(t, conn, map[string]interface{}{
+		"action":    "init",
+		"file_id":   "not-valid!!",
+		"file_name": "File",
+		"app_id":    wsApp,
+		"user_id":   wsApp,
+		"lang":      "markdown",
+		"content":   "",
+	})
+
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	_, _, err := conn.ReadMessage()
+	if err == nil {
+		t.Error("expected connection close after invalid file_id")
+	}
+}
+
+// TestWS_UnknownAction_ConnRemainsOpen verifies that an unknown action does not close the connection.
+func TestWS_UnknownAction_ConnRemainsOpen(t *testing.T) {
+	ts := wsTestServer(t, newWsTestService())
+	conn := wsConnect(t, ts)
+
+	wsInit(t, conn, wsFileA, "File")
+	wsRead(t, conn)
+
+	wsSend(t, conn, map[string]interface{}{
+		"action": "totally_unknown_action_xyz",
+	})
+
+	// Connection should survive; a valid set_name should still work.
+	wsSend(t, conn, map[string]interface{}{
+		"action":    "set_name",
+		"file_name": "Still Works",
+	})
+	msg := wsRead(t, conn)
+	if name, _ := msg["name"].(string); name != "Still Works" {
+		t.Errorf("name after unknown action: got %q, want 'Still Works'", name)
+	}
+}
+
+// TestWS_TwoClients_SetContent_BothReceiveUpdate verifies three-client fan-out: C reads A's content.
+func TestWS_TwoClients_SetContent_BothReceiveUpdate(t *testing.T) {
+	svc := newWsTestService()
+	ts := wsTestServer(t, svc)
+
+	const fileID = "CCCCCCCCCCCCCCCCCCCCCC"
+	connA := wsConnect(t, ts)
+	connC := wsConnect(t, ts)
+
+	wsInit(t, connA, fileID, "File")
+	wsRead(t, connA)
+
+	wsInit(t, connC, fileID, "File")
+	wsRead(t, connC)
+
+	wsSend(t, connA, map[string]interface{}{
+		"action":  "set_content",
+		"content": "fan out test",
+	})
+
+	msgA := wsRead(t, connA)
+	msgC := wsRead(t, connC)
+	for label, msg := range map[string]map[string]interface{}{"A": msgA, "C": msgC} {
+		if c, _ := msg["content"].(string); c != "fan out test" {
+			t.Errorf("client %s content: got %q, want 'fan out test'", label, c)
+		}
+	}
+}

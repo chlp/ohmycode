@@ -160,6 +160,9 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 		IsWaitingForResult: snap.IsWaitingForResult,
 		IsRunnerOnline:     snap.IsRunnerOnline,
 		PersistedAt:        snap.PersistedAt,
+		Encrypted:          snap.Encrypted,
+		ROToken:            snap.ROToken,
+		ROContent:          snap.ROContent,
 	}
 
 	if err := fs.db.ReplaceOneUpsert("files", map[string]interface{}{"_id": doc.ID}, &doc); err != nil {
