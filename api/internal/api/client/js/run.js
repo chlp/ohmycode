@@ -1,5 +1,5 @@
 import {ohMySimpleHash} from "./utils.js";
-import {file} from "./app.js";
+import {app, file} from "./app.js";
 import {actions} from "./connect.js";
 import {onFileChange} from "./file.js";
 import {getCurrentLang, onLangChange} from "./lang.js";
@@ -53,6 +53,11 @@ window.addEventListener("DOMContentLoaded", () => {
         runnerEditButtonOnclick();
     };
     const runnerBlocksUpdate = () => {
+        if (app.isROLink || file.is_locked) {
+            runnerContainerBlock.style.display = 'none';
+            runnerEditButton.style.display = 'none';
+            return;
+        }
         if (file.is_runner_online) {
             runnerContainerBlock.style.display = 'none';
         }
@@ -128,7 +133,7 @@ window.addEventListener("DOMContentLoaded", () => {
             resultCodeMirror.setValue('...');
         }
 
-        if (isRunBtnShouldBeDisabled) {
+        if (isRunBtnShouldBeDisabled || app.isROLink || file.is_locked) {
             runButton.setAttribute('disabled', 'true');
         } else {
             runButton.removeAttribute('disabled');
@@ -137,7 +142,11 @@ window.addEventListener("DOMContentLoaded", () => {
         if (getCurrentLang().action === 'run' && (isWaitingForResultUi || file.result.length > 0)) {
             resultContainerBlock.style.display = 'block';
             fileResultBlock.style.display = 'flex';
-            cleanResultButton.removeAttribute('disabled');
+            if (app.isROLink || file.is_locked) {
+                cleanResultButton.setAttribute('disabled', 'true');
+            } else {
+                cleanResultButton.removeAttribute('disabled');
+            }
         } else {
             resultContainerBlock.style.display = 'none';
             fileResultBlock.style.display = 'none';

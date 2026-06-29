@@ -1,6 +1,7 @@
 import {app, file} from "./app.js";
 import {getCurrentLang, onLangChange} from "./lang.js";
 import {contentCodeMirror, contentMarkdownBlock} from "./editor.js";
+import {onFileChange} from "./file.js";
 
 const helloWorldButton = document.getElementById('hello-world-button');
 
@@ -12,7 +13,12 @@ onLangChange(() => {
     }
 });
 
+onFileChange((f) => {
+    helloWorldButton.disabled = app.isROLink || f.is_locked;
+});
+
 helloWorldButton.onclick = () => {
+    if (app.isROLink || file.is_locked) return;
     const helloWorldType = getCurrentLang().helloWorld;
     if (typeof helloWorldType === 'undefined') {
         return;

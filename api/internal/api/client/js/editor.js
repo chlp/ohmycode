@@ -167,10 +167,12 @@ const editButton = document.getElementById('edit-button');
 const viewButton = document.getElementById('view-button');
 
 viewButton.onclick = () => {
+    if (app.isROLink || file.is_locked) return;
     setLang('markdown_view'); // todo: not only markdown
 };
 
 editButton.onclick = () => {
+    if (app.isROLink || file.is_locked) return;
     setLang('markdown');
 };
 

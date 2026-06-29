@@ -1,4 +1,4 @@
-import {app} from "./app.js";
+import {app, file} from "./app.js";
 import {actions} from "./connect.js";
 import {onFileChange} from "./file.js";
 import {contentCodeMirror, contentCodeMirrorBlock, contentMarkdownBlock} from "./editor.js";
@@ -142,6 +142,7 @@ const setLang = (langKey) => {
     langSelect.onchange = () => {};
     langSelect.value = langKey;
     langSelect.onchange = (ev) => {
+        if (app.isROLink || file.is_locked) return;
         const changeToLangName = ev.target.value;
         localStorage['initialLang'] = changeToLangName;
         contentCodeMirror.focus();
@@ -152,8 +153,9 @@ const setLang = (langKey) => {
 };
 
 window.addEventListener("DOMContentLoaded", () => {
-    onFileChange((file) => {
-        setLang(file.lang);
+    onFileChange((f) => {
+        setLang(f.lang);
+        langSelect.disabled = app.isROLink || f.is_locked;
     });
 });
 

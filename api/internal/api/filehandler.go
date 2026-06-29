@@ -218,6 +218,9 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		if client.getIsROLink() {
 			return true
 		}
+		if file.Snapshot(false).IsLocked {
+			return true
+		}
 		if !file.SetLang(i.Lang) {
 			util.LogError("set_lang failed", "file_id", file.ID, "lang", i.Lang)
 		}
@@ -251,6 +254,9 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		if client.getIsROLink() {
 			return true
 		}
+		if file.Snapshot(false).IsLocked {
+			return true
+		}
 		s.taskStore.DeleteTask(file.ID)
 		err = file.SetResult("")
 		if err != nil {
@@ -261,6 +267,9 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			return true
 		}
 		snap := file.Snapshot(false)
+		if snap.IsLocked {
+			return true
+		}
 		if snap.IsWaitingForResult {
 			return true
 		}
@@ -277,6 +286,9 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 			return true
 		}
 		snap := file.Snapshot(false)
+		if snap.IsLocked {
+			return true
+		}
 		if snap.IsWaitingForResult {
 			return true
 		}
