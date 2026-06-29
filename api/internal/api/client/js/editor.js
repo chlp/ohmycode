@@ -53,10 +53,14 @@ let updateEditorLockStatus = () => {
     if (app.isROLink) {
         contentCodeMirror.setOption('readOnly', true);
         setLockStatus('Read-only');
-        lockButton.style.display = 'none';
+        lockButton.style.display = '';
+        lockButton.innerHTML = lockIconClosed;
+        lockButton.title = 'Read-only access';
+        lockButton.disabled = true;
         return;
     }
 
+    lockButton.disabled = false;
     lockButton.style.display = '';
 
     if (!app.isOnline) {

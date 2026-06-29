@@ -668,6 +668,14 @@ input:invalid {
     border-color: var(--color-bg-transparent);
 }
 
+.header-icon-btn:disabled {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-text-secondary);
+    cursor: default;
+    opacity: 0.5;
+}
+
 .header-icon-btn svg {
     width: 20px;
     height: 20px;
@@ -854,8 +862,16 @@ input:invalid {
     height: 4em;
     flex: 0 0 4em;
     display: flex;
-    align-items: end;
-    padding-left: 8px;
+    align-items: center;
+    padding: 0 8px;
+}
+
+#status-bar {
+    margin-left: auto;
+    padding: 0.4rem 0.8rem;
+    color: var(--color-text-secondary);
+    font-size: 0.85em;
+    white-space: nowrap;
 }
 
 @media (max-width: 600px) {

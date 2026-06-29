@@ -94,8 +94,22 @@ const renderEncryptPanel = () => {
     if (app.isROLink) {
         const msg = document.createElement('p');
         msg.className = 'encrypt-panel-msg';
-        msg.textContent = 'You have read-only access via a shared link.';
+        msg.textContent = file.encrypted
+            ? 'Read-only access. You cannot edit or change encryption settings.'
+            : 'You have read-only access via a shared link.';
         encryptPanelContent.appendChild(msg);
+
+        if (file.encrypted) {
+            const roKeyStr = localStorage.getItem('ohmycode_rokey_' + file.id) || '';
+            const base = window.location.origin + '/' + file.id;
+            if (roKeyStr) addLinkRow('Read-only key:', roKeyStr);
+            if (app.roToken) {
+                const roLink = roKeyStr
+                    ? base + '#key=' + roKeyStr + '&ro=' + app.roToken
+                    : base + '#ro=' + app.roToken;
+                addLinkRow('Read-only link:', roLink);
+            }
+        }
         return;
     }
 
@@ -147,7 +161,35 @@ const renderEncryptPanel = () => {
     if (editKey) addLinkRow('Edit key:', editKey);
     addLinkRow('Edit link:', editLink);
     if (roLink) {
-        if (roKey) addLinkRow('Read-only key:', roKey);
+        if (roKey) {
+            addLinkRow('Read-only key:', roKey);
+        } else {
+            const noRoKey = document.createElement('p');
+            noRoKey.className = 'encrypt-panel-msg';
+            noRoKey.textContent = 'Read-only key is not available in this browser. Regenerate to create a new one (old read-only links will stop working).';
+            encryptPanelContent.appendChild(noRoKey);
+
+            const regenBtn = document.createElement('button');
+            regenBtn.textContent = 'Regenerate read-only key';
+            regenBtn.className = 'encrypt-action-btn';
+            regenBtn.onclick = async (e) => {
+                e.stopPropagation();
+                regenBtn.disabled = true;
+                regenBtn.textContent = 'Generating…';
+                try {
+                    const {key: newRoKey, exported: newRoExported} = await generateKey();
+                    app.roEncKey = newRoKey;
+                    localStorage.setItem('ohmycode_rokey_' + file.id, newRoExported);
+                    await actions.setContent(contentCodeMirror.getValue());
+                    renderEncryptPanel();
+                } catch(err) {
+                    console.error('Failed to regenerate RO key:', err);
+                    regenBtn.disabled = false;
+                    regenBtn.textContent = 'Regenerate read-only key';
+                }
+            };
+            encryptPanelContent.appendChild(regenBtn);
+        }
         addLinkRow('Read-only link:', roLink);
     } else {
         const pending = document.createElement('p');
