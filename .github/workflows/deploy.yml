@@ -1,11 +1,6 @@
 name: Deploy to fly.io
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'api/**'
-      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 jobs:
