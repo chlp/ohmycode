@@ -29,7 +29,7 @@ func main() {
 
 	worker.NewWorker(appCtx, fileStore, runnerStore).Run()
 
-	svc := api.NewService(apiConfig.HttpPort, apiConfig.ServeClientFiles, apiConfig.UseDynamicFiles, apiConfig.WsAllowedOrigins, fileStore, runnerStore, taskStore, versionStore)
+	svc := api.NewService(apiConfig.HttpPort, apiConfig.ServeClientFiles, apiConfig.UseDynamicFiles, apiConfig.WsAllowedOrigins, apiConfig.RunnerToken, fileStore, runnerStore, taskStore, versionStore)
 	if err := svc.Run(appCtx); err != nil && !errors.Is(err, context.Canceled) {
 		panic(err)
 	}

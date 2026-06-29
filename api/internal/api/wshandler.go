@@ -24,7 +24,8 @@ type input struct {
 	VersionId string `json:"version_id"`
 	ROToken   string `json:"ro_token"`
 	Encrypted bool   `json:"encrypted"`
-	ROContent string `json:"ro_content"`
+	ROContent   string `json:"ro_content"`
+	RunnerToken string `json:"runner_token"`
 }
 
 func (s *Service) HandleWs(w http.ResponseWriter, r *http.Request,

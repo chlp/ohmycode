@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"ohmycode_api/pkg/util"
+	"strings"
 	"time"
 )
 
@@ -78,6 +79,10 @@ func (s *Service) runnerMessageHandler(client *wsClient, message []byte) (ok boo
 			util.LogError("runner init: invalid runner_id", "runner_id", i.RunnerId)
 			return false
 		}
+		if s.runnerToken != "" && i.RunnerToken != s.runnerToken {
+			util.LogError("runner init: invalid token", "runner_id", i.RunnerId)
+			return false
+		}
 		client.setRunner(s.runnerStore.SetRunner(i.RunnerId, i.IsPublic))
 		return true
 	}
@@ -103,6 +108,10 @@ func (s *Service) runnerMessageHandler(client *wsClient, message []byte) (ok boo
 		if file == nil {
 			util.LogError("set_result: file not found", "file_id", task.FileId)
 			return true
+		}
+		i.Result = strings.ReplaceAll(i.Result, "\x00", "")
+		if len(i.Result) > 512*1024 {
+			i.Result = i.Result[:512*1024]
 		}
 		if i.Result == "" {
 			i.Result = "_"

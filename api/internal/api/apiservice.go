@@ -16,6 +16,7 @@ type Service struct {
 	serveClientFiles bool
 	useDynamicFiles  bool
 	wsAllowedOrigins []string
+	runnerToken      string
 	fileStore        *store.FileStore
 	runnerStore      *store.RunnerStore
 	taskStore        *store.TaskStore
@@ -23,12 +24,13 @@ type Service struct {
 	runLimiter       *ipRunLimiter
 }
 
-func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedOrigins []string, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore, versionStore *store.VersionStore) *Service {
+func NewService(httpPort int, serveClientFiles, useDynamicFiles bool, wsAllowedOrigins []string, runnerToken string, fileStore *store.FileStore, runnerStore *store.RunnerStore, taskStore *store.TaskStore, versionStore *store.VersionStore) *Service {
 	return &Service{
 		httpPort:         httpPort,
 		serveClientFiles: serveClientFiles,
 		useDynamicFiles:  useDynamicFiles,
 		wsAllowedOrigins: wsAllowedOrigins,
+		runnerToken:      runnerToken,
 		fileStore:        fileStore,
 		runnerStore:      runnerStore,
 		taskStore:        taskStore,

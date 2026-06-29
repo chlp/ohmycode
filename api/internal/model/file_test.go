@@ -162,6 +162,125 @@ func TestFile_ConcurrentSetContent_IsRaceFree(t *testing.T) {
 	}
 }
 
+// --- SetEncrypted ---
+
+func TestFile_SetEncrypted_SetsEncryptedAndToken(t *testing.T) {
+	f := NewFile(testFileID, "name", "markdown", "", testUserID, "u")
+	f.SetEncrypted(true, "test-ro-token")
+	s := f.Snapshot(false)
+	if !s.Encrypted {
+		t.Error("expected Encrypted=true")
+	}
+	if s.ROToken != "test-ro-token" {
+		t.Errorf("ROToken: got %q, want 'test-ro-token'", s.ROToken)
+	}
+}
+
+func TestFile_SetEncrypted_ClearsTokenOnDisable(t *testing.T) {
+	f := NewFile(testFileID, "name", "markdown", "", testUserID, "u")
+	f.SetEncrypted(true, "test-ro-token")
+	f.SetEncrypted(false, "")
+	s := f.Snapshot(false)
+	if s.Encrypted {
+		t.Error("expected Encrypted=false after disable")
+	}
+	if s.ROToken != "" {
+		t.Errorf("ROToken should be cleared, got %q", s.ROToken)
+	}
+}
+
+func TestFile_SetEncrypted_NotifiesSubscribers(t *testing.T) {
+	f := NewFile(testFileID, "name", "markdown", "", testUserID, "u")
+	ch := f.SubscribeUpdates()
+	defer f.UnsubscribeUpdates(ch)
+
+	f.SetEncrypted(true, "token")
+
+	select {
+	case <-ch:
+	case <-time.After(time.Second):
+		t.Error("timeout: subscriber not notified after SetEncrypted")
+	}
+}
+
+// --- SetLocked ---
+
+func TestFile_SetLocked_PreventsSetContent(t *testing.T) {
+	f := NewFile(testFileID, "name", "markdown", "original", testUserID, "u")
+	f.SetLocked(true)
+	if err := f.SetContent("modified", "", testAppID); err == nil {
+		t.Error("expected SetContent error on locked file")
+	}
+	s := f.Snapshot(true)
+	if s.Content == nil || *s.Content != "original" {
+		t.Error("content should not change on a locked file")
+	}
+}
+
+func TestFile_SetLocked_NotifiesSubscribers(t *testing.T) {
+	f := NewFile(testFileID, "name", "markdown", "", testUserID, "u")
+	ch := f.SubscribeUpdates()
+	defer f.UnsubscribeUpdates(ch)
+
+	f.SetLocked(true)
+
+	select {
+	case <-ch:
+	case <-time.After(time.Second):
+		t.Error("timeout: subscriber not notified after SetLocked")
+	}
+}
+
+func TestFile_SetLocked_NoNotifyWhenUnchanged(t *testing.T) {
+	f := NewFile(testFileID, "name", "markdown", "", testUserID, "u")
+	f.SetLocked(false) // already false — should not notify
+
+	ch := f.SubscribeUpdates()
+	defer f.UnsubscribeUpdates(ch)
+
+	select {
+	case <-ch:
+		t.Error("should not notify when lock state is unchanged")
+	default:
+	}
+}
+
+// --- SetName ---
+
+func TestFile_SetName_ChangesName(t *testing.T) {
+	f := NewFile(testFileID, "original", "markdown", "", testUserID, "u")
+	if !f.SetName("New Name") {
+		t.Error("expected SetName to return true")
+	}
+	if s := f.Snapshot(false); s.Name != "New Name" {
+		t.Errorf("name: got %q, want 'New Name'", s.Name)
+	}
+}
+
+func TestFile_SetName_RejectsEmptyName(t *testing.T) {
+	f := NewFile(testFileID, "original", "markdown", "", testUserID, "u")
+	if f.SetName("") {
+		t.Error("expected SetName to return false for empty name")
+	}
+	if s := f.Snapshot(false); s.Name != "original" {
+		t.Error("name should not change on invalid input")
+	}
+}
+
+func TestFile_SetName_NoNotifyWhenUnchanged(t *testing.T) {
+	f := NewFile(testFileID, "same", "markdown", "", testUserID, "u")
+	ch := f.SubscribeUpdates()
+	defer f.UnsubscribeUpdates(ch)
+
+	f.SetName("same") // same name — should not notify
+
+	select {
+	case <-ch:
+		t.Error("should not notify when name is unchanged")
+	default:
+	}
+}
+
 func TestFile_StartRunWithContent_SetsWaitingAndUpdatesContent(t *testing.T) {
 	f := NewFile("00000000-0000-0000-0000-000000000000", "t", "php", "<?php echo 1;", "11111111-1111-1111-1111-111111111111", "u")
 

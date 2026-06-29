@@ -23,6 +23,9 @@ type ApiConfig struct {
 	WsAllowedOrigins []string `json:"ws_allowed_origins"`
 	// ContentMaxLengthKb sets the maximum file content size in kilobytes. Default: 512.
 	ContentMaxLengthKb int `json:"content_max_length_kb"`
+	// RunnerToken is an optional shared secret runners must supply in the init message.
+	// When empty, all runners are accepted (backward-compatible default).
+	RunnerToken string `json:"runner_token"`
 }
 
 func LoadApiConf() ApiConfig {
@@ -55,6 +58,9 @@ func applyEnvOverrides(c *ApiConfig) {
 			parts[i] = strings.TrimSpace(parts[i])
 		}
 		c.WsAllowedOrigins = parts
+	}
+	if v := os.Getenv("OHMYCODE_RUNNER_TOKEN"); v != "" {
+		c.RunnerToken = v
 	}
 }
 

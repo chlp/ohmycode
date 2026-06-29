@@ -67,7 +67,7 @@ const applyFile = (newFile) => {
         let {left, top} = contentCodeMirror.getScrollInfo();
         let {line, ch} = contentCodeMirror.getCursor();
         contentCodeMirror.setValue(file.content);
-        contentMarkdownBlock.innerHTML = marked.parse(file.content);
+        contentMarkdownBlock.innerHTML = DOMPurify.sanitize(marked.parse(file.content));
         contentCodeMirror.scrollTo(left, top);
         contentCodeMirror.setCursor({line: line, ch: ch});
     }
