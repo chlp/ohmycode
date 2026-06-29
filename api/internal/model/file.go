@@ -27,8 +27,11 @@ type File struct {
 
 	IsWaitingForResult bool `json:"is_waiting_for_result"`
 	IsRunnerOnline     bool `json:"is_runner_online"`
-	Encrypted          bool `json:"encrypted" bson:"encrypted"`
+	Encrypted          bool   `json:"encrypted" bson:"encrypted"`
 	ROToken            string `json:"ro_token" bson:"ro_token"`
+	// ROContent holds the file content encrypted with the readonly key (separate from the edit key).
+	// Sent to readonly clients so they can decrypt with their key without exposing the edit key.
+	ROContent *string `json:"ro_content,omitempty" bson:"ro_content,omitempty"`
 
 	PersistedAt time.Time `json:"-" bson:"-"`
 	mutex       sync.Mutex
@@ -81,6 +84,7 @@ type FileSnapshot struct {
 	IsRunnerOnline     bool
 	Encrypted          bool
 	ROToken            string
+	ROContent          *string
 
 	PersistedAt time.Time
 }
@@ -97,6 +101,12 @@ func (f *File) Snapshot(includeContent bool) FileSnapshot {
 		content = &c
 	}
 	users := append([]User(nil), f.Users...)
+
+	var roContent *string
+	if includeContent && f.ROContent != nil {
+		rc := *f.ROContent
+		roContent = &rc
+	}
 
 	return FileSnapshot{
 		ID:                 f.ID,
@@ -117,6 +127,7 @@ func (f *File) Snapshot(includeContent bool) FileSnapshot {
 		IsRunnerOnline:     f.IsRunnerOnline,
 		Encrypted:          f.Encrypted,
 		ROToken:            f.ROToken,
+		ROContent:          roContent,
 		PersistedAt:        f.PersistedAt,
 	}
 }
@@ -312,7 +323,7 @@ func (f *File) SetLocked(isLocked bool) {
 	f.signalUpdatedLocked()
 }
 
-func (f *File) SetContent(content, appId string) error {
+func (f *File) SetContent(content, roContent, appId string) error {
 	if len(content) > contentMaxLength {
 		return errors.New("content is too long")
 	}
@@ -326,6 +337,9 @@ func (f *File) SetContent(content, appId string) error {
 	}
 
 	f.Content = &content
+	if roContent != "" {
+		f.ROContent = &roContent
+	}
 	f.Writer = appId
 	f.ContentUpdatedAt = time.Now()
 	f.UpdatedAt = time.Now()

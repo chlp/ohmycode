@@ -45,11 +45,13 @@ const copyText = async (text, btn) => {
 
 const buildShareLinks = () => {
     const keyStr = localStorage.getItem('ohmycode_key_' + file.id) || '';
+    const roKeyStr = localStorage.getItem('ohmycode_rokey_' + file.id) || '';
     const hash = keyStr ? '#key=' + keyStr : '';
+    const roHash = roKeyStr ? '#key=' + roKeyStr : '';
     const base = window.location.origin + '/' + file.id;
     return {
         editLink: base + hash,
-        roLink: file.ro_token ? base + '?ro=' + file.ro_token + hash : null,
+        roLink: file.ro_token ? base + '?ro=' + file.ro_token + roHash : null,
     };
 };
 
@@ -103,13 +105,17 @@ const renderEncryptPanel = () => {
         const btn = document.createElement('button');
         btn.textContent = 'Enable Encryption';
         btn.className = 'encrypt-action-btn';
-        btn.onclick = async () => {
+        btn.onclick = async (e) => {
+            e.stopPropagation();
             btn.disabled = true;
             btn.textContent = 'Generating key…';
             try {
-                const {key, exported} = await generateKey();
-                app.encKey = key;
-                localStorage.setItem('ohmycode_key_' + file.id, exported);
+                const {key: editKey, exported: editExported} = await generateKey();
+                const {key: roKey, exported: roExported} = await generateKey();
+                app.encKey = editKey;
+                app.roEncKey = roKey;
+                localStorage.setItem('ohmycode_key_' + file.id, editExported);
+                localStorage.setItem('ohmycode_rokey_' + file.id, roExported);
                 file.encrypted = true;
                 actions.setEncrypted(true);
                 actions.setContent(contentCodeMirror.getValue());
@@ -151,8 +157,10 @@ const renderEncryptPanel = () => {
     disableBtn.onclick = () => {
         disableBtn.disabled = true;
         app.encKey = null;
+        app.roEncKey = null;
         file.encrypted = false;
         localStorage.removeItem('ohmycode_key_' + file.id);
+        localStorage.removeItem('ohmycode_rokey_' + file.id);
         actions.setEncrypted(false);
         actions.setContent(contentCodeMirror.getValue());
         hideEncryptPanel();
@@ -176,7 +184,8 @@ const submitKey = async () => {
     noKeyError.textContent = '';
     try {
         await importKey(keyStr);
-        localStorage.setItem('ohmycode_key_' + file.id, keyStr);
+        const storagePrefix = app.isROLink ? 'ohmycode_rokey_' : 'ohmycode_key_';
+        localStorage.setItem(storagePrefix + file.id, keyStr);
         window.location.reload();
     } catch(e) {
         noKeyError.textContent = 'Invalid key. Make sure you pasted the full key.';

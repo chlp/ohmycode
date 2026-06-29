@@ -200,7 +200,7 @@ func (s *Service) fileMessageHandler(client *wsClient, message []byte) (ok bool)
 		if !snap.Encrypted {
 			s.saveVersionBeforeChange(file)
 		}
-		if err := file.SetContent(i.Content, client.getAppId()); err != nil {
+		if err := file.SetContent(i.Content, i.ROContent, client.getAppId()); err != nil {
 			util.LogError("set_content failed", "file_id", file.ID, "error", err)
 		}
 	case "set_name":

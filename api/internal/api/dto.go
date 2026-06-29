@@ -24,6 +24,7 @@ type fileDTO struct {
 	IsRunnerOnline     bool       `json:"is_runner_online"`
 	Encrypted          bool       `json:"encrypted"`
 	ROToken            string     `json:"ro_token,omitempty"`
+	ROContent          *string    `json:"ro_content,omitempty"`
 }
 
 func toFileDTO(f *model.File, includeContent bool) fileDTO {
@@ -47,6 +48,7 @@ func toFileDTO(f *model.File, includeContent bool) fileDTO {
 	}
 	if includeContent {
 		dto.Content = s.Content
+		dto.ROContent = s.ROContent
 	}
 	return dto
 }

@@ -88,15 +88,25 @@ const actions = {
         file.writer_id = app.id;
         file.content = content;
         let payload = content;
-        if (file.encrypted && app.encKey) {
-            try {
-                payload = await encryptText(app.encKey, content);
-            } catch(e) {
-                console.error('Encryption failed, not sending:', e);
-                return;
+        let roPayload = '';
+        if (file.encrypted) {
+            if (app.encKey) {
+                try {
+                    payload = await encryptText(app.encKey, content);
+                } catch(e) {
+                    console.error('Encryption failed, not sending:', e);
+                    return;
+                }
+            }
+            if (app.roEncKey) {
+                try {
+                    roPayload = await encryptText(app.roEncKey, content);
+                } catch(e) {
+                    console.error('RO encryption failed:', e);
+                }
             }
         }
-        postRequest('set_content', {content: payload});
+        postRequest('set_content', {content: payload, ro_content: roPayload});
     },
     setLocked: (isLocked) => {
         postRequest('set_locked', {
@@ -188,15 +198,26 @@ const doConnect = (app) => {
 
             console.log('file from server');
 
-            if (data.encrypted && typeof data.content === 'string') {
-                if (app.encKey) {
+            if (data.encrypted) {
+                if (app.isROLink && app.encKey) {
+                    if (typeof data.ro_content === 'string' && data.ro_content) {
+                        try {
+                            data.content = await decryptText(app.encKey, data.ro_content);
+                        } catch(e) {
+                            console.error('RO decryption failed:', e);
+                            delete data.content;
+                        }
+                    } else {
+                        delete data.content;
+                    }
+                } else if (!app.isROLink && app.encKey && typeof data.content === 'string') {
                     try {
                         data.content = await decryptText(app.encKey, data.content);
                     } catch(e) {
                         console.error('Decryption failed:', e);
                         delete data.content;
                     }
-                } else {
+                } else if (typeof data.content !== 'undefined') {
                     delete data.content;
                 }
             }

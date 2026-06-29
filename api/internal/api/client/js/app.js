@@ -27,6 +27,9 @@ const getFileIdFromWindowLocation = () => {
 };
 
 const loadKeyForFile = async (fileId) => {
+    const isRO = !!new URLSearchParams(window.location.search).get('ro');
+    const storagePrefix = isRO ? 'ohmycode_rokey_' : 'ohmycode_key_';
+
     const currentFileId = getFileIdFromWindowLocation();
     if (currentFileId === fileId && window.location.hash) {
         const hashStr = window.location.hash.slice(1);
@@ -35,15 +38,15 @@ const loadKeyForFile = async (fileId) => {
         if (keyStr) {
             try {
                 const key = await importKey(keyStr);
-                localStorage.setItem('ohmycode_key_' + fileId, keyStr);
+                localStorage.setItem(storagePrefix + fileId, keyStr);
                 history.replaceState(null, '', window.location.pathname + window.location.search);
                 return key;
             } catch(e) { console.warn('Key from URL hash invalid:', e); }
         }
     }
-    const stored = localStorage.getItem('ohmycode_key_' + fileId);
+    const stored = localStorage.getItem(storagePrefix + fileId);
     if (stored) {
-        try { return await importKey(stored); } catch(e) { console.warn('Stored key invalid, clearing:', e); localStorage.removeItem('ohmycode_key_' + fileId); }
+        try { return await importKey(stored); } catch(e) { console.warn('Stored key invalid, clearing:', e); localStorage.removeItem(storagePrefix + fileId); }
     }
     return null;
 };
@@ -115,6 +118,15 @@ const openFile = async (id, pushHistory) => {
     }
     app.encKey = await loadKeyForFile(id);
 
+    // Load readonly encryption key for non-RO owners who have generated readonly links
+    app.roEncKey = null;
+    if (!app.isROLink) {
+        const roKeyStr = localStorage.getItem('ohmycode_rokey_' + id);
+        if (roKeyStr) {
+            try { app.roEncKey = await importKey(roKeyStr); } catch(e) { localStorage.removeItem('ohmycode_rokey_' + id); }
+        }
+    }
+
     file = initFile(id);
     contentCodeMirror.setValue('');
     contentMarkdownBlock.innerHTML = '';
@@ -177,6 +189,7 @@ const app = {
     userName: localStorage['user_name'] === undefined ? '' : localStorage['user_name'],
     renderer: undefined,
     encKey: null,
+    roEncKey: null,
     isROLink: false,
     roToken: null,
 };

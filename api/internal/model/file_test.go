@@ -20,7 +20,7 @@ func TestFile_SetContent_UpdatesFields(t *testing.T) {
 	f := NewFile(testFileID, "name", "markdown", "original", testUserID, "u")
 	before := f.Snapshot(true)
 
-	if err := f.SetContent("updated", testAppID); err != nil {
+	if err := f.SetContent("updated", "", testAppID); err != nil {
 		t.Fatalf("SetContent: %v", err)
 	}
 
@@ -39,19 +39,19 @@ func TestFile_SetContent_UpdatesFields(t *testing.T) {
 func TestFile_SetContent_RejectsOtherWriter(t *testing.T) {
 	f := NewFile(testFileID, "name", "markdown", "", testUserID, "u")
 	// First writer claims the file
-	if err := f.SetContent("v1", testAppID); err != nil {
+	if err := f.SetContent("v1", "", testAppID); err != nil {
 		t.Fatalf("first SetContent: %v", err)
 	}
 	// Different app should be rejected
-	if err := f.SetContent("v2", testAppID2); err == nil {
+	if err := f.SetContent("v2", "", testAppID2); err == nil {
 		t.Error("expected error when another app tries to write a locked file")
 	}
 }
 
 func TestFile_SetContent_SameWriterSucceeds(t *testing.T) {
 	f := NewFile(testFileID, "name", "markdown", "", testUserID, "u")
-	_ = f.SetContent("v1", testAppID)
-	if err := f.SetContent("v2", testAppID); err != nil {
+	_ = f.SetContent("v1", "", testAppID)
+	if err := f.SetContent("v2", "", testAppID); err != nil {
 		t.Errorf("same writer should succeed on second write: %v", err)
 	}
 }
@@ -59,7 +59,7 @@ func TestFile_SetContent_SameWriterSucceeds(t *testing.T) {
 func TestFile_SetContent_RejectsTooLong(t *testing.T) {
 	f := NewFile(testFileID, "name", "markdown", "", testUserID, "u")
 	big := strings.Repeat("x", contentMaxLength+1)
-	if err := f.SetContent(big, testAppID); err == nil {
+	if err := f.SetContent(big, "", testAppID); err == nil {
 		t.Error("expected error for content exceeding max length")
 	}
 }
@@ -69,7 +69,7 @@ func TestFile_SetContent_NotifiesSubscribers(t *testing.T) {
 	ch := f.SubscribeUpdates()
 	defer f.UnsubscribeUpdates(ch)
 
-	_ = f.SetContent("hello", testAppID)
+	_ = f.SetContent("hello", "", testAppID)
 
 	select {
 	case <-ch:
@@ -107,7 +107,7 @@ func TestFile_Snapshot_IsDeepCopy(t *testing.T) {
 	s := f.Snapshot(true)
 
 	// Modify file — snapshot should be unaffected
-	_ = f.SetContent("modified", testAppID)
+	_ = f.SetContent("modified", "", testAppID)
 
 	if s.Content == nil || *s.Content != "original" {
 		t.Error("snapshot content should be independent from the original file")
@@ -128,7 +128,7 @@ func TestFile_UnsubscribeUpdates_StopsSignals(t *testing.T) {
 	f.UnsubscribeUpdates(ch)
 
 	// Channel is closed after unsubscribe; writing to file should not panic
-	_ = f.SetContent("after-unsub", testAppID)
+	_ = f.SetContent("after-unsub", "", testAppID)
 
 	// Closed channel is immediately readable (returns zero value)
 	select {
@@ -151,7 +151,7 @@ func TestFile_ConcurrentSetContent_IsRaceFree(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_ = f.SetContent("content", testAppID) // same appID — all succeed
+			_ = f.SetContent("content", "", testAppID) // same appID — all succeed
 		}()
 	}
 	wg.Wait()
