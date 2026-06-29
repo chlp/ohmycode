@@ -3,3 +3,4 @@
 
 api-conf.json
 api-conf.prod.json
+fly-secrets.env
