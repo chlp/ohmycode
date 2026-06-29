@@ -50,6 +50,15 @@ const lockIconClosed = `<svg width="20" height="20" viewBox="0 0 24 24" fill="no
 const lockIconOpen = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
 
 let updateEditorLockStatus = () => {
+    if (app.isROLink) {
+        contentCodeMirror.setOption('readOnly', true);
+        setLockStatus('Read-only');
+        lockButton.style.display = 'none';
+        return;
+    }
+
+    lockButton.style.display = '';
+
     if (!app.isOnline) {
         contentCodeMirror.setOption('readOnly', true);
         setLockStatus('Offline');
