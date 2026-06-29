@@ -6,6 +6,7 @@ COPY . .
 RUN go build -o api_app cmd/main.go
 
 FROM alpine:latest
-COPY --from=builder /app/api_app /app/api-conf*.json /app/
+COPY --from=builder /app/api_app /app/
+COPY --from=builder /app/api-conf.prod.json /app/api-conf.json
 WORKDIR /app
 ENTRYPOINT ["/app/api_app"]
