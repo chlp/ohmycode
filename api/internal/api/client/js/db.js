@@ -4,6 +4,17 @@ const openDB = () => {
         return Promise.resolve(dbInstance);
     }
 
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+        navigator.storage.estimate().then(({ quota, usage }) => {
+            console.log(`DB
+total: ${(quota / 1024 / 1024).toFixed(2)} MB
+usage: ${(usage / 1024 / 1024).toFixed(2)} MB
+free: ${((quota - usage) / 1024 / 1024).toFixed(2)} MB`);
+        });
+    } else {
+        console.warn("StorageManager API is not supported in this browser.");
+    }
+
     return new Promise((resolve, reject) => {
         const request = indexedDB.open("FilesDB", 5);
 
