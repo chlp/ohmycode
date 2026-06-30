@@ -176,10 +176,10 @@ document.onkeydown = (event) => {
                 actions.runTaskWithContent(contentCodeMirror.getValue());
                 break;
             case 'view':
-                setLang('markdown_view'); // todo: not only markdown
+                if (!app.isROLink && !file?.is_locked) setLang('markdown_view'); // todo: not only markdown
                 break;
             case 'edit':
-                setLang('markdown');
+                if (!app.isROLink && !file?.is_locked) setLang('markdown');
                 break;
             default:
                 console.warn("wrong action: ", action);
