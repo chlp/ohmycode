@@ -60,6 +60,7 @@ const saveFileToDB = async (file) => {
             result: file.result,
             persisted: file.persisted,
             writer_id: file.writer_id,
+            is_locked: file.is_locked ?? false,
             content: file.content,
         });
         tx.oncomplete = () => resolve();

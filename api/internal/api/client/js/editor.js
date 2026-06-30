@@ -49,6 +49,28 @@ const lockButton = document.getElementById('header-lock-btn');
 const lockIconClosed = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
 const lockIconOpen = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
 
+const editButton = document.getElementById('edit-button');
+const viewButton = document.getElementById('view-button');
+
+const updateEditViewButtons = () => {
+    const canSwitch = !app.isROLink && !file.is_locked;
+    const action = getCurrentLang().action;
+    switch (action) {
+        case 'view':
+            editButton.style.display = 'none';
+            viewButton.style.display = canSwitch ? '' : 'none';
+            break;
+        case 'edit':
+            editButton.style.display = canSwitch ? '' : 'none';
+            viewButton.style.display = 'none';
+            break;
+        default:
+            editButton.style.display = 'none';
+            viewButton.style.display = 'none';
+            break;
+    }
+};
+
 let updateEditorLockStatus = () => {
     if (app.isROLink) {
         contentCodeMirror.setOption('readOnly', true);
@@ -57,6 +79,7 @@ let updateEditorLockStatus = () => {
         lockButton.innerHTML = lockIconClosed;
         lockButton.title = 'Read-only access';
         lockButton.disabled = true;
+        updateEditViewButtons();
         return;
     }
 
@@ -68,6 +91,7 @@ let updateEditorLockStatus = () => {
         setLockStatus('Offline');
         lockButton.innerHTML = lockIconOpen;
         lockButton.title = 'Lock editing';
+        updateEditViewButtons();
         return;
     }
 
@@ -76,6 +100,7 @@ let updateEditorLockStatus = () => {
         setLockStatus('Locked');
         lockButton.innerHTML = lockIconClosed;
         lockButton.title = 'Unlock editing';
+        updateEditViewButtons();
         return;
     }
 
@@ -87,6 +112,7 @@ let updateEditorLockStatus = () => {
     } else {
         setLockStatus('Editing is blocked by someone else');
     }
+    updateEditViewButtons();
 };
 
 const updateContentSizeStatus = () => {
@@ -163,9 +189,6 @@ document.onkeydown = (event) => {
     }
 };
 
-const editButton = document.getElementById('edit-button');
-const viewButton = document.getElementById('view-button');
-
 viewButton.onclick = () => {
     if (app.isROLink || file.is_locked) return;
     setLang('markdown_view'); // todo: not only markdown
@@ -176,26 +199,8 @@ editButton.onclick = () => {
     setLang('markdown');
 };
 
-onLangChange((lang) => {
-    switch (lang.action) {
-        case 'run':
-            editButton.style.display = 'none';
-            viewButton.style.display = 'none';
-            break;
-        case 'view':
-            editButton.style.display = 'none';
-            viewButton.style.display = '';
-            break;
-        case 'edit':
-            editButton.style.display = '';
-            viewButton.style.display = 'none';
-            break;
-        case 'none':
-        default:
-            editButton.style.display = 'none';
-            viewButton.style.display = 'none';
-            break;
-    }
+onLangChange(() => {
+    updateEditViewButtons();
 });
 
 lockButton.onclick = () => {
