@@ -55,6 +55,16 @@ cd e2e && npm install && npx playwright install chromium && npx playwright test
 | E2E collaboration | `e2e/collaboration.spec.js` | Yes |
 | E2E UI controls | `e2e/ui-controls.spec.js` | Yes |
 
+## Deploy
+
+API deploys to Fly.io (`ohmycode` app → https://ohmycode.fly.dev/):
+
+```bash
+cd api && ./deploy.sh
+```
+
+Script sources `api/fly-secrets.env` then runs `flyctl deploy --remote-only` (remote build, no local Docker needed).
+
 ## Architecture
 
 Two independent Go modules communicate over WebSocket:
