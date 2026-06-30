@@ -53,7 +53,7 @@ const editButton = document.getElementById('edit-button');
 const viewButton = document.getElementById('view-button');
 
 const updateEditViewButtons = () => {
-    const canSwitch = !app.isROLink && !file.is_locked;
+    const canSwitch = !app.isROLink && !file?.is_locked;
     const action = getCurrentLang().action;
     switch (action) {
         case 'view':
