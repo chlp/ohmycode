@@ -43,7 +43,7 @@ const applyFile = (newFile) => {
         file.content = newFile.content;
     }
 
-    if (justPersisted) {
+    if (justPersisted && app.isOnline) {
         const t = new Date();
         const timeStr = t.toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'});
         setStatus(`Saved ${timeStr}`, 3000);
