@@ -160,6 +160,7 @@ func (fs *FileStore) PersistFile(file *model.File) error {
 		IsWaitingForResult: snap.IsWaitingForResult,
 		IsRunnerOnline:     snap.IsRunnerOnline,
 		PersistedAt:        snap.PersistedAt,
+		IsLocked:           snap.IsLocked,
 		Encrypted:          snap.Encrypted,
 		ROToken:            snap.ROToken,
 		ROContent:          snap.ROContent,
