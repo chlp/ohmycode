@@ -118,6 +118,10 @@ Files use 22-character base62 IDs (not UUIDs). Users/runners use standard UUIDs.
 - `api/CLAUDE.md` — detailed API config, data flow, and client JS structure
 - `runner/CLAUDE.md` — runner config, Docker setup per language
 
+## Repo audit snapshot
+
+`analysis/` — full-repo audit (architecture, risks, gaps) as of 2026-07-01, one file per area (`00-overview.md` through `04-docs-tests-deploy.md`). Start at `00-overview.md`. Findings are a snapshot, not living docs — re-verify against current code before acting.
+
 ## Related repositories
 
 - `../ohmycode-private` — private repo with product planning, ideas, and business notes (not public)
