@@ -58,7 +58,7 @@ go test -race ./...
 - **`internal/model/file_test.go`** — `File` model: SetContent, SetLang, SetEncrypted, SetLocked, SetName, subscribe/unsubscribe, concurrency
 - **`internal/store/filestore_test.go`** — in-memory store CRUD and concurrent access
 - **`internal/store/runnerstore_test.go`** — RunnerStore: SetRunner, IsOnline, CountOnline, GetPublicRunner, TouchRunner
-- **`internal/api/ws_integration_test.go`** — WS init→snapshot, set_content→broadcast, two-client sync
+- **`internal/store/versionstore_test.go`** — `diffPreview`/`truncLine`/`splitTrimmedLines`: added/removed/reordered-line detection, 62-rune truncation, blank-line handling
 
 ## Architecture
 
@@ -87,16 +87,18 @@ Browser → WS /file → API → FileStore (in-memory + MongoDB)
 - **File** — document with content, metadata, users, execution result
 - **Task** — execution task (content, language, hash, runner)
 - **Runner** — code execution service (ID, public/private, online status)
+- **FileVersion** — daily content snapshot (max 1/UTC day/file, trimmed to latest 20) for the version history panel
 
 ### Storage (internal/store/)
 
 - **FileStore** — in-memory cache + MongoDB persistence, per-file mutex
 - **TaskStore** — task queue with pub/sub for runner notification
 - **RunnerStore** — runner registry with online status tracking
+- **VersionStore** — MongoDB-backed version snapshots; queried by `file_id` + sorted by `created_at`. No index is created in code for `file_versions` — confirm one exists on the Mongo side at scale.
 
 ### Background Worker (internal/worker/)
 
-- Cleanup of unused files (10 minutes)
+- Cleanup sweep every 1 second — deletes files idle >10 minutes with no subscribers
 - Persistence to MongoDB (every 30 seconds)
 - Runner status synchronization (every second)
 
@@ -138,6 +140,8 @@ JavaScript modules in `internal/api/client/js/`:
 - `db.js` — IndexedDB cache for offline/fast load
 - `status.js` — status bar: lock messages (Offline, Blocked), transient notifications (save time, run time), idle info (file size)
 - `utils.js` — pure helpers (`ohMySimpleHash`)
+- `encrypt.js` — AES-GCM 256 client-side encryption primitives (Web Crypto)
+- `encrypt_ui.js` — encryption panel: enable/disable, edit/read-only key management, share-link generation, "no key" unlock overlay
 
 CodeMirror modes bundled in `internal/api/client/codemirror/mode/`:
 `clike`, `css`, `go`, `htmlmixed`, `javascript`, `markdown`, `php`, `python`, `sql`, `xml`

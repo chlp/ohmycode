@@ -95,7 +95,7 @@ Browser ──WS /file──► API (Go + MongoDB)
 - `/runner` WS endpoint for runner services
 - Files live in memory with per-file mutex; persisted to MongoDB every 30s
 - Version snapshots taken once per day per file
-- Background worker: cleanup (10 min), persist (30 s), runner status sync (1 s)
+- Background worker: cleanup sweep every 1s (deletes files idle >10 min with no subscribers), persist (30 s), runner status sync (1 s)
 
 **`runner/`** — Stateless bridge between API and language containers.
 - Connects to API via WebSocket with auto-reconnect
