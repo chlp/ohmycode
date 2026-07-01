@@ -64,7 +64,7 @@ document.addEventListener('drop', (event) => {
         }
 
         contentCodeMirror.setValue(newContent);
-        contentMarkdownBlock.innerHTML = marked.parse(file.content);
+        contentMarkdownBlock.innerHTML = DOMPurify.sanitize(marked.parse(file.content));
         actions.setContent(newContent);
     };
     reader.onerror = function () {

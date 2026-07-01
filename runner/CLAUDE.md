@@ -58,6 +58,7 @@ API Server ←→ WebSocket ←→ Runner Manager
 - `is_public` — Whether runner is publicly available
 - `languages` — Array of supported languages (must match docker-compose services)
 - `api` — WebSocket URL of the API server
+- `runner_token` — optional shared secret sent in the `/runner` init message; must match the API's `runner_token` (`OHMYCODE_RUNNER_TOKEN`) when the API has one configured. Empty by default (any runner accepted).
 
 ### Docker Setup
 

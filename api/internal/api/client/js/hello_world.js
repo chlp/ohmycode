@@ -209,7 +209,7 @@ echo 'Hello, OhMyCode!';`;
 
     if (helloWorldCode !== '') {
         const content = helloWorldCode + "\r\n" + contentCodeMirror.getValue();
-        contentMarkdownBlock.innerHTML = marked.parse(content);
+        contentMarkdownBlock.innerHTML = DOMPurify.sanitize(marked.parse(content));
         contentCodeMirror.setValue(content);
     }
 }

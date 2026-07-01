@@ -16,9 +16,10 @@ import (
 type Client struct {
 	ctx context.Context
 
-	RunnerId string
-	IsPublic bool
-	ApiUrl   string
+	RunnerId    string
+	IsPublic    bool
+	ApiUrl      string
+	RunnerToken string
 
 	mutex      *sync.Mutex
 	tasksQueue []*Task
@@ -37,16 +38,17 @@ const (
 	maxMessageSize = 1 << 20 // 1 MiB
 )
 
-func NewApiClient(ctx context.Context, runnerId string, isPublic bool, apiUrl string) *Client {
+func NewApiClient(ctx context.Context, runnerId string, isPublic bool, apiUrl string, runnerToken string) *Client {
 	apiClient := Client{
-		ctx:        ctx,
-		RunnerId:   runnerId,
-		IsPublic:   isPublic,
-		ApiUrl:     apiUrl,
-		mutex:      &sync.Mutex{},
-		socketMu:   &sync.RWMutex{},
-		writeMu:    &sync.Mutex{},
-		tasksQueue: make([]*Task, 0),
+		ctx:         ctx,
+		RunnerId:    runnerId,
+		IsPublic:    isPublic,
+		ApiUrl:      apiUrl,
+		RunnerToken: runnerToken,
+		mutex:       &sync.Mutex{},
+		socketMu:    &sync.RWMutex{},
+		writeMu:     &sync.Mutex{},
+		tasksQueue:  make([]*Task, 0),
 	}
 	go apiClient.handleReconnection()
 	go func() {
@@ -64,9 +66,10 @@ func NewApiClient(ctx context.Context, runnerId string, isPublic bool, apiUrl st
 }
 
 type InitMessage struct {
-	Action   string `json:"action"`
-	RunnerId string `json:"runner_id"`
-	IsPublic bool   `json:"is_public"`
+	Action      string `json:"action"`
+	RunnerId    string `json:"runner_id"`
+	IsPublic    bool   `json:"is_public"`
+	RunnerToken string `json:"runner_token,omitempty"`
 }
 
 func (apiClient *Client) getSocket() *websocket.Conn {
@@ -100,9 +103,10 @@ func (apiClient *Client) createWebSocket() {
 		return
 	}
 	initMessage := InitMessage{
-		Action:   "init",
-		RunnerId: apiClient.RunnerId,
-		IsPublic: apiClient.IsPublic,
+		Action:      "init",
+		RunnerId:    apiClient.RunnerId,
+		IsPublic:    apiClient.IsPublic,
+		RunnerToken: apiClient.RunnerToken,
 	}
 	if err := socket.WriteJSON(initMessage); err != nil {
 		util.Log("createWebSocket: json err: " + err.Error())

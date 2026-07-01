@@ -30,6 +30,14 @@ else
   fail "api"
 fi
 
+echo ""
+echo "=== Go tests (runner) ==="
+if (cd "$REPO_ROOT/runner" && go test -race ./...); then
+  pass "runner"
+else
+  fail "runner"
+fi
+
 # ── JS unit ─────────────────────────────────────────────────────────────────
 echo ""
 echo "=== JS unit tests ==="

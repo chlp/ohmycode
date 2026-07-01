@@ -1,40 +1,48 @@
-# CLAUDE.md — E2E тесты (Playwright)
+# CLAUDE.md — E2E tests (Playwright)
 
-Этот файл описывает E2E-тесты для OhMyCode и даёт всё необходимое для их запуска и расширения.
+This file describes the E2E tests for OhMyCode and everything needed to run and extend them.
 
-## Структура тестов
+## Test structure
 
 ```
 e2e/
-├── editor.spec.js        — базовое поведение редактора (загрузка, WS, CodeMirror)
-├── static-files.spec.js  — cache busting: hash в URL, Cache-Control, immutable-заголовки
-├── playwright.config.js  — конфигурация (chromium, baseURL, timeout, retries)
-└── package.json          — зависимости (@playwright/test)
+├── editor.spec.js          — basic editor behavior (load, WS, CodeMirror)
+├── static-files.spec.js    — cache busting: hash in URL, Cache-Control, immutable headers
+├── collaboration.spec.js   — two clients on the same file stay in sync (lang, content, name)
+├── file-rename.spec.js     — inline contenteditable file name editing
+├── lang-switch.spec.js     — language dropdown and mode switching
+├── ui-controls.spec.js     — header buttons, controls/status bar visibility, new file
+├── code-execution.spec.js  — run_task_with_content → runner → result pane, clean result
+├── lock-mode.spec.js       — locking a file makes it read-only for every viewer
+├── readonly-share.spec.js  — encrypted read-only share links (generate, open, decrypt, no-edit)
+├── playwright.config.js    — config (chromium, baseURL, timeout, retries)
+└── package.json            — dependencies (@playwright/test)
 ```
 
-Смежные слои тестирования (не E2E):
+Related test layers (not E2E):
 
-| Слой | Расположение | Команда |
-|------|-------------|---------|
-| Go unit + WS integration | `api/internal/...` | `cd api && go test -race ./...` |
+| Layer | Location | Command |
+|-------|----------|---------|
+| Go unit + WS integration (api) | `api/internal/...` | `cd api && go test -race ./...` |
+| Go unit (runner) | `runner/internal/...`, `runner/config/...` | `cd runner && go test -race ./...` |
 | JS unit (Vitest) | `api/internal/api/client/js/test/` | `cd api/internal/api/client && npm test` |
-| **E2E (Playwright)** | `e2e/` | см. ниже |
+| **E2E (Playwright)** | `e2e/` | see below |
 
-## Требования перед запуском
+## Before running
 
-1. **Приложение должно быть запущено** на `http://localhost:52674/`
+1. **The app must be running** at `http://localhost:52674/`
 
 ```bash
-# Запустить API + MongoDB
+# Start API + MongoDB
 docker compose -f api/docker/docker-compose.yml up -d --build --remove-orphans --force-recreate
 
-# Запустить runner'ы (Python, Go, Node.js, Java, PHP, PostgreSQL, MySQL)
+# Start runners (Python, Go, Node.js, Java, PHP, PostgreSQL, MySQL, ...)
 docker compose -f runner/docker/docker-compose.yml up -d --build --remove-orphans --force-recreate
 ```
 
-Docker должен быть запущен. Если Docker Desktop не работает: `open -a Docker && sleep 10`.
+Docker must be running. If Docker Desktop isn't up: `open -a Docker && sleep 10`.
 
-2. **Зависимости E2E** (один раз):
+2. **E2E dependencies** (one-time):
 
 ```bash
 cd e2e
@@ -42,101 +50,126 @@ npm install
 npx playwright install chromium
 ```
 
-## Запуск тестов
+## Running tests
 
 ```bash
 cd e2e
 
-# Все тесты
+# All tests
 npm test
 
-# С подробным выводом
+# Verbose output
 npx playwright test --reporter=list
 
-# Один файл
+# A single file
 npx playwright test editor.spec.js
 
-# Интерактивный UI-режим (полезно при отладке)
+# Interactive UI mode (useful for debugging)
 npm run test:ui
 
-# Против другого окружения
+# Against a different environment
 APP_URL=https://ohmycode.work npx playwright test
 ```
 
-## Что проверяют тесты
+## What each spec checks
 
 ### `editor.spec.js`
-
-- Приложение отдаёт 200, `#content` textarea присутствует в DOM
-- При загрузке URL меняется на `/[22-символьный base62 ID]`
-- `body` переходит из `opacity:0` в `opacity:1` после DOMContentLoaded
-- WebSocket подключается к `/file`
-- CodeMirror рендерится и виден
-- `#file-header` виден
-- После WS-рукопожатия редактор получает снапшот файла
+- App returns 200, `#content` textarea is present in the DOM
+- URL changes to `/[22-char base62 ID]` on load
+- `body` transitions from `opacity:0` to `opacity:1` after DOMContentLoaded
+- WebSocket connects to `/file`
+- CodeMirror renders and is visible
+- `#file-header` is visible
+- Editor receives a file snapshot after the WS handshake
 
 ### `static-files.spec.js`
+- `index.html` is served with `Cache-Control: no-cache` — passes in both modes
+- The other 5 tests check hash-based versioning and **auto-skip** in dev mode (`use_dynamic_files=true`): `?v=HASH` in the URL, immutable Cache-Control, hash stability
 
-- `index.html` отдаётся с `Cache-Control: no-cache` — работает в обоих режимах
-- Остальные 5 тестов проверяют hash-based versioning и **автоматически пропускаются** в dev-режиме (`use_dynamic_files=true`): хэш `?v=HASH` в URL, immutable Cache-Control, стабильность хэша
+All 6 tests should pass in prod mode (`use_dynamic_files=false`, embedded files).
 
-В prod-режиме (`use_dynamic_files=false`, embedded files) все 6 тестов должны проходить.
+### `collaboration.spec.js`
+- Two browser contexts open the same file URL and see the same language, content, and file name
 
-## Добавление новых тестов
+### `file-rename.spec.js`
+- `#file-name` is visible and `contenteditable`
+- Clicking it focuses it; typing a new name updates the visible text
 
-Новые `.spec.js` файлы в `e2e/` подхватываются автоматически (см. `testDir: '.'` в конфиге).
+### `lang-switch.spec.js`
+- `#lang-select` is visible and contains the expected language options
+- Selecting a language updates the select value across changes
 
-Типовой шаблон:
+### `ui-controls.spec.js`
+- History/lock/encrypt/download/versions header buttons are visible
+- `#controls-container` and `#status-bar` become visible after WS init
+- "New file" navigates to a distinct new 22-char file URL
+
+### `code-execution.spec.js`
+- Selecting `python3` and clicking Run shows the program's output in the result pane
+- Clean Result clears a previous run's output and hides the result pane
+- Requires a runner (e.g. python3 container) to be online — the run button only enables once one is
+
+### `lock-mode.spec.js`
+- Clicking the lock button sets the status bar to "Locked" and makes the CodeMirror instance read-only
+- A lock set by one client is reflected on another client viewing the same file
+
+### `readonly-share.spec.js`
+- Enabling encryption and copying the generated read-only link lets a second, unrelated browser context open it, decrypt the content client-side, and see it — but not edit it (lock button disabled, editor read-only)
+
+## Adding new tests
+
+New `.spec.js` files in `e2e/` are picked up automatically (see `testDir: '.'` in the config).
+
+Typical template:
 
 ```js
 import { test, expect } from '@playwright/test';
 
-test('описание', async ({ page }) => {
+test('description', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   // ...
 });
 ```
 
-**Важные детали:**
+**Important details:**
 
-- `baseURL` — `http://localhost:52674` по умолчанию, переопределяется через `APP_URL`
-- Timeout: 30 секунд на тест, 1 retry при падении
-- Только Chromium (намеренно: приложение ориентировано на desktop Chrome)
-- `retries: 1` — не считай тест сломанным с первой попытки, особенно WS-зависимые
+- `baseURL` defaults to `http://localhost:52674`, overridden via `APP_URL`
+- Timeout: 30s per test, 1 retry on failure
+- Chromium only (intentional — the app targets desktop Chrome)
+- `retries: 1` — don't treat a test as broken on the first failure, especially WS-dependent ones
 
-## Типичные ошибки и диагностика
+## Common failures and diagnostics
 
-| Симптом | Причина | Решение |
-|---------|---------|---------|
-| `Connection refused` при запуске | Приложение не запущено | Запустить docker compose |
-| `ERR_MODULE_NOT_FOUND: @playwright/test` | Не установлены зависимости | `npm install` в `e2e/` |
-| `Cannot find package 'playwright'` | Запуск из неправильной директории | `cd e2e` перед командами |
-| Тест по WS падает на первой попытке | Race condition при подключении | Нормально — retry сработает |
-| `test-results/` в git status | Не добавлен `.gitignore` | Файл уже есть: `e2e/.gitignore` |
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `Connection refused` on run | App isn't running | Start docker compose (see above) |
+| `ERR_MODULE_NOT_FOUND: @playwright/test` | Dependencies not installed | `npm install` in `e2e/` |
+| `Cannot find package 'playwright'` | Running from the wrong directory | `cd e2e` before commands |
+| A WS-dependent test fails on the first attempt | Race condition on connect | Normal — the retry will pass |
+| `test-results/` shows up in git status | Missing `.gitignore` | Already present: `e2e/.gitignore` |
 
-## Для Claude
+## For Claude
 
-**Перед запуском тестов всегда проверяй:**
+**Always check before running tests:**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}" http://localhost:52674/
-# Должно вернуть 200. Если нет — сначала запусти docker compose (см. выше).
+# Should return 200. If not, start docker compose first (see above).
 ```
 
-**Рабочая директория для E2E:** всегда `cd e2e` перед `npx playwright`.  
-Запуск из корня `/Users/amini/Documents/github/ohmycode` или из `api/` даст `ERR_MODULE_NOT_FOUND`.
+**E2E working directory:** always `cd e2e` before `npx playwright`. Running from the repo root or from `api/` gives `ERR_MODULE_NOT_FOUND`.
 
-**Docker daemon:** если получаешь `Cannot connect to the Docker daemon` — выполни `open -a Docker` и подожди ~10 секунд до повторной попытки.
+**Docker daemon:** if you get `Cannot connect to the Docker daemon` — run `open -a Docker` and wait ~10s before retrying.
 
-**Скриншоты при отладке:** Playwright сохраняет трейсы в `e2e/test-results/` при падении с retry. Файл `trace.zip` можно просмотреть командой:
+**Debug screenshots:** Playwright saves traces to `e2e/test-results/` on a failed retry. View a trace with:
 
 ```bash
 npx playwright show-trace e2e/test-results/<test-name>/trace.zip
 ```
 
-**Написание исследовательских тестов:** для UX-проверок используй `page.keyboard.insertText()` вместо `page.keyboard.type()` — `type()` эмулирует посимвольный ввод и может потерять фокус в CodeMirror до подключения WS (редактор `readOnly: true` до получения первого снапшота).
+**Writing exploratory tests:** for UX checks, use `page.keyboard.insertText()` instead of `page.keyboard.type()` — `type()` emulates character-by-character input and can lose focus in CodeMirror before the WS connects (the editor is `readOnly: true` until the first snapshot arrives).
 
-**Два CodeMirror на странице:** `.CodeMirror` разрешается в 2 элемента когда runner подключён (второй — read-only result pane с темой `tomorrow-night-bright`). Всегда используй `.first()` или явный селектор `#content-container .CodeMirror`.
+**Two CodeMirror instances on the page:** `.CodeMirror` resolves to 2 elements once a runner is connected (the second is the read-only result pane, themed `tomorrow-night-bright`). Always scope with a container selector, e.g. `#content-container .CodeMirror` or `#result-container .CodeMirror`, rather than relying on `.first()`.
 
-**WS-тесты:** регистрируй `page.waitForEvent('websocket', ...)` **до** `page.goto()` — иначе событие подключения может произойти раньше, чем слушатель будет установлен, и тест зависнет на таймауте.
+**WS tests:** register `page.waitForEvent('websocket', ...)` **before** `page.goto()` — otherwise the connect event can fire before the listener is attached and the test will hang until timeout.

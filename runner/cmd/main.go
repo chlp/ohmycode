@@ -18,7 +18,7 @@ func main() {
 
 	apiConfig := config.LoadRunnerConf()
 	util.Log(appCtx, fmt.Sprintf("OhMyCode.Runner app started with id: %s", apiConfig.RunnerId))
-	apiClient := api.NewApiClient(appCtx, apiConfig.RunnerId, apiConfig.IsPublic, apiConfig.ApiUrl)
+	apiClient := api.NewApiClient(appCtx, apiConfig.RunnerId, apiConfig.IsPublic, apiConfig.ApiUrl, apiConfig.RunnerToken)
 
 	w := worker.NewWorker(appCtx, apiConfig.RunnerId, apiClient, apiConfig.Languages)
 	w.Run()

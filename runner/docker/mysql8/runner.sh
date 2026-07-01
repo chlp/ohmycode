@@ -37,11 +37,17 @@ while true; do
         touch -- "$OUT"
         chmod 744 -- "$OUT"
         chmod 644 -- "$REQUEST" 2>/dev/null || true
+        TMP_USER_PWD="tmp_pass_${ID}"
         mysql -u root -e "CREATE DATABASE tmp_${ID};"
-        timeout 5 mysql -u root "tmp_${ID}" --table < "$REQUEST" 1>>"$OUT" 2>&1
+        mysql -u root -e "CREATE USER 'tmp_user_${ID}'@'localhost' IDENTIFIED BY '${TMP_USER_PWD}';"
+        mysql -u root -e "GRANT ALL PRIVILEGES ON tmp_${ID}.* TO 'tmp_user_${ID}'@'localhost';"
+        mysql -u root -e "FLUSH PRIVILEGES;"
+
+        MYSQL_PWD="$TMP_USER_PWD" timeout 5 mysql -u "tmp_user_${ID}" "tmp_${ID}" --table < "$REQUEST" 1>>"$OUT" 2>&1
         if [ $? -eq 124 ]; then
           echo -e "\n\n-------------------------\nTimeout reached, aborting\n-------------------------\n" >> "$OUT"
         fi
+        mysql -u root -e "DROP USER 'tmp_user_${ID}'@'localhost';"
         mysql -u root -e "DROP DATABASE tmp_${ID};"
         rm -f -- "$REQUEST"
         mv -- "$OUT" "results/$ID"

@@ -16,6 +16,9 @@ type RunnerConf struct {
 	RunnerName string   `json:"name"`
 	ApiUrl     string   `json:"api"`
 	Languages  []string `json:"languages"`
+	// RunnerToken is an optional shared secret sent in the /runner init message.
+	// Must match the API's runner_token when the API has one configured.
+	RunnerToken string `json:"runner_token,omitempty"`
 }
 
 func LoadRunnerConf() RunnerConf {
@@ -44,6 +47,9 @@ func applyEnvOverrides(c *RunnerConf) {
 	}
 	if v := os.Getenv("OHMYCODE_RUNNER_ID"); v != "" {
 		c.RunnerId = v
+	}
+	if v := os.Getenv("OHMYCODE_RUNNER_TOKEN"); v != "" {
+		c.RunnerToken = v
 	}
 }
 

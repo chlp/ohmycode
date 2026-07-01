@@ -132,7 +132,7 @@ let contentSender = () => {
     const newContent = contentCodeMirror.getValue();
     if (app.isOnline && !file.is_locked && ohMySimpleHash(file.content) !== ohMySimpleHash(newContent)) {
         getNextUpdateFunc(1000);
-        contentMarkdownBlock.innerHTML = marked.parse(newContent); // todo: should have function to update all editors/views or load data after changing mode
+        contentMarkdownBlock.innerHTML = DOMPurify.sanitize(marked.parse(newContent)); // todo: should have function to update all editors/views or load data after changing mode
         actions.setContent(newContent);
     } else {
         getNextUpdateFunc(500);

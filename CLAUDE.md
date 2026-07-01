@@ -30,6 +30,9 @@ Individual commands:
 # Go — unit + WS integration (no external deps required)
 cd api && go test -race ./...
 
+# Go — runner unit tests (task distribution, result processing, config)
+cd runner && go test -race ./...
+
 # JS unit (Vitest, pure functions)
 cd api/internal/api/client && npm test
 
@@ -47,6 +50,7 @@ cd e2e && npm install && npx playwright install chromium && npx playwright test
 | Go API unit (health, headers, rate limiter, origin) | `internal/api/*_test.go` | No |
 | Go WS integration | `internal/api/ws_integration_test.go` | No |
 | Go static files | `internal/api/staticfiles_test.go` | No |
+| Go runner unit (task distribution, result processing, config) | `runner/internal/worker/*_test.go`, `runner/config/*_test.go` | No |
 | JS unit (Vitest) | `internal/api/client/js/test/` | No |
 | E2E editor | `e2e/editor.spec.js` | Yes |
 | E2E static files | `e2e/static-files.spec.js` | Yes |
@@ -54,6 +58,9 @@ cd e2e && npm install && npx playwright install chromium && npx playwright test
 | E2E file rename | `e2e/file-rename.spec.js` | Yes |
 | E2E collaboration | `e2e/collaboration.spec.js` | Yes |
 | E2E UI controls | `e2e/ui-controls.spec.js` | Yes |
+| E2E code execution | `e2e/code-execution.spec.js` | Yes |
+| E2E lock mode | `e2e/lock-mode.spec.js` | Yes |
+| E2E read-only share / encryption | `e2e/readonly-share.spec.js` | Yes |
 
 ## Deploy
 
